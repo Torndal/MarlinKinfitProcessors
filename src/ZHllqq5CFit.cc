@@ -87,6 +87,9 @@ m_nSLDecayTotal(0),
 m_nJets(0),
 m_nLeptons(0),
 m_HDecayMode(-1),
+m_dijet_angle_wNu_bestfit(0.),
+m_dijet_angle_woNu(0.),
+m_dijet_angle_best(0.),
 m_iError_wNu_bestfit(-5),
 m_probability_wNu_bestfit(0.),
 m_chi2_wNu_bestfit(0.),
@@ -224,7 +227,17 @@ h_SigmaPxPz(NULL),
 h_SigmaPxE(NULL),
 h_SigmaPyPz(NULL),
 h_SigmaPyE(NULL),
-h_SigmaPzE(NULL)
+h_SigmaPzE(NULL),
+h_fitProbability_diJetAngle(NULL),
+h_fitProbability_Ejet(NULL),
+h_fitProbability_Thetajet(NULL),
+h_fitProbability_Phijet(NULL),
+h_fitProbability_SigmaEjet(NULL),
+h_fitProbability_SigmaThetajet(NULL),
+h_fitProbability_SigmaPhijet(NULL),
+h_fitProbability_pullEjet(NULL),
+h_fitProbability_pullThetajet(NULL),
+h_fitProbability_pullPhijet(NULL)
 {
 
 //	modify processor description
@@ -572,18 +585,30 @@ void ZHllqq5CFit::init()
 	m_pTTree_3->Branch("jet_startPy_wNu",&m_jet_startPy_wNu);
 	m_pTTree_3->Branch("jet_startPz_wNu",&m_jet_startPz_wNu);
 	m_pTTree_3->Branch("jet_startE_wNu",&m_jet_startE_wNu);
+	m_pTTree_3->Branch("jet_startTheta_wNu",&m_jet_startTheta_wNu);
+	m_pTTree_3->Branch("jet_startPhi_wNu",&m_jet_startPhi_wNu);
+	m_pTTree_3->Branch("dijet_angle_wNu",&m_dijet_angle_wNu);
 	m_pTTree_3->Branch("jet_startPx_wNu_bestfit",&m_jet_startPx_wNu_bestfit);
 	m_pTTree_3->Branch("jet_startPy_wNu_bestfit",&m_jet_startPy_wNu_bestfit);
 	m_pTTree_3->Branch("jet_startPz_wNu_bestfit",&m_jet_startPz_wNu_bestfit);
 	m_pTTree_3->Branch("jet_startE_wNu_bestfit",&m_jet_startE_wNu_bestfit);
+	m_pTTree_3->Branch("jet_startTheta_wNu_bestfit",&m_jet_startTheta_wNu_bestfit);
+	m_pTTree_3->Branch("jet_startPhi_wNu_bestfit",&m_jet_startPhi_wNu_bestfit);
+	m_pTTree_3->Branch("dijet_angle_wNu_bestfit",&m_dijet_angle_wNu_bestfit,"dijet_angle_wNu_bestfit/F");
 	m_pTTree_3->Branch("jet_startPx_woNu",&m_jet_startPx_woNu);
 	m_pTTree_3->Branch("jet_startPy_woNu",&m_jet_startPy_woNu);
 	m_pTTree_3->Branch("jet_startPz_woNu",&m_jet_startPz_woNu);
 	m_pTTree_3->Branch("jet_startE_woNu",&m_jet_startE_woNu);
+	m_pTTree_3->Branch("jet_startTheta_woNu",&m_jet_startTheta_woNu);
+	m_pTTree_3->Branch("jet_startPhi_woNu",&m_jet_startPhi_woNu);
+	m_pTTree_3->Branch("dijet_angle_woNu",&m_dijet_angle_woNu,"dijet_angle_woNu/F");
 	m_pTTree_3->Branch("jet_startPx_best",&m_jet_startPx_best);
 	m_pTTree_3->Branch("jet_startPy_best",&m_jet_startPy_best);
 	m_pTTree_3->Branch("jet_startPz_best",&m_jet_startPz_best);
 	m_pTTree_3->Branch("jet_startE_best",&m_jet_startE_best);
+	m_pTTree_3->Branch("jet_startTheta_best",&m_jet_startTheta_best);
+	m_pTTree_3->Branch("jet_startPhi_best",&m_jet_startPhi_best);
+	m_pTTree_3->Branch("dijet_angle_best",&m_dijet_angle_best,"dijet_angle_best/F");
 	m_pTTree_3->Branch("lepton_startPx_wNu",&m_lepton_startPx_wNu);
 	m_pTTree_3->Branch("lepton_startPy_wNu",&m_lepton_startPy_wNu);
 	m_pTTree_3->Branch("lepton_startPz_wNu",&m_lepton_startPz_wNu);
@@ -723,6 +748,26 @@ void ZHllqq5CFit::init()
 	h_SigmaPyE->SetDirectory(m_pTFile);
 	h_SigmaPzE = new TH1F("h_SigmaPzE", "; #sigma(p_{z}E); n_{jet}", 400, -0.01, 0.01);
 	h_SigmaPzE->SetDirectory(m_pTFile);
+	h_fitProbability_diJetAngle = new TH2F("h_fitProbability_diJetAngle", "fit probability vs di-jet angle (best fit); di-jet angle [deg]; fit probability", 90, -180., 180., 40, 0., 0.2);
+	h_fitProbability_diJetAngle->SetDirectory(m_pTFile);
+	h_fitProbability_Ejet = new TH2F("h_fitProbability_Ejet", "fit probability vs jet energy (best fit); jet energy [GeV]; fit probability", 75, 0., 150., 40, 0., 0.2);
+	h_fitProbability_Ejet->SetDirectory(m_pTFile);
+	h_fitProbability_Thetajet = new TH2F("h_fitProbability_Thetajet", "fit probability vs jet theta (best fit); #theta_{jet} [deg]; fit probability", 90, 0., 180., 40, 0., 0.2);
+	h_fitProbability_Thetajet->SetDirectory(m_pTFile);
+	h_fitProbability_Phijet = new TH2F("h_fitProbability_Phijet", "fit probability vs jet phi (best fit); #phi_{jet} [deg]; fit probability", 90, 0., 360., 40, 0., 0.2);
+	h_fitProbability_Phijet->SetDirectory(m_pTFile);
+	h_fitProbability_SigmaEjet = new TH2F("h_fitProbability_SigmaEjet", "fit probability vs #sigma(E_{jet}) (best fit); #sigma(E_{jet}) [GeV]; fit probability", 50, 0., 50., 40, 0., 0.2);
+	h_fitProbability_SigmaEjet->SetDirectory(m_pTFile);
+	h_fitProbability_SigmaThetajet = new TH2F("h_fitProbability_SigmaThetajet", "fit probability vs #sigma(#theta_{jet}) (best fit); #sigma(#theta_{jet}) [radian]; fit probability", 100, 0., 0.02, 40, 0., 0.2);
+	h_fitProbability_SigmaThetajet->SetDirectory(m_pTFile);
+	h_fitProbability_SigmaPhijet = new TH2F("h_fitProbability_SigmaPhijet", "fit probability vs #sigma(#phi_{jet}) (best fit); #sigma(#phi_{jet}) [radian]; fit probability", 100, 0., 0.02, 40, 0., 0.2);
+	h_fitProbability_SigmaPhijet->SetDirectory(m_pTFile);
+	h_fitProbability_pullEjet = new TH2F("h_fitProbability_pullEjet", "fit probability vs pull E_{jet} (best fit); pull E_{jet}; fit probability", 100, -10., 10., 40, 0., 0.2);
+	h_fitProbability_pullEjet->SetDirectory(m_pTFile);
+	h_fitProbability_pullThetajet = new TH2F("h_fitProbability_pullThetajet", "fit probability vs pull #theta_{jet} (best fit); pull #theta_{jet}; fit probability", 100, -10., 10., 40, 0., 0.2);
+	h_fitProbability_pullThetajet->SetDirectory(m_pTFile);
+	h_fitProbability_pullPhijet = new TH2F("h_fitProbability_pullPhijet", "fit probability vs pull #phi_{jet} (best fit); pull #phi_{jet}; fit probability", 100, -10., 10., 40, 0., 0.2);
+	h_fitProbability_pullPhijet->SetDirectory(m_pTFile);
 }
 
 void ZHllqq5CFit::Clear()
@@ -752,18 +797,30 @@ void ZHllqq5CFit::Clear()
 	m_jet_startPy_wNu.clear();
 	m_jet_startPz_wNu.clear();
 	m_jet_startE_wNu.clear();
+	m_jet_startTheta_wNu.clear();
+	m_jet_startPhi_wNu.clear();
+	m_dijet_angle_wNu.clear();
 	m_jet_startPx_wNu_bestfit.clear();
 	m_jet_startPy_wNu_bestfit.clear();
 	m_jet_startPz_wNu_bestfit.clear();
 	m_jet_startE_wNu_bestfit.clear();
+	m_jet_startTheta_wNu_bestfit.clear();
+	m_jet_startPhi_wNu_bestfit.clear();
+	m_dijet_angle_wNu_bestfit = 0.;
 	m_jet_startPx_woNu.clear();
 	m_jet_startPy_woNu.clear();
 	m_jet_startPz_woNu.clear();
 	m_jet_startE_woNu.clear();
+	m_jet_startTheta_woNu.clear();
+	m_jet_startPhi_woNu.clear();
+	m_dijet_angle_woNu = 0.;
 	m_jet_startPx_best.clear();
 	m_jet_startPy_best.clear();
 	m_jet_startPz_best.clear();
 	m_jet_startE_best.clear();
+	m_jet_startTheta_best.clear();
+	m_jet_startPhi_best.clear();
+	m_dijet_angle_best = 0.;
 	m_lepton_startPx_wNu.clear();
 	m_lepton_startPy_wNu.clear();
 	m_lepton_startPz_wNu.clear();
@@ -1193,8 +1250,41 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 		TLorentzVector Jet1_CNutlv(0,0,0,0);
 		TLorentzVector Jet0_Nutlv(0,0,0,0);
 		TLorentzVector Jet1_Nutlv(0,0,0,0);
-		std::vector<float> FitResultwNu{};
-		std::vector<float> FitResultwoNu{};
+		std::vector<std::vector<float>> FitResultwNu{};
+		std::vector<std::vector<float>> FitResultwoNu{};
+
+		std::vector<float> fitStartValueswNu;
+		std::vector<float> fitOutputswNu;
+		std::vector<float> fittedParticleswNu;
+		std::vector<float> pullswNu;
+		std::vector<float> constraintswNu;
+		std::vector<float> uncertaintieswNu;
+		std::vector<float> diJetSystemwNu;
+
+		std::vector<float> fitStartValueswNu_bestfit;
+		std::vector<float> fitOutputswNu_bestfit;
+		std::vector<float> fittedParticleswNu_bestfit;
+		std::vector<float> pullswNu_bestfit;
+		std::vector<float> constraintswNu_bestfit;
+		std::vector<float> uncertaintieswNu_bestfit;
+		std::vector<float> diJetSystemwNu_bestfit;
+
+		std::vector<float> fitStartValueswoNu;
+		std::vector<float> fitOutputswoNu;
+		std::vector<float> fittedParticleswoNu;
+		std::vector<float> pullswoNu;
+		std::vector<float> constraintswoNu;
+		std::vector<float> uncertaintieswoNu;
+		std::vector<float> diJetSystemwoNu;
+
+		std::vector<float> fitStartValues_best;
+		std::vector<float> fitOutputs_best;
+		std::vector<float> fittedParticles_best;
+		std::vector<float> pulls_best;
+		std::vector<float> constraints_best;
+		std::vector<float> uncertainties_best;
+		std::vector<float> diJetSystem_best;
+
 		int ierr = 0.;
 		float bestfitprob_wNu = 0.;
 		float bestfitprob_woNu = 0.;
@@ -1330,131 +1420,150 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 				streamlog_out(MESSAGE) << "******************************************************************************************************************************************************************" << std::endl;
 //				FitResultwNu = this->performFIT( pLCEvent , ENeutrinoJet0 , ENeutrinoJet1 );
 				FitResultwNu = this->performFIT( pLCEvent , Jet0_Nutlv , Jet1_Nutlv );
+				fitStartValueswNu = FitResultwNu[0];
+				fitOutputswNu = FitResultwNu[1];
+				fittedParticleswNu = FitResultwNu[2];
+				pullswNu = FitResultwNu[3];
+				constraintswNu = FitResultwNu[4];
+				uncertaintieswNu = FitResultwNu[5];
+				diJetSystemwNu = FitResultwNu[6];
+				streamlog_out(DEBUG)  << "FitResult with neutrino correction received from fit successfully: " << std::endl ;
+				
 				Jet0_BNutlv = TLorentzVector(0.,0.,0.,0.);
 				Jet0_CNutlv = TLorentzVector(0.,0.,0.,0.);
 				Jet1_BNutlv = TLorentzVector(0.,0.,0.,0.);
 				Jet1_CNutlv = TLorentzVector(0.,0.,0.,0.);
 				Jet0_Nutlv = TLorentzVector(0.,0.,0.,0.);
 				Jet1_Nutlv = TLorentzVector(0.,0.,0.,0.);
-				m_iError_wNu.push_back(FitResultwNu[0]);
-				ierr = FitResultwNu[0];
+				m_iError_wNu.push_back(fitOutputswNu[0]);
+				ierr = fitOutputswNu[0];
 				h_fitError_wNu->Fill(ierr);
 				if ( ierr == 0 )//&& ( ENeutrinoJet0 != 0 || ENeutrinoJet1 !=0 ) )
 				{
-					m_probability_wNu.push_back(FitResultwNu[1]);
-					m_n_itter_wNu.push_back(FitResultwNu[2]);
-					m_startmassZ_wNu.push_back(FitResultwNu[3]);
-					m_startmassH_wNu.push_back(FitResultwNu[4]);
-					m_beststartmassZ_wNu.push_back(FitResultwNu[5]);
-					m_beststartmassH_wNu.push_back(FitResultwNu[6]);
-					m_Zmass_after_fit_wNu.push_back(FitResultwNu[7]);
-					m_Hmass_after_fit_wNu.push_back(FitResultwNu[8]);
-					m_chi2startmassZ_wNu.push_back(FitResultwNu[9]);
-					m_chi2startmassH_wNu.push_back(FitResultwNu[10]);
-					m_chi2_wNu.push_back(FitResultwNu[11]);
-					m_bestphotonenergy_wNu.push_back(FitResultwNu[12]);
-					m_pull_jet_E_wNu.push_back(FitResultwNu[13]);
-					m_pull_jet_E_wNu.push_back(FitResultwNu[14]);
-					m_pull_jet_th_wNu.push_back(FitResultwNu[15]);
-					m_pull_jet_th_wNu.push_back(FitResultwNu[16]);
-					m_pull_jet_phi_wNu.push_back(FitResultwNu[17]);
-					m_pull_jet_phi_wNu.push_back(FitResultwNu[18]);
-					m_pull_lepton_InvpT_wNu.push_back(FitResultwNu[19]);
-					m_pull_lepton_InvpT_wNu.push_back(FitResultwNu[20]);
-					m_pull_lepton_th_wNu.push_back(FitResultwNu[21]);
-					m_pull_lepton_th_wNu.push_back(FitResultwNu[22]);
-					m_pull_lepton_phi_wNu.push_back(FitResultwNu[23]);
-					m_pull_lepton_phi_wNu.push_back(FitResultwNu[24]);
-					m_jet_startPx_wNu.push_back(FitResultwNu[48]);
-					m_jet_startPx_wNu.push_back(FitResultwNu[49]);
-					m_jet_startPy_wNu.push_back(FitResultwNu[50]);
-					m_jet_startPy_wNu.push_back(FitResultwNu[51]);
-					m_jet_startPz_wNu.push_back(FitResultwNu[52]);
-					m_jet_startPz_wNu.push_back(FitResultwNu[53]);
-					m_jet_startE_wNu.push_back(FitResultwNu[54]);
-					m_jet_startE_wNu.push_back(FitResultwNu[55]);
-					m_lepton_startPx_wNu.push_back(FitResultwNu[56]);
-					m_lepton_startPx_wNu.push_back(FitResultwNu[57]);
-					m_lepton_startPy_wNu.push_back(FitResultwNu[58]);
-					m_lepton_startPy_wNu.push_back(FitResultwNu[59]);
-					m_lepton_startPz_wNu.push_back(FitResultwNu[60]);
-					m_lepton_startPz_wNu.push_back(FitResultwNu[61]);
-					m_lepton_startE_wNu.push_back(FitResultwNu[62]);
-					m_lepton_startE_wNu.push_back(FitResultwNu[63]);
+					m_probability_wNu.push_back(fitOutputswNu[1]);
+					m_n_itter_wNu.push_back(fitOutputswNu[2]);
+					m_startmassZ_wNu.push_back(fitOutputswNu[3]);
+					m_startmassH_wNu.push_back(fitOutputswNu[4]);
+					m_beststartmassZ_wNu.push_back(fitOutputswNu[5]);
+					m_beststartmassH_wNu.push_back(fitOutputswNu[6]);
+					m_Zmass_after_fit_wNu.push_back(fitOutputswNu[7]);
+					m_Hmass_after_fit_wNu.push_back(fitOutputswNu[8]);
+					m_chi2startmassZ_wNu.push_back(fitOutputswNu[9]);
+					m_chi2startmassH_wNu.push_back(fitOutputswNu[10]);
+					m_chi2_wNu.push_back(fitOutputswNu[11]);
+					m_bestphotonenergy_wNu.push_back(fitOutputswNu[12]);
+					m_pull_jet_E_wNu.push_back(pullswNu[0]);
+					m_pull_jet_E_wNu.push_back(pullswNu[1]);
+					m_pull_jet_th_wNu.push_back(pullswNu[2]);
+					m_pull_jet_th_wNu.push_back(pullswNu[3]);
+					m_pull_jet_phi_wNu.push_back(pullswNu[4]);
+					m_pull_jet_phi_wNu.push_back(pullswNu[5]);
+					m_pull_lepton_InvpT_wNu.push_back(pullswNu[6]);
+					m_pull_lepton_InvpT_wNu.push_back(pullswNu[7]);
+					m_pull_lepton_th_wNu.push_back(pullswNu[8]);
+					m_pull_lepton_th_wNu.push_back(pullswNu[9]);
+					m_pull_lepton_phi_wNu.push_back(pullswNu[10]);
+					m_pull_lepton_phi_wNu.push_back(pullswNu[11]);
+					m_jet_startPx_wNu.push_back(fitStartValueswNu[0]);
+					m_jet_startPx_wNu.push_back(fitStartValueswNu[1]);
+					m_jet_startPy_wNu.push_back(fitStartValueswNu[2]);
+					m_jet_startPy_wNu.push_back(fitStartValueswNu[3]);
+					m_jet_startPz_wNu.push_back(fitStartValueswNu[4]);
+					m_jet_startPz_wNu.push_back(fitStartValueswNu[5]);
+					m_jet_startE_wNu.push_back(fitStartValueswNu[6]);
+					m_jet_startE_wNu.push_back(fitStartValueswNu[7]);
+					m_jet_startTheta_wNu.push_back(diJetSystemwNu[1]);
+					m_jet_startTheta_wNu.push_back(diJetSystemwNu[7]);
+					m_jet_startPhi_wNu.push_back(diJetSystemwNu[2]);
+					m_jet_startPhi_wNu.push_back(diJetSystemwNu[8]);
+					m_dijet_angle_wNu.push_back(diJetSystemwNu[12]);
+					m_lepton_startPx_wNu.push_back(fitStartValueswNu[8]);
+					m_lepton_startPx_wNu.push_back(fitStartValueswNu[9]);
+					m_lepton_startPy_wNu.push_back(fitStartValueswNu[10]);
+					m_lepton_startPy_wNu.push_back(fitStartValueswNu[11]);
+					m_lepton_startPz_wNu.push_back(fitStartValueswNu[12]);
+					m_lepton_startPz_wNu.push_back(fitStartValueswNu[13]);
+					m_lepton_startE_wNu.push_back(fitStartValueswNu[14]);
+					m_lepton_startE_wNu.push_back(fitStartValueswNu[15]);
 				}
-				m_iError_wNu_bestfit = FitResultwNu[0];
-				if ( m_iError_wNu_bestfit == 0 && bestfitprob_wNu <= FitResultwNu[1] )
+				m_iError_wNu_bestfit = fitOutputswNu[0];
+				if ( m_iError_wNu_bestfit == 0 && bestfitprob_wNu <= fitOutputswNu[1] )
 				{
 					best_B_Nu = i_perm_B;
 					best_C_Nu = i_perm_C;
-					m_probability_wNu_bestfit = FitResultwNu[1];
+					m_probability_wNu_bestfit = fitOutputswNu[1];
 					bestfitprob_wNu = m_probability_wNu_bestfit;
-					m_n_itter_wNu_bestfit = FitResultwNu[2];
-					m_startmassZ_wNu_bestfit = FitResultwNu[3];
-					m_startmassH_wNu_bestfit = FitResultwNu[4];
-					m_beststartmassZ_wNu_bestfit = FitResultwNu[5];
-					m_beststartmassH_wNu_bestfit = FitResultwNu[6];
-					m_Zmass_after_fit_wNu_bestfit = FitResultwNu[7];
-					m_Hmass_after_fit_wNu_bestfit = FitResultwNu[8];
-					m_chi2startmassZ_wNu_bestfit = FitResultwNu[9];
-					m_chi2startmassH_wNu_bestfit = FitResultwNu[10];
-					m_chi2_wNu_bestfit = FitResultwNu[11];
-					m_bestphotonenergy_wNu_bestfit = FitResultwNu[12];
-					m_pull_jet1_E_wNu_bestfit = FitResultwNu[13];
-					m_pull_jet2_E_wNu_bestfit = FitResultwNu[14];
-					m_pull_jet1_th_wNu_bestfit = FitResultwNu[15];
-					m_pull_jet2_th_wNu_bestfit = FitResultwNu[16];
-					m_pull_jet1_phi_wNu_bestfit = FitResultwNu[17];
-					m_pull_jet2_phi_wNu_bestfit = FitResultwNu[18];
-					m_pull_lepton1_InvpT_wNu_bestfit = FitResultwNu[19];
-					m_pull_lepton2_InvpT_wNu_bestfit = FitResultwNu[20];
-					m_pull_lepton1_th_wNu_bestfit = FitResultwNu[21];
-					m_pull_lepton2_th_wNu_bestfit = FitResultwNu[22];
-					m_pull_lepton1_phi_wNu_bestfit = FitResultwNu[23];
-					m_pull_lepton2_phi_wNu_bestfit = FitResultwNu[24];
-					ISRpx_wNu_bestfit = FitResultwNu[25];
-					ISRpy_wNu_bestfit = FitResultwNu[26];
-					ISRpz_wNu_bestfit = FitResultwNu[27];
-					Zpx_wNu_bestfit = FitResultwNu[28];
-					Zpy_wNu_bestfit = FitResultwNu[29];
-					Zpz_wNu_bestfit = FitResultwNu[30];
-					ZE_wNu_bestfit = FitResultwNu[31];
-					Hpx_wNu_bestfit = FitResultwNu[32];
-					Hpy_wNu_bestfit = FitResultwNu[33];
-					Hpz_wNu_bestfit = FitResultwNu[34];
-					HE_wNu_bestfit = FitResultwNu[35];
-					m_pxc_before_ISR_wNu = FitResultwNu[36];
-					m_pyc_before_ISR_wNu = FitResultwNu[37];
-					m_pzc_before_ISR_wNu = FitResultwNu[38];
-					m_ec_before_ISR_wNu = FitResultwNu[39];
-					m_pxc_before_fit_wNu = FitResultwNu[40];
-					m_pyc_before_fit_wNu = FitResultwNu[41];
-					m_pzc_before_fit_wNu = FitResultwNu[42];
-					m_ec_before_fit_wNu = FitResultwNu[43];
-					m_pxc_after_fit_wNu = FitResultwNu[44];
-					m_pyc_after_fit_wNu = FitResultwNu[45];
-					m_pzc_after_fit_wNu = FitResultwNu[46];
-					m_ec_after_fit_wNu = FitResultwNu[47];
-					m_jet_startPx_wNu_bestfit.push_back(FitResultwNu[48]);
-					m_jet_startPx_wNu_bestfit.push_back(FitResultwNu[49]);
-					m_jet_startPy_wNu_bestfit.push_back(FitResultwNu[50]);
-					m_jet_startPy_wNu_bestfit.push_back(FitResultwNu[51]);
-					m_jet_startPz_wNu_bestfit.push_back(FitResultwNu[52]);
-					m_jet_startPz_wNu_bestfit.push_back(FitResultwNu[53]);
-					m_jet_startE_wNu_bestfit.push_back(FitResultwNu[54]);
-					m_jet_startE_wNu_bestfit.push_back(FitResultwNu[55]);
-					m_lepton_startPx_wNu_bestfit.push_back(FitResultwNu[56]);
-					m_lepton_startPx_wNu_bestfit.push_back(FitResultwNu[57]);
-					m_lepton_startPy_wNu_bestfit.push_back(FitResultwNu[58]);
-					m_lepton_startPy_wNu_bestfit.push_back(FitResultwNu[59]);
-					m_lepton_startPz_wNu_bestfit.push_back(FitResultwNu[60]);
-					m_lepton_startPz_wNu_bestfit.push_back(FitResultwNu[61]);
-					m_lepton_startE_wNu_bestfit.push_back(FitResultwNu[62]);
-					m_lepton_startE_wNu_bestfit.push_back(FitResultwNu[63]);
+					m_n_itter_wNu_bestfit = fitOutputswNu[2];
+					m_startmassZ_wNu_bestfit = fitOutputswNu[3];
+					m_startmassH_wNu_bestfit = fitOutputswNu[4];
+					m_beststartmassZ_wNu_bestfit = fitOutputswNu[5];
+					m_beststartmassH_wNu_bestfit = fitOutputswNu[6];
+					m_Zmass_after_fit_wNu_bestfit = fitOutputswNu[7];
+					m_Hmass_after_fit_wNu_bestfit = fitOutputswNu[8];
+					m_chi2startmassZ_wNu_bestfit = fitOutputswNu[9];
+					m_chi2startmassH_wNu_bestfit = fitOutputswNu[10];
+					m_chi2_wNu_bestfit = fitOutputswNu[11];
+					m_bestphotonenergy_wNu_bestfit = fitOutputswNu[12];
+					m_pull_jet1_E_wNu_bestfit = pullswNu[0];
+					m_pull_jet2_E_wNu_bestfit = pullswNu[1];
+					m_pull_jet1_th_wNu_bestfit = pullswNu[2];
+					m_pull_jet2_th_wNu_bestfit = pullswNu[3];
+					m_pull_jet1_phi_wNu_bestfit = pullswNu[4];
+					m_pull_jet2_phi_wNu_bestfit = pullswNu[5];
+					m_pull_lepton1_InvpT_wNu_bestfit = pullswNu[6];
+					m_pull_lepton2_InvpT_wNu_bestfit = pullswNu[7];
+					m_pull_lepton1_th_wNu_bestfit = pullswNu[8];
+					m_pull_lepton2_th_wNu_bestfit = pullswNu[9];
+					m_pull_lepton1_phi_wNu_bestfit = pullswNu[10];
+					m_pull_lepton2_phi_wNu_bestfit = pullswNu[11];
+					ISRpx_wNu_bestfit = fittedParticleswNu[0];
+					ISRpy_wNu_bestfit = fittedParticleswNu[1];
+					ISRpz_wNu_bestfit = fittedParticleswNu[2];
+					Zpx_wNu_bestfit = fittedParticleswNu[3];
+					Zpy_wNu_bestfit = fittedParticleswNu[4];
+					Zpz_wNu_bestfit = fittedParticleswNu[5];
+					ZE_wNu_bestfit = fittedParticleswNu[6];
+					Hpx_wNu_bestfit = fittedParticleswNu[7];
+					Hpy_wNu_bestfit = fittedParticleswNu[8];
+					Hpz_wNu_bestfit = fittedParticleswNu[9];
+					HE_wNu_bestfit = fittedParticleswNu[10];
+					m_pxc_before_ISR_wNu = constraintswNu[0];
+					m_pyc_before_ISR_wNu = constraintswNu[1];
+					m_pzc_before_ISR_wNu = constraintswNu[2];
+					m_ec_before_ISR_wNu = constraintswNu[3];
+					m_pxc_before_fit_wNu = constraintswNu[4];
+					m_pyc_before_fit_wNu = constraintswNu[5];
+					m_pzc_before_fit_wNu = constraintswNu[6];
+					m_ec_before_fit_wNu = constraintswNu[7];
+					m_pxc_after_fit_wNu = constraintswNu[8];
+					m_pyc_after_fit_wNu = constraintswNu[9];
+					m_pzc_after_fit_wNu = constraintswNu[10];
+					m_ec_after_fit_wNu = constraintswNu[11];
+					m_jet_startPx_wNu_bestfit.push_back(fitStartValueswNu[0]);
+					m_jet_startPx_wNu_bestfit.push_back(fitStartValueswNu[1]);
+					m_jet_startPy_wNu_bestfit.push_back(fitStartValueswNu[2]);
+					m_jet_startPy_wNu_bestfit.push_back(fitStartValueswNu[3]);
+					m_jet_startPz_wNu_bestfit.push_back(fitStartValueswNu[4]);
+					m_jet_startPz_wNu_bestfit.push_back(fitStartValueswNu[5]);
+					m_jet_startE_wNu_bestfit.push_back(fitStartValueswNu[6]);
+					m_jet_startE_wNu_bestfit.push_back(fitStartValueswNu[7]);
+					m_jet_startTheta_wNu_bestfit.push_back(diJetSystemwNu[1]);
+					m_jet_startTheta_wNu_bestfit.push_back(diJetSystemwNu[7]);
+					m_jet_startPhi_wNu_bestfit.push_back(diJetSystemwNu[2]);
+					m_jet_startPhi_wNu_bestfit.push_back(diJetSystemwNu[8]);
+					m_dijet_angle_wNu_bestfit = diJetSystemwNu[12];
+					m_lepton_startPx_wNu_bestfit.push_back(fitStartValueswNu[8]);
+					m_lepton_startPx_wNu_bestfit.push_back(fitStartValueswNu[9]);
+					m_lepton_startPy_wNu_bestfit.push_back(fitStartValueswNu[10]);
+					m_lepton_startPy_wNu_bestfit.push_back(fitStartValueswNu[11]);
+					m_lepton_startPz_wNu_bestfit.push_back(fitStartValueswNu[12]);
+					m_lepton_startPz_wNu_bestfit.push_back(fitStartValueswNu[13]);
+					m_lepton_startE_wNu_bestfit.push_back(fitStartValueswNu[14]);
+					m_lepton_startE_wNu_bestfit.push_back(fitStartValueswNu[15]);
 				}
-				m_ISR_startPx_wNu = FitResultwNu[76];
-				m_ISR_startPy_wNu = FitResultwNu[77];
-				m_ISR_startPz_wNu = FitResultwNu[78];
+				m_ISR_startPx_wNu = fitStartValueswNu[16];
+				m_ISR_startPy_wNu = fitStartValueswNu[17];
+				m_ISR_startPz_wNu = fitStartValueswNu[18];
 				streamlog_out(DEBUG) << "size of FitResult with neutrino = " << FitResultwNu.size() << endl;
 //				streamlog_out(DEBUG) << "Fit best probability with neutrino correction = " << FitResultwNu[1] << endl;
 				FitResultwNu.clear();
@@ -1530,91 +1639,105 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 		streamlog_out(MESSAGE) << "***********************************************************************************************************************************************" << std::endl;
 //		FitResultwoNu = this->performFIT( pLCEvent , 0. , 0. );
 		FitResultwoNu = this->performFIT( pLCEvent , Jet0_Nutlv , Jet1_Nutlv );
-		m_iError_woNu = FitResultwoNu[0];
-		ierr = FitResultwoNu[0];
+		fitStartValueswoNu = FitResultwoNu[0];
+		fitOutputswoNu = FitResultwoNu[1];
+		fittedParticleswoNu = FitResultwoNu[2];
+		pullswoNu = FitResultwoNu[3];
+		constraintswoNu = FitResultwoNu[4];
+		uncertaintieswoNu = FitResultwoNu[5];
+		diJetSystemwoNu = FitResultwoNu[6];
+		streamlog_out(DEBUG)  << "FitResult without neutrino correction received from fit successfully: " << std::endl ;
+
+		m_iError_woNu = fitOutputswoNu[0];
+		ierr = fitOutputswoNu[0];
 		h_fitError_woNu->Fill(m_iError_woNu);
 		if ( ierr == 0 )
 		{
-			m_probability_woNu = FitResultwoNu[1];
+			m_probability_woNu = fitOutputswoNu[1];
 			bestfitprob_woNu = m_probability_woNu;
-			m_n_itter_woNu = FitResultwoNu[2];
-			m_startmassZ_woNu = FitResultwoNu[3];
-			m_startmassH_woNu = FitResultwoNu[4];
-			m_beststartmassZ_woNu = FitResultwoNu[5];
-			m_beststartmassH_woNu = FitResultwoNu[6];
-			m_Zmass_after_fit_woNu = FitResultwoNu[7];
-			m_Hmass_after_fit_woNu = FitResultwoNu[8];
-			m_chi2startmassZ_woNu = FitResultwoNu[9];
-			m_chi2startmassH_woNu = FitResultwoNu[10];
-			m_chi2best_woNu = FitResultwoNu[11];
-			m_bestphotonenergy_woNu = FitResultwoNu[12];
-			m_pull_jet_E_woNu.push_back(FitResultwoNu[13]);
-			m_pull_jet_E_woNu.push_back(FitResultwoNu[14]);
-			m_pull_jet_th_woNu.push_back(FitResultwoNu[15]);
-			m_pull_jet_th_woNu.push_back(FitResultwoNu[16]);
-			m_pull_jet_phi_woNu.push_back(FitResultwoNu[17]);
-			m_pull_jet_phi_woNu.push_back(FitResultwoNu[18]);
-			m_pull_lepton_InvpT_woNu.push_back(FitResultwoNu[19]);
-			m_pull_lepton_InvpT_woNu.push_back(FitResultwoNu[20]);
-			m_pull_lepton_th_woNu.push_back(FitResultwoNu[21]);
-			m_pull_lepton_th_woNu.push_back(FitResultwoNu[22]);
-			m_pull_lepton_phi_woNu.push_back(FitResultwoNu[23]);
-			m_pull_lepton_phi_woNu.push_back(FitResultwoNu[24]);
-			ISRpx_woNu = FitResultwoNu[25];
-			ISRpy_woNu = FitResultwoNu[26];
-			ISRpz_woNu = FitResultwoNu[27];
-			Zpx_woNu = FitResultwoNu[28];
-			Zpy_woNu = FitResultwoNu[29];
-			Zpz_woNu = FitResultwoNu[30];
-			ZE_woNu = FitResultwoNu[31];
-			Hpx_woNu = FitResultwoNu[32];
-			Hpy_woNu = FitResultwoNu[33];
-			Hpz_woNu = FitResultwoNu[34];
-			HE_woNu = FitResultwoNu[35];
-			m_pxc_before_ISR_woNu = FitResultwoNu[36];
-			m_pyc_before_ISR_woNu = FitResultwoNu[37];
-			m_pzc_before_ISR_woNu = FitResultwoNu[38];
-			m_ec_before_ISR_woNu = FitResultwoNu[39];
-			m_pxc_before_fit_woNu = FitResultwoNu[40];
-			m_pyc_before_fit_woNu = FitResultwoNu[41];
-			m_pzc_before_fit_woNu = FitResultwoNu[42];
-			m_ec_before_fit_woNu = FitResultwoNu[43];
-			m_pxc_after_fit_woNu = FitResultwoNu[44];
-			m_pyc_after_fit_woNu = FitResultwoNu[45];
-			m_pzc_after_fit_woNu = FitResultwoNu[46];
-			m_ec_after_fit_woNu = FitResultwoNu[47];
-			m_jet_startPx_woNu.push_back(FitResultwoNu[48]);
-			m_jet_startPx_woNu.push_back(FitResultwoNu[49]);
-			m_jet_startPy_woNu.push_back(FitResultwoNu[50]);
-			m_jet_startPy_woNu.push_back(FitResultwoNu[51]);
-			m_jet_startPz_woNu.push_back(FitResultwoNu[52]);
-			m_jet_startPz_woNu.push_back(FitResultwoNu[53]);
-			m_jet_startE_woNu.push_back(FitResultwoNu[54]);
-			m_jet_startE_woNu.push_back(FitResultwoNu[55]);
-			m_lepton_startPx_woNu.push_back(FitResultwoNu[56]);
-			m_lepton_startPx_woNu.push_back(FitResultwoNu[57]);
-			m_lepton_startPy_woNu.push_back(FitResultwoNu[58]);
-			m_lepton_startPy_woNu.push_back(FitResultwoNu[59]);
-			m_lepton_startPz_woNu.push_back(FitResultwoNu[60]);
-			m_lepton_startPz_woNu.push_back(FitResultwoNu[61]);
-			m_lepton_startE_woNu.push_back(FitResultwoNu[62]);
-			m_lepton_startE_woNu.push_back(FitResultwoNu[63]);
+			m_n_itter_woNu = fitOutputswoNu[2];
+			m_startmassZ_woNu = fitOutputswoNu[3];
+			m_startmassH_woNu = fitOutputswoNu[4];
+			m_beststartmassZ_woNu = fitOutputswoNu[5];
+			m_beststartmassH_woNu = fitOutputswoNu[6];
+			m_Zmass_after_fit_woNu = fitOutputswoNu[7];
+			m_Hmass_after_fit_woNu = fitOutputswoNu[8];
+			m_chi2startmassZ_woNu = fitOutputswoNu[9];
+			m_chi2startmassH_woNu = fitOutputswoNu[10];
+			m_chi2best_woNu = fitOutputswoNu[11];
+			m_bestphotonenergy_woNu = fitOutputswoNu[12];
+			m_pull_jet_E_woNu.push_back(pullswoNu[13]);
+			m_pull_jet_E_woNu.push_back(pullswoNu[14]);
+			m_pull_jet_th_woNu.push_back(pullswoNu[15]);
+			m_pull_jet_th_woNu.push_back(pullswoNu[16]);
+			m_pull_jet_phi_woNu.push_back(pullswoNu[17]);
+			m_pull_jet_phi_woNu.push_back(pullswoNu[18]);
+			m_pull_lepton_InvpT_woNu.push_back(pullswoNu[19]);
+			m_pull_lepton_InvpT_woNu.push_back(pullswoNu[20]);
+			m_pull_lepton_th_woNu.push_back(pullswoNu[21]);
+			m_pull_lepton_th_woNu.push_back(pullswoNu[22]);
+			m_pull_lepton_phi_woNu.push_back(pullswoNu[23]);
+			m_pull_lepton_phi_woNu.push_back(pullswoNu[24]);
+			ISRpx_woNu = fittedParticleswoNu[25];
+			ISRpy_woNu = fittedParticleswoNu[26];
+			ISRpz_woNu = fittedParticleswoNu[27];
+			Zpx_woNu = fittedParticleswoNu[28];
+			Zpy_woNu = fittedParticleswoNu[29];
+			Zpz_woNu = fittedParticleswoNu[30];
+			ZE_woNu = fittedParticleswoNu[31];
+			Hpx_woNu = fittedParticleswoNu[32];
+			Hpy_woNu = fittedParticleswoNu[33];
+			Hpz_woNu = fittedParticleswoNu[34];
+			HE_woNu = fittedParticleswoNu[35];
+			m_pxc_before_ISR_woNu = constraintswoNu[36];
+			m_pyc_before_ISR_woNu = constraintswoNu[37];
+			m_pzc_before_ISR_woNu = constraintswoNu[38];
+			m_ec_before_ISR_woNu = constraintswoNu[39];
+			m_pxc_before_fit_woNu = constraintswoNu[40];
+			m_pyc_before_fit_woNu = constraintswoNu[41];
+			m_pzc_before_fit_woNu = constraintswoNu[42];
+			m_ec_before_fit_woNu = constraintswoNu[43];
+			m_pxc_after_fit_woNu = constraintswoNu[44];
+			m_pyc_after_fit_woNu = constraintswoNu[45];
+			m_pzc_after_fit_woNu = constraintswoNu[46];
+			m_ec_after_fit_woNu = constraintswoNu[47];
+			m_jet_startPx_woNu.push_back(fitStartValueswoNu[48]);
+			m_jet_startPx_woNu.push_back(fitStartValueswoNu[49]);
+			m_jet_startPy_woNu.push_back(fitStartValueswoNu[50]);
+			m_jet_startPy_woNu.push_back(fitStartValueswoNu[51]);
+			m_jet_startPz_woNu.push_back(fitStartValueswoNu[52]);
+			m_jet_startPz_woNu.push_back(fitStartValueswoNu[53]);
+			m_jet_startE_woNu.push_back(fitStartValueswoNu[54]);
+			m_jet_startE_woNu.push_back(fitStartValueswoNu[55]);
+			m_jet_startTheta_woNu.push_back(diJetSystemwNu[1]);
+			m_jet_startTheta_woNu.push_back(diJetSystemwNu[7]);
+			m_jet_startPhi_woNu.push_back(diJetSystemwNu[2]);
+			m_jet_startPhi_woNu.push_back(diJetSystemwNu[8]);
+			m_dijet_angle_woNu = diJetSystemwoNu[12];
+			m_lepton_startPx_woNu.push_back(fitStartValueswoNu[56]);
+			m_lepton_startPx_woNu.push_back(fitStartValueswoNu[57]);
+			m_lepton_startPy_woNu.push_back(fitStartValueswoNu[58]);
+			m_lepton_startPy_woNu.push_back(fitStartValueswoNu[59]);
+			m_lepton_startPz_woNu.push_back(fitStartValueswoNu[60]);
+			m_lepton_startPz_woNu.push_back(fitStartValueswoNu[61]);
+			m_lepton_startE_woNu.push_back(fitStartValueswoNu[62]);
+			m_lepton_startE_woNu.push_back(fitStartValueswoNu[63]);
 		}
-		m_jet_SigmaTheta.push_back(FitResultwoNu[64]);
-		m_jet_SigmaTheta.push_back(FitResultwoNu[65]);
-		m_jet_SigmaPhi.push_back(FitResultwoNu[66]);
-		m_jet_SigmaPhi.push_back(FitResultwoNu[67]);
-		m_jet_SigmaE.push_back(FitResultwoNu[68]);
-		m_jet_SigmaE.push_back(FitResultwoNu[69]);
-		m_lepton_SigmaTheta.push_back(FitResultwoNu[70]);
-		m_lepton_SigmaTheta.push_back(FitResultwoNu[71]);
-		m_lepton_SigmaPhi.push_back(FitResultwoNu[72]);
-		m_lepton_SigmaPhi.push_back(FitResultwoNu[73]);
-		m_lepton_SigmaInvpT.push_back(FitResultwoNu[74]);
-		m_lepton_SigmaInvpT.push_back(FitResultwoNu[75]);
-		m_ISR_startPx_woNu = FitResultwoNu[76];
-		m_ISR_startPy_woNu = FitResultwoNu[77];
-		m_ISR_startPz_woNu = FitResultwoNu[78];
+		m_jet_SigmaTheta.push_back(uncertaintieswoNu[64]);
+		m_jet_SigmaTheta.push_back(uncertaintieswoNu[65]);
+		m_jet_SigmaPhi.push_back(uncertaintieswoNu[66]);
+		m_jet_SigmaPhi.push_back(uncertaintieswoNu[67]);
+		m_jet_SigmaE.push_back(uncertaintieswoNu[68]);
+		m_jet_SigmaE.push_back(uncertaintieswoNu[69]);
+		m_lepton_SigmaTheta.push_back(uncertaintieswoNu[70]);
+		m_lepton_SigmaTheta.push_back(uncertaintieswoNu[71]);
+		m_lepton_SigmaPhi.push_back(uncertaintieswoNu[72]);
+		m_lepton_SigmaPhi.push_back(uncertaintieswoNu[73]);
+		m_lepton_SigmaInvpT.push_back(uncertaintieswoNu[74]);
+		m_lepton_SigmaInvpT.push_back(uncertaintieswoNu[75]);
+		m_ISR_startPx_woNu = uncertaintieswoNu[76];
+		m_ISR_startPy_woNu = uncertaintieswoNu[77];
+		m_ISR_startPz_woNu = uncertaintieswoNu[78];
 		h_error_jet_E->Fill(m_jet_SigmaE[0]);
 		h_error_jet_E->Fill(m_jet_SigmaE[1]);
 		h_error_jet_Theta->Fill(m_jet_SigmaTheta[0]);
@@ -1629,7 +1752,7 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 		h_error_lepton_Phi->Fill(m_lepton_SigmaPhi[1]);
 
 		streamlog_out(DEBUG) << "size of FitResult without neutrino = " << FitResultwoNu.size() << endl;
-		streamlog_out(DEBUG) << "Fit probability without neutrino correction = " << FitResultwoNu[3] << endl;
+		streamlog_out(DEBUG) << "Fit probability without neutrino correction = " << FitResultwoNu[0][1] << endl;
 		h_ErrorCode_wNu_woNu->Fill( m_iError_wNu_bestfit , m_iError_woNu );
 //		m_iError_best = m_iError_wNu_bestfit;
 
@@ -1685,6 +1808,11 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 			m_jet_startPz_best.push_back(m_jet_startPz_wNu_bestfit[1]);
 			m_jet_startE_best.push_back(m_jet_startE_wNu_bestfit[0]);
 			m_jet_startE_best.push_back(m_jet_startE_wNu_bestfit[1]);
+			m_jet_startTheta_best.push_back(m_jet_startTheta_wNu_bestfit[0]);
+			m_jet_startTheta_best.push_back(m_jet_startTheta_wNu_bestfit[1]);
+			m_jet_startPhi_best.push_back(m_jet_startPhi_wNu_bestfit[0]);
+			m_jet_startPhi_best.push_back(m_jet_startPhi_wNu_bestfit[1]);
+			m_dijet_angle_best = m_dijet_angle_wNu_bestfit;
 			m_lepton_startPx_best.push_back(m_lepton_startPx_wNu_bestfit[0]);
 			m_lepton_startPx_best.push_back(m_lepton_startPx_wNu_bestfit[1]);
 			m_lepton_startPy_best.push_back(m_lepton_startPy_wNu_bestfit[0]);
@@ -1770,6 +1898,11 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 			m_jet_startPz_best.push_back(m_jet_startPz_woNu[1]);
 			m_jet_startE_best.push_back(m_jet_startE_woNu[0]);
 			m_jet_startE_best.push_back(m_jet_startE_woNu[1]);
+			m_jet_startTheta_best.push_back(m_jet_startTheta_woNu[0]);
+			m_jet_startTheta_best.push_back(m_jet_startTheta_woNu[1]);
+			m_jet_startPhi_best.push_back(m_jet_startPhi_woNu[0]);
+			m_jet_startPhi_best.push_back(m_jet_startPhi_woNu[1]);
+			m_dijet_angle_best = m_dijet_angle_woNu;
 			m_lepton_startPx_best.push_back(m_lepton_startPx_woNu[0]);
 			m_lepton_startPx_best.push_back(m_lepton_startPx_woNu[1]);
 			m_lepton_startPy_best.push_back(m_lepton_startPy_woNu[0]);
@@ -1823,7 +1956,7 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 		}
 		if ( m_iError_best == 0 )
 		{
-			streamlog_out(DEBUG) << "Fit best probability = " << FitResultwoNu[3] << endl;
+			streamlog_out(DEBUG) << "Fit best probability = " << FitResultwoNu[0][1] << endl;
 			h_Zmass_afterfit_wNu->Fill(m_Zmass_after_fit_best);
 			h_Hmass_afterfit_wNu->Fill(m_Hmass_after_fit_best);
 			h_fitProbability_best->Fill(m_probability_best);
@@ -1832,6 +1965,26 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 			h_ISRpz_1mcp_fit->Fill( ISRpz_mcp_max , ISRpz_best );
 			h_ISRE_2mcp_fit->Fill( ISR1E_mcp + ISR2E_mcp , m_bestphotonenergy_best );
 			h_ISRpz_2mcp_fit->Fill( ISR1pz_mcp + ISR2pz_mcp , ISRpz_best );
+			
+			h_fitProbability_diJetAngle->Fill( m_dijet_angle_best , m_probability_best );
+			h_fitProbability_Ejet->Fill( m_jet_startE_best[0] , m_probability_best );
+			h_fitProbability_Ejet->Fill( m_jet_startE_best[1] , m_probability_best );
+			h_fitProbability_Thetajet->Fill( m_jet_startTheta_best[0] * 45 / atan(1) , m_probability_best );
+			h_fitProbability_Thetajet->Fill( m_jet_startTheta_best[1] * 45 / atan(1) , m_probability_best );
+			h_fitProbability_Phijet->Fill( m_jet_startPhi_best[0] * 45 / atan(1) , m_probability_best );
+			h_fitProbability_Phijet->Fill( m_jet_startPhi_best[1] * 45 / atan(1) , m_probability_best );
+			h_fitProbability_SigmaEjet->Fill( m_jet_SigmaE[0] , m_probability_best );
+			h_fitProbability_SigmaEjet->Fill( m_jet_SigmaE[1] , m_probability_best );
+			h_fitProbability_SigmaThetajet->Fill( m_jet_SigmaTheta[0] * 100 , m_probability_best );
+			h_fitProbability_SigmaThetajet->Fill( m_jet_SigmaTheta[1] * 100 , m_probability_best );
+			h_fitProbability_SigmaPhijet->Fill( m_jet_SigmaPhi[0] * 100 , m_probability_best );
+			h_fitProbability_SigmaPhijet->Fill( m_jet_SigmaPhi[1] * 100 , m_probability_best );
+			h_fitProbability_pullEjet->Fill( m_pull_jet_E_best[0] , m_probability_best );
+			h_fitProbability_pullEjet->Fill( m_pull_jet_E_best[1] , m_probability_best );
+			h_fitProbability_pullThetajet->Fill( m_pull_jet_th_best[0] , m_probability_best );
+			h_fitProbability_pullThetajet->Fill( m_pull_jet_th_best[1] , m_probability_best );
+			h_fitProbability_pullPhijet->Fill( m_pull_jet_phi_best[0] , m_probability_best );
+			h_fitProbability_pullPhijet->Fill( m_pull_jet_phi_best[1] , m_probability_best );
 
 			LCCollectionVec *OutputCol = new LCCollectionVec(LCIO::RECONSTRUCTEDPARTICLE);
 			ReconstructedParticleImpl* ISRfitrec = new ReconstructedParticleImpl;
@@ -2002,10 +2155,17 @@ int ZHllqq5CFit::FindMatchingJettoSLD(EVENT::LCEvent *pLCEvent, int had_index)
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-std::vector<float> ZHllqq5CFit::performFIT(EVENT::LCEvent *pLCEvent, TLorentzVector Jet0_Nutlv, TLorentzVector Jet1_Nutlv)
+std::vector<std::vector<float>> ZHllqq5CFit::performFIT(EVENT::LCEvent *pLCEvent, TLorentzVector Jet0_Nutlv, TLorentzVector Jet1_Nutlv)
 {
 	Setvalues();
-	std::vector<float> FitResult{};
+	std::vector<std::vector<float>> FitResult{};
+	std::vector<float> fitStartValues;
+	std::vector<float> fitOutputs;
+	std::vector<float> fittedParticles;
+	std::vector<float> pulls;
+	std::vector<float> constraints;
+	std::vector<float> uncertainties;
+	std::vector<float> diJetSystem;
 	LCCollection *inputJetCollection = pLCEvent->getCollection( jetcollection );
 	LCCollection *inputErrorFlowCollection = pLCEvent->getCollection( errorflowcollection );
 	LCCollection *inputLeptonCollection = pLCEvent->getCollection( leptoncollection );
@@ -2052,6 +2212,8 @@ std::vector<float> ZHllqq5CFit::performFIT(EVENT::LCEvent *pLCEvent, TLorentzVec
 	HepLorentzVector jetvec;
 	HepLorentzVector Nuvec;
 	HepLorentzVector leptonvec;
+	Hep3Vector jet0_unit;
+	Hep3Vector jet1_unit;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////
@@ -2142,12 +2304,14 @@ std::vector<float> ZHllqq5CFit::performFIT(EVENT::LCEvent *pLCEvent, TLorentzVec
 			jet0_SigmaTheta = JetResTheta;
 			jet0_SigmaPhi = JetResPhi;
 			jet0_SigmaE = JetResE;
+			jet0_unit = (Hep3Vector(jetvec)).unit();
 		}
 		else if ( i_jet == 1 )
 		{
 			jet1_SigmaTheta = JetResTheta;
 			jet1_SigmaPhi = JetResPhi;
 			jet1_SigmaE = JetResE;
+			jet1_unit = (Hep3Vector(jetvec)).unit();
 		}
 
 		if (m_useErrorFlow)
@@ -2178,7 +2342,14 @@ std::vector<float> ZHllqq5CFit::performFIT(EVENT::LCEvent *pLCEvent, TLorentzVec
 			}
 			streamlog_out(DEBUG)  << " start four-vector of jet[" << i_jet << "]: " << *jet[i_jet]  << std::endl ;
 		}
+		diJetSystem.push_back(jetvec.e());
+		diJetSystem.push_back(jetvec.theta());
+		diJetSystem.push_back(jetvec.phi());
+		diJetSystem.push_back(JetResE * sigmaScaleFactor);
+		diJetSystem.push_back(JetResTheta);
+		diJetSystem.push_back(JetResPhi);
 	}
+	diJetSystem.push_back(jet0_unit.dot(jet1_unit) * 45 / atan(1));
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////
@@ -2602,85 +2773,100 @@ std::vector<float> ZHllqq5CFit::performFIT(EVENT::LCEvent *pLCEvent, TLorentzVec
 	streamlog_out(DEBUG)  << "best mass of H: " << bestmassH << std::endl ;
 	streamlog_out(DEBUG)  << "Error Code: " << errorcode << std::endl ;
 
-	FitResult.push_back(ierr);
-	FitResult.push_back(prob);
-	FitResult.push_back(nit);
-	FitResult.push_back(startmassZ);
-	FitResult.push_back(startmassH);
-	FitResult.push_back(beststartmassZ);
-	FitResult.push_back(beststartmassH);
-	FitResult.push_back(Zmass_after_fit);
-	FitResult.push_back(Hmass_after_fit);
-	FitResult.push_back(chi2startmassZ);
-	FitResult.push_back(chi2startmassH);
-	FitResult.push_back(chi2best);
-	FitResult.push_back(bestphotonenergy);
-	FitResult.push_back(hpull_jet_E);
-	FitResult.push_back(hpull_jet2_E);
-	FitResult.push_back(hpull_jet_th);
-	FitResult.push_back(hpull_jet2_th);
-	FitResult.push_back(hpull_jet_phi);
-	FitResult.push_back(hpull_jet2_phi);
-	FitResult.push_back(hpull_lepton_InvpT);
-	FitResult.push_back(hpull_lepton2_InvpT);
-	FitResult.push_back(hpull_lepton_th);
-	FitResult.push_back(hpull_lepton2_th);
-	FitResult.push_back(hpull_lepton_phi);
-	FitResult.push_back(hpull_lepton2_phi);
-	FitResult.push_back(ISRmomentum[0]);
-	FitResult.push_back(ISRmomentum[1]);
-	FitResult.push_back(ISRmomentum[2]);
-	FitResult.push_back(Zmomentum[0]);
-	FitResult.push_back(Zmomentum[1]);
-	FitResult.push_back(Zmomentum[2]);
-	FitResult.push_back(Z_Energy);
-	FitResult.push_back(Hmomentum[0]);
-	FitResult.push_back(Hmomentum[1]);
-	FitResult.push_back(Hmomentum[2]);
-	FitResult.push_back(H_Energy);
-	FitResult.push_back(pxc_before_ISR);
-	FitResult.push_back(pyc_before_ISR);
-	FitResult.push_back(pzc_before_ISR);
-	FitResult.push_back(ec_before_ISR);
-	FitResult.push_back(pxc_before_fit);
-	FitResult.push_back(pyc_before_fit);
-	FitResult.push_back(pzc_before_fit);
-	FitResult.push_back(ec_before_fit);
-	FitResult.push_back(pxc_after_fit);
-	FitResult.push_back(pyc_after_fit);
-	FitResult.push_back(pzc_after_fit);
-	FitResult.push_back(ec_after_fit);
-	FitResult.push_back(jet0_Px);
-	FitResult.push_back(jet1_Px);
-	FitResult.push_back(jet0_Py);
-	FitResult.push_back(jet1_Py);
-	FitResult.push_back(jet0_Pz);
-	FitResult.push_back(jet1_Pz);
-	FitResult.push_back(jet0_E);
-	FitResult.push_back(jet1_E);
-	FitResult.push_back(lepton0_Px);
-	FitResult.push_back(lepton1_Px);
-	FitResult.push_back(lepton0_Py);
-	FitResult.push_back(lepton1_Py);
-	FitResult.push_back(lepton0_Pz);
-	FitResult.push_back(lepton1_Pz);
-	FitResult.push_back(lepton0_E);
-	FitResult.push_back(lepton1_E);
-	FitResult.push_back(jet0_SigmaTheta);
-	FitResult.push_back(jet1_SigmaTheta);
-	FitResult.push_back(jet0_SigmaPhi);
-	FitResult.push_back(jet1_SigmaPhi);
-	FitResult.push_back(jet0_SigmaE);
-	FitResult.push_back(jet1_SigmaE);
-	FitResult.push_back(lepton0_SigmaTheta);
-	FitResult.push_back(lepton1_SigmaTheta);
-	FitResult.push_back(lepton0_SigmaPhi);
-	FitResult.push_back(lepton1_SigmaPhi);
-	FitResult.push_back(lepton0_SigmaInvpT);
-	FitResult.push_back(lepton1_SigmaInvpT);
-	FitResult.push_back(ISRstartPx);
-	FitResult.push_back(ISRstartPy);
-	FitResult.push_back(ISRstartPz);
+	fitStartValues.push_back(jet0_Px);
+	fitStartValues.push_back(jet1_Px);
+	fitStartValues.push_back(jet0_Py);
+	fitStartValues.push_back(jet1_Py);
+	fitStartValues.push_back(jet0_Pz);
+	fitStartValues.push_back(jet1_Pz);
+	fitStartValues.push_back(jet0_E);
+	fitStartValues.push_back(jet1_E);
+	fitStartValues.push_back(lepton0_Px);
+	fitStartValues.push_back(lepton1_Px);
+	fitStartValues.push_back(lepton0_Py);
+	fitStartValues.push_back(lepton1_Py);
+	fitStartValues.push_back(lepton0_Pz);
+	fitStartValues.push_back(lepton1_Pz);
+	fitStartValues.push_back(lepton0_E);
+	fitStartValues.push_back(lepton1_E);
+	fitStartValues.push_back(ISRstartPx);
+	fitStartValues.push_back(ISRstartPy);
+	fitStartValues.push_back(ISRstartPz);
+
+	fitOutputs.push_back(ierr);
+	fitOutputs.push_back(prob);
+	fitOutputs.push_back(nit);
+	fitOutputs.push_back(startmassZ);
+	fitOutputs.push_back(startmassH);
+	fitOutputs.push_back(beststartmassZ);
+	fitOutputs.push_back(beststartmassH);
+	fitOutputs.push_back(Zmass_after_fit);
+	fitOutputs.push_back(Hmass_after_fit);
+	fitOutputs.push_back(chi2startmassZ);
+	fitOutputs.push_back(chi2startmassH);
+	fitOutputs.push_back(chi2best);
+	fitOutputs.push_back(bestphotonenergy);
+
+	fittedParticles.push_back(ISRmomentum[0]);
+	fittedParticles.push_back(ISRmomentum[1]);
+	fittedParticles.push_back(ISRmomentum[2]);
+	fittedParticles.push_back(Zmomentum[0]);
+	fittedParticles.push_back(Zmomentum[1]);
+	fittedParticles.push_back(Zmomentum[2]);
+	fittedParticles.push_back(Z_Energy);
+	fittedParticles.push_back(Hmomentum[0]);
+	fittedParticles.push_back(Hmomentum[1]);
+	fittedParticles.push_back(Hmomentum[2]);
+	fittedParticles.push_back(H_Energy);
+
+	pulls.push_back(hpull_jet_E);
+	pulls.push_back(hpull_jet2_E);
+	pulls.push_back(hpull_jet_th);
+	pulls.push_back(hpull_jet2_th);
+	pulls.push_back(hpull_jet_phi);
+	pulls.push_back(hpull_jet2_phi);
+	pulls.push_back(hpull_lepton_InvpT);
+	pulls.push_back(hpull_lepton2_InvpT);
+	pulls.push_back(hpull_lepton_th);
+	pulls.push_back(hpull_lepton2_th);
+	pulls.push_back(hpull_lepton_phi);
+	pulls.push_back(hpull_lepton2_phi);
+
+	constraints.push_back(pxc_before_ISR);
+	constraints.push_back(pyc_before_ISR);
+	constraints.push_back(pzc_before_ISR);
+	constraints.push_back(ec_before_ISR);
+	constraints.push_back(pxc_before_fit);
+	constraints.push_back(pyc_before_fit);
+	constraints.push_back(pzc_before_fit);
+	constraints.push_back(ec_before_fit);
+	constraints.push_back(pxc_after_fit);
+	constraints.push_back(pyc_after_fit);
+	constraints.push_back(pzc_after_fit);
+	constraints.push_back(ec_after_fit);
+
+	uncertainties.push_back(jet0_SigmaTheta);
+	uncertainties.push_back(jet1_SigmaTheta);
+	uncertainties.push_back(jet0_SigmaPhi);
+	uncertainties.push_back(jet1_SigmaPhi);
+	uncertainties.push_back(jet0_SigmaE);
+	uncertainties.push_back(jet1_SigmaE);
+	uncertainties.push_back(lepton0_SigmaTheta);
+	uncertainties.push_back(lepton1_SigmaTheta);
+	uncertainties.push_back(lepton0_SigmaPhi);
+	uncertainties.push_back(lepton1_SigmaPhi);
+	uncertainties.push_back(lepton0_SigmaInvpT);
+	uncertainties.push_back(lepton1_SigmaInvpT);
+
+	FitResult.push_back(fitStartValues);
+	FitResult.push_back(fitOutputs);
+	FitResult.push_back(fittedParticles);
+	FitResult.push_back(pulls);
+	FitResult.push_back(constraints);
+	FitResult.push_back(uncertainties);
+	FitResult.push_back(diJetSystem);
+	streamlog_out(DEBUG)  << "FitResult returned to event processor successfully: " << std::endl ;
+
 
 	delete photon;
 	return FitResult;
@@ -2752,6 +2938,16 @@ void ZHllqq5CFit::end()
 	h_SigmaPyPz->Write();
 	h_SigmaPyE->Write();
 	h_SigmaPzE->Write();
+	h_fitProbability_diJetAngle->Write();
+	h_fitProbability_Ejet->Write();
+	h_fitProbability_Thetajet->Write();
+	h_fitProbability_Phijet->Write();
+	h_fitProbability_SigmaEjet->Write();
+	h_fitProbability_SigmaThetajet->Write();
+	h_fitProbability_SigmaPhijet->Write();
+	h_fitProbability_pullEjet->Write();
+	h_fitProbability_pullThetajet->Write();
+	h_fitProbability_pullPhijet->Write();
 	m_pTFile->Close();
 	delete m_pTFile;
 

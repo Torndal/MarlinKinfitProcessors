@@ -38,7 +38,7 @@ class ZHllqq5CFit : public Processor
 		virtual void				check( LCEvent * evt ) ;
 		virtual void				end() ;
 		int					FindMatchingJettoSLD(EVENT::LCEvent *pLCEvent, int had_index);
-		std::vector<float>			performFIT(EVENT::LCEvent *pLCEvent, TLorentzVector Jet0_Nutlv, TLorentzVector Jet1_Nutlv);
+		std::vector<std::vector<float>>		performFIT(EVENT::LCEvent *pLCEvent, TLorentzVector Jet0_Nutlv, TLorentzVector Jet1_Nutlv);
 
 		double					JetEnergyResolution(double E);
 		void					compcorrect();
@@ -113,18 +113,30 @@ class ZHllqq5CFit : public Processor
 		floatVector				m_jet_startPy_wNu{};
 		floatVector				m_jet_startPz_wNu{};
 		floatVector				m_jet_startE_wNu{};
+		floatVector				m_jet_startTheta_wNu{};
+		floatVector				m_jet_startPhi_wNu{};
+		floatVector				m_dijet_angle_wNu{};
 		floatVector				m_jet_startPx_wNu_bestfit{};
 		floatVector				m_jet_startPy_wNu_bestfit{};
 		floatVector				m_jet_startPz_wNu_bestfit{};
 		floatVector				m_jet_startE_wNu_bestfit{};
+		floatVector				m_jet_startTheta_wNu_bestfit{};
+		floatVector				m_jet_startPhi_wNu_bestfit{};
+		float					m_dijet_angle_wNu_bestfit;
 		floatVector				m_jet_startPx_woNu{};
 		floatVector				m_jet_startPy_woNu{};
 		floatVector				m_jet_startPz_woNu{};
 		floatVector				m_jet_startE_woNu{};
+		floatVector				m_jet_startTheta_woNu{};
+		floatVector				m_jet_startPhi_woNu{};
+		float					m_dijet_angle_woNu;
 		floatVector				m_jet_startPx_best{};
 		floatVector				m_jet_startPy_best{};
 		floatVector				m_jet_startPz_best{};
 		floatVector				m_jet_startE_best{};
+		floatVector				m_jet_startTheta_best{};
+		floatVector				m_jet_startPhi_best{};
+		float					m_dijet_angle_best;
 		floatVector				m_lepton_startPx_wNu{};
 		floatVector				m_lepton_startPy_wNu{};
 		floatVector				m_lepton_startPz_wNu{};
@@ -327,6 +339,16 @@ class ZHllqq5CFit : public Processor
 		TH1F					*h_SigmaPyPz{};
 		TH1F					*h_SigmaPyE{};
 		TH1F					*h_SigmaPzE{};
+		TH2F					*h_fitProbability_diJetAngle{};
+		TH2F					*h_fitProbability_Ejet{};
+		TH2F					*h_fitProbability_Thetajet{};
+		TH2F					*h_fitProbability_Phijet{};
+		TH2F					*h_fitProbability_SigmaEjet{};
+		TH2F					*h_fitProbability_SigmaThetajet{};
+		TH2F					*h_fitProbability_SigmaPhijet{};
+		TH2F					*h_fitProbability_pullEjet{};
+		TH2F					*h_fitProbability_pullThetajet{};
+		TH2F					*h_fitProbability_pullPhijet{};
 
 
 		std::string				_name{};
