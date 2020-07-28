@@ -237,7 +237,11 @@ h_fitProbability_SigmaThetajet(NULL),
 h_fitProbability_SigmaPhijet(NULL),
 h_fitProbability_pullEjet(NULL),
 h_fitProbability_pullThetajet(NULL),
-h_fitProbability_pullPhijet(NULL)
+h_fitProbability_pullPhijet(NULL),
+h_fitProbability_constraintPx(NULL),
+h_fitProbability_constraintPy(NULL),
+h_fitProbability_constraintPz(NULL),
+h_fitProbability_constraintE(NULL)
 {
 
 //	modify processor description
@@ -768,6 +772,14 @@ void ZHllqq5CFit::init()
 	h_fitProbability_pullThetajet->SetDirectory(m_pTFile);
 	h_fitProbability_pullPhijet = new TH2F("h_fitProbability_pullPhijet", "fit probability vs pull #phi_{jet} (best fit); pull #phi_{jet}; fit probability", 100, -10., 10., 40, 0., 0.2);
 	h_fitProbability_pullPhijet->SetDirectory(m_pTFile);
+	h_fitProbability_constraintPx = new TH2F("h_fitProbability_constraintPx", "fit probability vs #Sigma p_{x} (best fit); p_{x} constraint [GeV]; fit probability", 100, -50., 50., 40, 0., 0.2);
+	h_fitProbability_constraintPx->SetDirectory(m_pTFile);
+	h_fitProbability_constraintPy = new TH2F("h_fitProbability_constraintPy", "fit probability vs #Sigma p_{y} (best fit); p_{y} constraint [GeV]; fit probability", 100, -50., 50., 40, 0., 0.2);
+	h_fitProbability_constraintPy->SetDirectory(m_pTFile);
+	h_fitProbability_constraintPz = new TH2F("h_fitProbability_constraintPz", "fit probability vs #Sigma p_{z} (best fit); p_{z} constraint [GeV]; fit probability", 100, -50., 50., 40, 0., 0.2);
+	h_fitProbability_constraintPz->SetDirectory(m_pTFile);
+	h_fitProbability_constraintE = new TH2F("h_fitProbability_constraintE", "fit probability vs #Sigma E (best fit); E constraint [GeV]; fit probability", 100, -50., 50., 40, 0., 0.2);
+	h_fitProbability_constraintE->SetDirectory(m_pTFile);
 }
 
 void ZHllqq5CFit::Clear()
@@ -1486,11 +1498,11 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 					m_lepton_startE_wNu.push_back(fitStartValueswNu[14]);
 					m_lepton_startE_wNu.push_back(fitStartValueswNu[15]);
 				}
-				m_iError_wNu_bestfit = fitOutputswNu[0];
-				if ( m_iError_wNu_bestfit == 0 && bestfitprob_wNu <= fitOutputswNu[1] )
+				if ( fitOutputswNu[0] == 0 && bestfitprob_wNu <= fitOutputswNu[1] )
 				{
 					best_B_Nu = i_perm_B;
 					best_C_Nu = i_perm_C;
+					m_iError_wNu_bestfit = fitOutputswNu[0];
 					m_probability_wNu_bestfit = fitOutputswNu[1];
 					bestfitprob_wNu = m_probability_wNu_bestfit;
 					m_n_itter_wNu_bestfit = fitOutputswNu[2];
@@ -1985,6 +1997,10 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 			h_fitProbability_pullThetajet->Fill( m_pull_jet_th_best[1] , m_probability_best );
 			h_fitProbability_pullPhijet->Fill( m_pull_jet_phi_best[0] , m_probability_best );
 			h_fitProbability_pullPhijet->Fill( m_pull_jet_phi_best[1] , m_probability_best );
+			h_fitProbability_constraintPx->Fill( m_pxc_before_ISR_wNu , m_probability_best );
+			h_fitProbability_constraintPy->Fill( m_pyc_before_ISR_wNu , m_probability_best );
+			h_fitProbability_constraintPz->Fill( m_pzc_before_ISR_wNu , m_probability_best );
+			h_fitProbability_constraintE->Fill( m_ec_before_ISR_wNu , m_probability_best );
 
 			LCCollectionVec *OutputCol = new LCCollectionVec(LCIO::RECONSTRUCTEDPARTICLE);
 			ReconstructedParticleImpl* ISRfitrec = new ReconstructedParticleImpl;
@@ -2260,21 +2276,13 @@ std::vector<std::vector<float>> ZHllqq5CFit::performFIT(EVENT::LCEvent *pLCEvent
 			jet1_Pz = Pz;
 			jet1_E = j->getEnergy();
 		}
-/*
-		SigPx2 =	std::fabs( j->getCovMatrix()[0] );
+
+		SigPx2 =	j->getCovMatrix()[0];
 		SigPxSigPy =	j->getCovMatrix()[1];
-		SigPxSigPz =	j->getCovMatrix()[2];
-		SigPy2 =	std::fabs( j->getCovMatrix()[4] );
-		SigPySigPz =	j->getCovMatrix()[5];
-		SigPz2 =	std::fabs( j->getCovMatrix()[7] );
-		SigE2 =		j->getCovMatrix()[9];
-*/
-		SigPx2 =	std::fabs( j->getCovMatrix()[0] );
-		SigPxSigPy =	j->getCovMatrix()[1];
-		SigPy2 =	std::fabs( j->getCovMatrix()[2] );
+		SigPy2 =	j->getCovMatrix()[2];
 		SigPxSigPz =	j->getCovMatrix()[3];
 		SigPySigPz =	j->getCovMatrix()[4];
-		SigPz2 =	std::fabs( j->getCovMatrix()[5] );
+		SigPz2 =	j->getCovMatrix()[5];
 		SigE2 =		j->getCovMatrix()[9];
 
 		dth_dpx =	Px * Pz / ( P2 * Pt );
@@ -2948,6 +2956,10 @@ void ZHllqq5CFit::end()
 	h_fitProbability_pullEjet->Write();
 	h_fitProbability_pullThetajet->Write();
 	h_fitProbability_pullPhijet->Write();
+	h_fitProbability_constraintPx->Write();
+	h_fitProbability_constraintPy->Write();
+	h_fitProbability_constraintPz->Write();
+	h_fitProbability_constraintE->Write();
 	m_pTFile->Close();
 	delete m_pTFile;
 

@@ -349,6 +349,10 @@ class ZHllqq5CFit : public Processor
 		TH2F					*h_fitProbability_pullEjet{};
 		TH2F					*h_fitProbability_pullThetajet{};
 		TH2F					*h_fitProbability_pullPhijet{};
+		TH2F					*h_fitProbability_constraintPx{};
+		TH2F					*h_fitProbability_constraintPy{};
+		TH2F					*h_fitProbability_constraintPz{};
+		TH2F					*h_fitProbability_constraintE{};
 
 
 		std::string				_name{};
