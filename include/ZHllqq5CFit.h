@@ -353,6 +353,18 @@ class ZHllqq5CFit : public Processor
 		TH2F					*h_fitProbability_constraintPy{};
 		TH2F					*h_fitProbability_constraintPz{};
 		TH2F					*h_fitProbability_constraintE{};
+		TH1F					*h_constraintPx_lowFitProb{};
+		TH1F					*h_constraintPx_midFitProb{};
+		TH1F					*h_constraintPx_highFitProb{};
+		TH1F					*h_constraintPy_lowFitProb{};
+		TH1F					*h_constraintPy_midFitProb{};
+		TH1F					*h_constraintPy_highFitProb{};
+		TH1F					*h_constraintPz_lowFitProb{};
+		TH1F					*h_constraintPz_midFitProb{};
+		TH1F					*h_constraintPz_highFitProb{};
+		TH1F					*h_constraintE_lowFitProb{};
+		TH1F					*h_constraintE_midFitProb{};
+		TH1F					*h_constraintE_highFitProb{};
 
 
 		std::string				_name{};

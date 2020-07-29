@@ -241,7 +241,19 @@ h_fitProbability_pullPhijet(NULL),
 h_fitProbability_constraintPx(NULL),
 h_fitProbability_constraintPy(NULL),
 h_fitProbability_constraintPz(NULL),
-h_fitProbability_constraintE(NULL)
+h_fitProbability_constraintE(NULL),
+h_constraintPx_lowFitProb(NULL),
+h_constraintPx_midFitProb(NULL),
+h_constraintPx_highFitProb(NULL),
+h_constraintPy_lowFitProb(NULL),
+h_constraintPy_midFitProb(NULL),
+h_constraintPy_highFitProb(NULL),
+h_constraintPz_lowFitProb(NULL),
+h_constraintPz_midFitProb(NULL),
+h_constraintPz_highFitProb(NULL),
+h_constraintE_lowFitProb(NULL),
+h_constraintE_midFitProb(NULL),
+h_constraintE_highFitProb(NULL)
 {
 
 //	modify processor description
@@ -546,6 +558,7 @@ void ZHllqq5CFit::init()
 	m_pTTree_1->Branch("pull_lepton_phi_best",&m_pull_lepton_phi_best);
 	m_pTTree_2 = new TTree("constraints","constraints");
 	m_pTTree_2->SetDirectory(m_pTFile);
+	m_pTTree_2->Branch("probability_best",&m_probability_best,"probability_best/F") ;
 	m_pTTree_2->Branch("pxc_before_ISR_wNu",&m_pxc_before_ISR_wNu,"pxc_before_ISR_wNu/F") ;
 	m_pTTree_2->Branch("pyc_before_ISR_wNu",&m_pyc_before_ISR_wNu,"pyc_before_ISR_wNu/F") ;
 	m_pTTree_2->Branch("pzc_before_ISR_wNu",&m_pzc_before_ISR_wNu,"pzc_before_ISR_wNu/F") ;
@@ -752,7 +765,7 @@ void ZHllqq5CFit::init()
 	h_SigmaPyE->SetDirectory(m_pTFile);
 	h_SigmaPzE = new TH1F("h_SigmaPzE", "; #sigma(p_{z}E); n_{jet}", 400, -0.01, 0.01);
 	h_SigmaPzE->SetDirectory(m_pTFile);
-	h_fitProbability_diJetAngle = new TH2F("h_fitProbability_diJetAngle", "fit probability vs di-jet angle (best fit); di-jet angle [deg]; fit probability", 90, -180., 180., 40, 0., 0.2);
+	h_fitProbability_diJetAngle = new TH2F("h_fitProbability_diJetAngle", "fit probability vs di-jet angle (best fit); di-jet angle [deg]; fit probability", 90, 0., 180., 40, 0., 0.2);
 	h_fitProbability_diJetAngle->SetDirectory(m_pTFile);
 	h_fitProbability_Ejet = new TH2F("h_fitProbability_Ejet", "fit probability vs jet energy (best fit); jet energy [GeV]; fit probability", 75, 0., 150., 40, 0., 0.2);
 	h_fitProbability_Ejet->SetDirectory(m_pTFile);
@@ -780,6 +793,30 @@ void ZHllqq5CFit::init()
 	h_fitProbability_constraintPz->SetDirectory(m_pTFile);
 	h_fitProbability_constraintE = new TH2F("h_fitProbability_constraintE", "fit probability vs #Sigma E (best fit); E constraint [GeV]; fit probability", 100, -50., 50., 40, 0., 0.2);
 	h_fitProbability_constraintE->SetDirectory(m_pTFile);
+	h_constraintPx_lowFitProb = new TH1F("h_constraintPx_lowFitProb", "fit Probability < 0.1; #Sigma p_{x} [GeV]; n_{events}", 400, -50.0, 50.0);
+	h_constraintPx_lowFitProb->SetDirectory(m_pTFile);
+	h_constraintPx_midFitProb = new TH1F("h_constraintPx_midFitProb", "0.1 < fit Probability < 0.9; #Sigma p_{x} [GeV]; n_{events}", 400, -50.0, 50.0);
+	h_constraintPx_midFitProb->SetDirectory(m_pTFile);
+	h_constraintPx_highFitProb = new TH1F("h_constraintPx_highFitProb", "0.9 < fit Probability; #Sigma p_{x} [GeV]; n_{events}", 400, -50.0, 50.0);
+	h_constraintPx_highFitProb->SetDirectory(m_pTFile);
+	h_constraintPy_lowFitProb = new TH1F("h_constraintPy_lowFitProb", "fit Probability < 0.1; #Sigma p_{y} [GeV]; n_{events}", 400, -50.0, 50.0);
+	h_constraintPy_lowFitProb->SetDirectory(m_pTFile);
+	h_constraintPy_midFitProb = new TH1F("h_constraintPy_midFitProb", "0.1 < fit Probability < 0.9; #Sigma p_{y} [GeV]; n_{events}", 400, -50.0, 50.0);
+	h_constraintPy_midFitProb->SetDirectory(m_pTFile);
+	h_constraintPy_highFitProb = new TH1F("h_constraintPy_highFitProb", "0.9 < fit Probability; #Sigma p_{y} [GeV]; n_{events}", 400, -50.0, 50.0);
+	h_constraintPy_highFitProb->SetDirectory(m_pTFile);
+	h_constraintPz_lowFitProb = new TH1F("h_constraintPz_lowFitProb", "fit Probability < 0.1; #Sigma p_{z} [GeV]; n_{events}", 400, -50.0, 50.0);
+	h_constraintPz_lowFitProb->SetDirectory(m_pTFile);
+	h_constraintPz_midFitProb = new TH1F("h_constraintPz_midFitProb", "0.1 < fit Probability < 0.9; #Sigma p_{z} [GeV]; n_{events}", 400, -50.0, 50.0);
+	h_constraintPz_midFitProb->SetDirectory(m_pTFile);
+	h_constraintPz_highFitProb = new TH1F("h_constraintPz_highFitProb", "0.9 < fit Probability; #Sigma p_{z} [GeV]; n_{events}", 400, -50.0, 50.0);
+	h_constraintPz_highFitProb->SetDirectory(m_pTFile);
+	h_constraintE_lowFitProb = new TH1F("h_constraintE_lowFitProb", "fit Probability < 0.1; #Sigma E [GeV]; n_{events}", 400, -50.0, 50.0);
+	h_constraintE_lowFitProb->SetDirectory(m_pTFile);
+	h_constraintE_midFitProb = new TH1F("h_constraintE_midFitProb", "0.1 < fit Probability < 0.9; #Sigma E [GeV]; n_{events}", 400, -50.0, 50.0);
+	h_constraintE_midFitProb->SetDirectory(m_pTFile);
+	h_constraintE_highFitProb = new TH1F("h_constraintE_highFitProb", "0.9 < fit Probability; #Sigma E [GeV]; n_{events}", 400, -50.0, 50.0);
+	h_constraintE_highFitProb->SetDirectory(m_pTFile);
 }
 
 void ZHllqq5CFit::Clear()
@@ -2001,6 +2038,27 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 			h_fitProbability_constraintPy->Fill( m_pyc_before_ISR_wNu , m_probability_best );
 			h_fitProbability_constraintPz->Fill( m_pzc_before_ISR_wNu , m_probability_best );
 			h_fitProbability_constraintE->Fill( m_ec_before_ISR_wNu , m_probability_best );
+			if ( m_probability_best < 0.1 )
+			{
+				h_constraintPx_lowFitProb->Fill( m_pxc_before_ISR_wNu );
+				h_constraintPy_lowFitProb->Fill( m_pyc_before_ISR_wNu );
+				h_constraintPz_lowFitProb->Fill( m_pzc_before_ISR_wNu );
+				h_constraintE_lowFitProb->Fill( m_ec_before_ISR_wNu );
+			}
+			else if ( 0.1 <= m_probability_best && m_probability_best < 0.9 )
+			{
+				h_constraintPx_midFitProb->Fill( m_pxc_before_ISR_wNu );
+				h_constraintPy_midFitProb->Fill( m_pyc_before_ISR_wNu );
+				h_constraintPz_midFitProb->Fill( m_pzc_before_ISR_wNu );
+				h_constraintE_midFitProb->Fill( m_ec_before_ISR_wNu );
+			}
+			else
+			{
+				h_constraintPx_highFitProb->Fill( m_pxc_before_ISR_wNu );
+				h_constraintPy_highFitProb->Fill( m_pyc_before_ISR_wNu );
+				h_constraintPz_highFitProb->Fill( m_pzc_before_ISR_wNu );
+				h_constraintE_highFitProb->Fill( m_ec_before_ISR_wNu );
+			}
 
 			LCCollectionVec *OutputCol = new LCCollectionVec(LCIO::RECONSTRUCTEDPARTICLE);
 			ReconstructedParticleImpl* ISRfitrec = new ReconstructedParticleImpl;
@@ -2357,7 +2415,7 @@ std::vector<std::vector<float>> ZHllqq5CFit::performFIT(EVENT::LCEvent *pLCEvent
 		diJetSystem.push_back(JetResTheta);
 		diJetSystem.push_back(JetResPhi);
 	}
-	diJetSystem.push_back(jet0_unit.dot(jet1_unit) * 45 / atan(1));
+	diJetSystem.push_back( acos( jet0_unit.dot(jet1_unit) ) * 45 / atan(1) );
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////
@@ -2960,6 +3018,18 @@ void ZHllqq5CFit::end()
 	h_fitProbability_constraintPy->Write();
 	h_fitProbability_constraintPz->Write();
 	h_fitProbability_constraintE->Write();
+	h_constraintPx_lowFitProb->Write();
+	h_constraintPx_midFitProb->Write();
+	h_constraintPx_highFitProb->Write();
+	h_constraintPy_lowFitProb->Write();
+	h_constraintPy_midFitProb->Write();
+	h_constraintPy_highFitProb->Write();
+	h_constraintPz_lowFitProb->Write();
+	h_constraintPz_midFitProb->Write();
+	h_constraintPz_highFitProb->Write();
+	h_constraintE_lowFitProb->Write();
+	h_constraintE_midFitProb->Write();
+	h_constraintE_highFitProb->Write();
 	m_pTFile->Close();
 	delete m_pTFile;
 
