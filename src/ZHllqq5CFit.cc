@@ -253,7 +253,19 @@ h_constraintPz_midFitProb(NULL),
 h_constraintPz_highFitProb(NULL),
 h_constraintE_lowFitProb(NULL),
 h_constraintE_midFitProb(NULL),
-h_constraintE_highFitProb(NULL)
+h_constraintE_highFitProb(NULL),
+h_constraintPx_uncertaintyPx_lowFitProb(NULL),
+h_constraintPx_uncertaintyPx_midFitProb(NULL),
+h_constraintPx_uncertaintyPx_highFitProb(NULL),
+h_constraintPy_uncertaintyPy_lowFitProb(NULL),
+h_constraintPy_uncertaintyPy_midFitProb(NULL),
+h_constraintPy_uncertaintyPy_highFitProb(NULL),
+h_constraintPz_uncertaintyPz_lowFitProb(NULL),
+h_constraintPz_uncertaintyPz_midFitProb(NULL),
+h_constraintPz_uncertaintyPz_highFitProb(NULL),
+h_constraintE_uncertaintyE_lowFitProb(NULL),
+h_constraintE_uncertaintyE_midFitProb(NULL),
+h_constraintE_uncertaintyE_highFitProb(NULL)
 {
 
 //	modify processor description
@@ -771,7 +783,7 @@ void ZHllqq5CFit::init()
 	h_fitProbability_Ejet->SetDirectory(m_pTFile);
 	h_fitProbability_Thetajet = new TH2F("h_fitProbability_Thetajet", "fit probability vs jet theta (best fit); #theta_{jet} [deg]; fit probability", 90, 0., 180., 40, 0., 0.2);
 	h_fitProbability_Thetajet->SetDirectory(m_pTFile);
-	h_fitProbability_Phijet = new TH2F("h_fitProbability_Phijet", "fit probability vs jet phi (best fit); #phi_{jet} [deg]; fit probability", 90, 0., 360., 40, 0., 0.2);
+	h_fitProbability_Phijet = new TH2F("h_fitProbability_Phijet", "fit probability vs jet phi (best fit); #phi_{jet} [deg]; fit probability", 90, -180., 180., 40, 0., 0.2);
 	h_fitProbability_Phijet->SetDirectory(m_pTFile);
 	h_fitProbability_SigmaEjet = new TH2F("h_fitProbability_SigmaEjet", "fit probability vs #sigma(E_{jet}) (best fit); #sigma(E_{jet}) [GeV]; fit probability", 50, 0., 50., 40, 0., 0.2);
 	h_fitProbability_SigmaEjet->SetDirectory(m_pTFile);
@@ -817,6 +829,30 @@ void ZHllqq5CFit::init()
 	h_constraintE_midFitProb->SetDirectory(m_pTFile);
 	h_constraintE_highFitProb = new TH1F("h_constraintE_highFitProb", "0.9 < fit Probability; #Sigma E [GeV]; n_{events}", 400, -50.0, 50.0);
 	h_constraintE_highFitProb->SetDirectory(m_pTFile);
+	h_constraintPx_uncertaintyPx_lowFitProb = new TH2F("h_constraintPx_uncertaintyPx_lowFitProb", "fit probability < 0.1; #Sigma p_{x} [GeV]; #sigma^{2}(p_{x}^{jj})", 100, -50., 50., 50, 0., 0.001);
+	h_constraintPx_uncertaintyPx_lowFitProb->SetDirectory(m_pTFile);
+	h_constraintPx_uncertaintyPx_midFitProb = new TH2F("h_constraintPx_uncertaintyPx_midFitProb", "0.1 #leq fit probability < 0.9; #Sigma p_{x} [GeV]; #sigma^{2}(p_{x}^{jj})", 100, -50., 50., 50, 0., 0.001);
+	h_constraintPx_uncertaintyPx_midFitProb->SetDirectory(m_pTFile);
+	h_constraintPx_uncertaintyPx_highFitProb = new TH2F("h_constraintPx_uncertaintyPx_highFitProb", "0.9 #leq fit probability; #Sigma p_{x} [GeV]; #sigma^{2}(p_{x}^{jj})", 100, -50., 50., 50, 0., 0.001);
+	h_constraintPx_uncertaintyPx_highFitProb->SetDirectory(m_pTFile);
+	h_constraintPy_uncertaintyPy_lowFitProb = new TH2F("h_constraintPy_uncertaintyPy_lowFitProb", "fit probability < 0.1; #Sigma p_{y} [GeV]; #sigma^{2}(p_{y}^{jj})", 100, -50., 50., 50, 0., 0.001);
+	h_constraintPy_uncertaintyPy_lowFitProb->SetDirectory(m_pTFile);
+	h_constraintPy_uncertaintyPy_midFitProb = new TH2F("h_constraintPy_uncertaintyPy_midFitProb", "0.1 #leq fit probability < 0.9; #Sigma p_{y} [GeV]; #sigma^{2}(p_{y}^{jj})", 100, -50., 50., 50, 0., 0.001);
+	h_constraintPy_uncertaintyPy_midFitProb->SetDirectory(m_pTFile);
+	h_constraintPy_uncertaintyPy_highFitProb = new TH2F("h_constraintPy_uncertaintyPy_highFitProb", "0.9 #leq fit probability; #Sigma p_{y} [GeV]; #sigma^{2}(p_{y}^{jj})", 100, -50., 50., 50, 0., 0.001);
+	h_constraintPy_uncertaintyPy_highFitProb->SetDirectory(m_pTFile);
+	h_constraintPz_uncertaintyPz_lowFitProb = new TH2F("h_constraintPz_uncertaintyPz_lowFitProb", "fit probability < 0.1; #Sigma p_{z} [GeV]; #sigma^{2}(p_{z}^{jj})", 100, -50., 50., 50, 0., 0.001);
+	h_constraintPz_uncertaintyPz_lowFitProb->SetDirectory(m_pTFile);
+	h_constraintPz_uncertaintyPz_midFitProb = new TH2F("h_constraintPz_uncertaintyPz_midFitProb", "0.1 #leq fit probability < 0.9; #Sigma p_{z} [GeV]; #sigma^{2}(p_{z}^{jj})", 100, -50., 50., 50, 0., 0.001);
+	h_constraintPz_uncertaintyPz_midFitProb->SetDirectory(m_pTFile);
+	h_constraintPz_uncertaintyPz_highFitProb = new TH2F("h_constraintPz_uncertaintyPz_highFitProb", "0.9 #leq fit probability; #Sigma p_{z} [GeV]; #sigma^{2}(p_{z}^{jj})", 100, -50., 50., 50, 0., 0.001);
+	h_constraintPz_uncertaintyPz_highFitProb->SetDirectory(m_pTFile);
+	h_constraintE_uncertaintyE_lowFitProb = new TH2F("h_constraintE_uncertaintyE_lowFitProb", "fit probability < 0.1; #Sigma E [GeV]; #sigma^{2}(E^{jj})", 100, -50., 50., 50, 0., 50.0);
+	h_constraintE_uncertaintyE_lowFitProb->SetDirectory(m_pTFile);
+	h_constraintE_uncertaintyE_midFitProb = new TH2F("h_constraintE_uncertaintyE_midFitProb", "0.1 #leq fit probability < 0.9; #Sigma E [GeV]; #sigma^{2}(E^{jj})", 100, -50., 50., 50, 0., 50.0);
+	h_constraintE_uncertaintyE_midFitProb->SetDirectory(m_pTFile);
+	h_constraintE_uncertaintyE_highFitProb = new TH2F("h_constraintE_uncertaintyE_highFitProb", "0.9 #leq fit probability; #Sigma E [GeV]; #sigma^{2}(E^{jj})", 100, -50., 50., 50, 0., 50.0);
+	h_constraintE_uncertaintyE_highFitProb->SetDirectory(m_pTFile);
 }
 
 void ZHllqq5CFit::Clear()
@@ -1715,78 +1751,78 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 			m_chi2startmassH_woNu = fitOutputswoNu[10];
 			m_chi2best_woNu = fitOutputswoNu[11];
 			m_bestphotonenergy_woNu = fitOutputswoNu[12];
-			m_pull_jet_E_woNu.push_back(pullswoNu[13]);
-			m_pull_jet_E_woNu.push_back(pullswoNu[14]);
-			m_pull_jet_th_woNu.push_back(pullswoNu[15]);
-			m_pull_jet_th_woNu.push_back(pullswoNu[16]);
-			m_pull_jet_phi_woNu.push_back(pullswoNu[17]);
-			m_pull_jet_phi_woNu.push_back(pullswoNu[18]);
-			m_pull_lepton_InvpT_woNu.push_back(pullswoNu[19]);
-			m_pull_lepton_InvpT_woNu.push_back(pullswoNu[20]);
-			m_pull_lepton_th_woNu.push_back(pullswoNu[21]);
-			m_pull_lepton_th_woNu.push_back(pullswoNu[22]);
-			m_pull_lepton_phi_woNu.push_back(pullswoNu[23]);
-			m_pull_lepton_phi_woNu.push_back(pullswoNu[24]);
-			ISRpx_woNu = fittedParticleswoNu[25];
-			ISRpy_woNu = fittedParticleswoNu[26];
-			ISRpz_woNu = fittedParticleswoNu[27];
-			Zpx_woNu = fittedParticleswoNu[28];
-			Zpy_woNu = fittedParticleswoNu[29];
-			Zpz_woNu = fittedParticleswoNu[30];
-			ZE_woNu = fittedParticleswoNu[31];
-			Hpx_woNu = fittedParticleswoNu[32];
-			Hpy_woNu = fittedParticleswoNu[33];
-			Hpz_woNu = fittedParticleswoNu[34];
-			HE_woNu = fittedParticleswoNu[35];
-			m_pxc_before_ISR_woNu = constraintswoNu[36];
-			m_pyc_before_ISR_woNu = constraintswoNu[37];
-			m_pzc_before_ISR_woNu = constraintswoNu[38];
-			m_ec_before_ISR_woNu = constraintswoNu[39];
-			m_pxc_before_fit_woNu = constraintswoNu[40];
-			m_pyc_before_fit_woNu = constraintswoNu[41];
-			m_pzc_before_fit_woNu = constraintswoNu[42];
-			m_ec_before_fit_woNu = constraintswoNu[43];
-			m_pxc_after_fit_woNu = constraintswoNu[44];
-			m_pyc_after_fit_woNu = constraintswoNu[45];
-			m_pzc_after_fit_woNu = constraintswoNu[46];
-			m_ec_after_fit_woNu = constraintswoNu[47];
-			m_jet_startPx_woNu.push_back(fitStartValueswoNu[48]);
-			m_jet_startPx_woNu.push_back(fitStartValueswoNu[49]);
-			m_jet_startPy_woNu.push_back(fitStartValueswoNu[50]);
-			m_jet_startPy_woNu.push_back(fitStartValueswoNu[51]);
-			m_jet_startPz_woNu.push_back(fitStartValueswoNu[52]);
-			m_jet_startPz_woNu.push_back(fitStartValueswoNu[53]);
-			m_jet_startE_woNu.push_back(fitStartValueswoNu[54]);
-			m_jet_startE_woNu.push_back(fitStartValueswoNu[55]);
+			m_pull_jet_E_woNu.push_back(pullswoNu[0]);
+			m_pull_jet_E_woNu.push_back(pullswoNu[1]);
+			m_pull_jet_th_woNu.push_back(pullswoNu[2]);
+			m_pull_jet_th_woNu.push_back(pullswoNu[3]);
+			m_pull_jet_phi_woNu.push_back(pullswoNu[4]);
+			m_pull_jet_phi_woNu.push_back(pullswoNu[5]);
+			m_pull_lepton_InvpT_woNu.push_back(pullswoNu[6]);
+			m_pull_lepton_InvpT_woNu.push_back(pullswoNu[7]);
+			m_pull_lepton_th_woNu.push_back(pullswoNu[8]);
+			m_pull_lepton_th_woNu.push_back(pullswoNu[9]);
+			m_pull_lepton_phi_woNu.push_back(pullswoNu[10]);
+			m_pull_lepton_phi_woNu.push_back(pullswoNu[11]);
+			ISRpx_woNu = fittedParticleswoNu[0];
+			ISRpy_woNu = fittedParticleswoNu[1];
+			ISRpz_woNu = fittedParticleswoNu[2];
+			Zpx_woNu = fittedParticleswoNu[3];
+			Zpy_woNu = fittedParticleswoNu[4];
+			Zpz_woNu = fittedParticleswoNu[5];
+			ZE_woNu = fittedParticleswoNu[6];
+			Hpx_woNu = fittedParticleswoNu[7];
+			Hpy_woNu = fittedParticleswoNu[8];
+			Hpz_woNu = fittedParticleswoNu[9];
+			HE_woNu = fittedParticleswoNu[10];
+			m_pxc_before_ISR_woNu = constraintswoNu[0];
+			m_pyc_before_ISR_woNu = constraintswoNu[1];
+			m_pzc_before_ISR_woNu = constraintswoNu[2];
+			m_ec_before_ISR_woNu = constraintswoNu[3];
+			m_pxc_before_fit_woNu = constraintswoNu[4];
+			m_pyc_before_fit_woNu = constraintswoNu[5];
+			m_pzc_before_fit_woNu = constraintswoNu[6];
+			m_ec_before_fit_woNu = constraintswoNu[7];
+			m_pxc_after_fit_woNu = constraintswoNu[8];
+			m_pyc_after_fit_woNu = constraintswoNu[9];
+			m_pzc_after_fit_woNu = constraintswoNu[10];
+			m_ec_after_fit_woNu = constraintswoNu[11];
+			m_jet_startPx_woNu.push_back(fitStartValueswoNu[0]);
+			m_jet_startPx_woNu.push_back(fitStartValueswoNu[1]);
+			m_jet_startPy_woNu.push_back(fitStartValueswoNu[2]);
+			m_jet_startPy_woNu.push_back(fitStartValueswoNu[3]);
+			m_jet_startPz_woNu.push_back(fitStartValueswoNu[4]);
+			m_jet_startPz_woNu.push_back(fitStartValueswoNu[5]);
+			m_jet_startE_woNu.push_back(fitStartValueswoNu[6]);
+			m_jet_startE_woNu.push_back(fitStartValueswoNu[7]);
+			m_lepton_startPx_woNu.push_back(fitStartValueswoNu[8]);
+			m_lepton_startPx_woNu.push_back(fitStartValueswoNu[9]);
+			m_lepton_startPy_woNu.push_back(fitStartValueswoNu[10]);
+			m_lepton_startPy_woNu.push_back(fitStartValueswoNu[11]);
+			m_lepton_startPz_woNu.push_back(fitStartValueswoNu[12]);
+			m_lepton_startPz_woNu.push_back(fitStartValueswoNu[13]);
+			m_lepton_startE_woNu.push_back(fitStartValueswoNu[14]);
+			m_lepton_startE_woNu.push_back(fitStartValueswoNu[15]);
 			m_jet_startTheta_woNu.push_back(diJetSystemwNu[1]);
 			m_jet_startTheta_woNu.push_back(diJetSystemwNu[7]);
 			m_jet_startPhi_woNu.push_back(diJetSystemwNu[2]);
 			m_jet_startPhi_woNu.push_back(diJetSystemwNu[8]);
 			m_dijet_angle_woNu = diJetSystemwoNu[12];
-			m_lepton_startPx_woNu.push_back(fitStartValueswoNu[56]);
-			m_lepton_startPx_woNu.push_back(fitStartValueswoNu[57]);
-			m_lepton_startPy_woNu.push_back(fitStartValueswoNu[58]);
-			m_lepton_startPy_woNu.push_back(fitStartValueswoNu[59]);
-			m_lepton_startPz_woNu.push_back(fitStartValueswoNu[60]);
-			m_lepton_startPz_woNu.push_back(fitStartValueswoNu[61]);
-			m_lepton_startE_woNu.push_back(fitStartValueswoNu[62]);
-			m_lepton_startE_woNu.push_back(fitStartValueswoNu[63]);
 		}
-		m_jet_SigmaTheta.push_back(uncertaintieswoNu[64]);
-		m_jet_SigmaTheta.push_back(uncertaintieswoNu[65]);
-		m_jet_SigmaPhi.push_back(uncertaintieswoNu[66]);
-		m_jet_SigmaPhi.push_back(uncertaintieswoNu[67]);
-		m_jet_SigmaE.push_back(uncertaintieswoNu[68]);
-		m_jet_SigmaE.push_back(uncertaintieswoNu[69]);
-		m_lepton_SigmaTheta.push_back(uncertaintieswoNu[70]);
-		m_lepton_SigmaTheta.push_back(uncertaintieswoNu[71]);
-		m_lepton_SigmaPhi.push_back(uncertaintieswoNu[72]);
-		m_lepton_SigmaPhi.push_back(uncertaintieswoNu[73]);
-		m_lepton_SigmaInvpT.push_back(uncertaintieswoNu[74]);
-		m_lepton_SigmaInvpT.push_back(uncertaintieswoNu[75]);
-		m_ISR_startPx_woNu = uncertaintieswoNu[76];
-		m_ISR_startPy_woNu = uncertaintieswoNu[77];
-		m_ISR_startPz_woNu = uncertaintieswoNu[78];
+		m_jet_SigmaTheta.push_back(uncertaintieswoNu[0]);
+		m_jet_SigmaTheta.push_back(uncertaintieswoNu[1]);
+		m_jet_SigmaPhi.push_back(uncertaintieswoNu[2]);
+		m_jet_SigmaPhi.push_back(uncertaintieswoNu[3]);
+		m_jet_SigmaE.push_back(uncertaintieswoNu[4]);
+		m_jet_SigmaE.push_back(uncertaintieswoNu[5]);
+		m_lepton_SigmaTheta.push_back(uncertaintieswoNu[6]);
+		m_lepton_SigmaTheta.push_back(uncertaintieswoNu[7]);
+		m_lepton_SigmaPhi.push_back(uncertaintieswoNu[8]);
+		m_lepton_SigmaPhi.push_back(uncertaintieswoNu[9]);
+		m_lepton_SigmaInvpT.push_back(uncertaintieswoNu[10]);
+		m_lepton_SigmaInvpT.push_back(uncertaintieswoNu[11]);
+		m_ISR_startPx_woNu = uncertaintieswoNu[12];
+		m_ISR_startPy_woNu = uncertaintieswoNu[13];
+		m_ISR_startPz_woNu = uncertaintieswoNu[14];
 		h_error_jet_E->Fill(m_jet_SigmaE[0]);
 		h_error_jet_E->Fill(m_jet_SigmaE[1]);
 		h_error_jet_Theta->Fill(m_jet_SigmaTheta[0]);
@@ -2044,6 +2080,10 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 				h_constraintPy_lowFitProb->Fill( m_pyc_before_ISR_wNu );
 				h_constraintPz_lowFitProb->Fill( m_pzc_before_ISR_wNu );
 				h_constraintE_lowFitProb->Fill( m_ec_before_ISR_wNu );
+				h_constraintPx_uncertaintyPx_lowFitProb->Fill( m_pxc_before_ISR_wNu , m_SigmaPx2[0] + m_SigmaPx2[1] );
+				h_constraintPy_uncertaintyPy_lowFitProb->Fill( m_pyc_before_ISR_wNu , m_SigmaPy2[0] + m_SigmaPy2[1] );
+				h_constraintPz_uncertaintyPz_lowFitProb->Fill( m_pzc_before_ISR_wNu , m_SigmaPz2[0] + m_SigmaPz2[1] );
+				h_constraintE_uncertaintyE_lowFitProb->Fill( m_ec_before_ISR_wNu , m_SigmaE2[0] + m_SigmaE2[1] );
 			}
 			else if ( 0.1 <= m_probability_best && m_probability_best < 0.9 )
 			{
@@ -2051,6 +2091,10 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 				h_constraintPy_midFitProb->Fill( m_pyc_before_ISR_wNu );
 				h_constraintPz_midFitProb->Fill( m_pzc_before_ISR_wNu );
 				h_constraintE_midFitProb->Fill( m_ec_before_ISR_wNu );
+				h_constraintPx_uncertaintyPx_midFitProb->Fill( m_pxc_before_ISR_wNu , m_SigmaPx2[0] + m_SigmaPx2[1] );
+				h_constraintPy_uncertaintyPy_midFitProb->Fill( m_pyc_before_ISR_wNu , m_SigmaPy2[0] + m_SigmaPy2[1] );
+				h_constraintPz_uncertaintyPz_midFitProb->Fill( m_pzc_before_ISR_wNu , m_SigmaPz2[0] + m_SigmaPz2[1] );
+				h_constraintE_uncertaintyE_midFitProb->Fill( m_ec_before_ISR_wNu , m_SigmaE2[0] + m_SigmaE2[1] );
 			}
 			else
 			{
@@ -2058,6 +2102,10 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 				h_constraintPy_highFitProb->Fill( m_pyc_before_ISR_wNu );
 				h_constraintPz_highFitProb->Fill( m_pzc_before_ISR_wNu );
 				h_constraintE_highFitProb->Fill( m_ec_before_ISR_wNu );
+				h_constraintPx_uncertaintyPx_highFitProb->Fill( m_pxc_before_ISR_wNu , m_SigmaPx2[0] + m_SigmaPx2[1] );
+				h_constraintPy_uncertaintyPy_highFitProb->Fill( m_pyc_before_ISR_wNu , m_SigmaPy2[0] + m_SigmaPy2[1] );
+				h_constraintPz_uncertaintyPz_highFitProb->Fill( m_pzc_before_ISR_wNu , m_SigmaPz2[0] + m_SigmaPz2[1] );
+				h_constraintE_uncertaintyE_highFitProb->Fill( m_ec_before_ISR_wNu , m_SigmaE2[0] + m_SigmaE2[1] );
 			}
 
 			LCCollectionVec *OutputCol = new LCCollectionVec(LCIO::RECONSTRUCTEDPARTICLE);
@@ -3030,6 +3078,18 @@ void ZHllqq5CFit::end()
 	h_constraintE_lowFitProb->Write();
 	h_constraintE_midFitProb->Write();
 	h_constraintE_highFitProb->Write();
+	h_constraintPx_uncertaintyPx_lowFitProb->Write();
+	h_constraintPx_uncertaintyPx_midFitProb->Write();
+	h_constraintPx_uncertaintyPx_highFitProb->Write();
+	h_constraintPy_uncertaintyPy_lowFitProb->Write();
+	h_constraintPy_uncertaintyPy_midFitProb->Write();
+	h_constraintPy_uncertaintyPy_highFitProb->Write();
+	h_constraintPz_uncertaintyPz_lowFitProb->Write();
+	h_constraintPz_uncertaintyPz_midFitProb->Write();
+	h_constraintPz_uncertaintyPz_highFitProb->Write();
+	h_constraintE_uncertaintyE_lowFitProb->Write();
+	h_constraintE_uncertaintyE_midFitProb->Write();
+	h_constraintE_uncertaintyE_highFitProb->Write();
 	m_pTFile->Close();
 	delete m_pTFile;
 
