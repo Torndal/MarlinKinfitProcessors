@@ -174,6 +174,16 @@ m_ISR_startPz_wNu(0.),
 m_ISR_startPx_woNu(0.),
 m_ISR_startPy_woNu(0.),
 m_ISR_startPz_woNu(0.),
+m_TotalSigmaPx2(0.),
+m_TotalSigmaPy2(0.),
+m_TotalSigmaPz2(0.),
+m_TotalSigmaE2(0.),
+m_TotalSigmaPxPy(0.),
+m_TotalSigmaPxPz(0.),
+m_TotalSigmaPxE(0.),
+m_TotalSigmaPyPz(0.),
+m_TotalSigmaPyE(0.),
+m_TotalSigmaPzE(0.),
 m_pTFile(NULL),
 m_pTTree(NULL),
 m_pTTree_0(NULL),
@@ -242,6 +252,10 @@ h_fitProbability_constraintPx(NULL),
 h_fitProbability_constraintPy(NULL),
 h_fitProbability_constraintPz(NULL),
 h_fitProbability_constraintE(NULL),
+h_fitProbability_sigmaPx(NULL),
+h_fitProbability_sigmaPy(NULL),
+h_fitProbability_sigmaPz(NULL),
+h_fitProbability_sigmaE(NULL),
 h_constraintPx_lowFitProb(NULL),
 h_constraintPx_midFitProb(NULL),
 h_constraintPx_highFitProb(NULL),
@@ -254,6 +268,10 @@ h_constraintPz_highFitProb(NULL),
 h_constraintE_lowFitProb(NULL),
 h_constraintE_midFitProb(NULL),
 h_constraintE_highFitProb(NULL),
+h_constraintPx_uncertaintyPx(NULL),
+h_constraintPy_uncertaintyPy(NULL),
+h_constraintPz_uncertaintyPz(NULL),
+h_constraintE_uncertaintyE(NULL),
 h_constraintPx_uncertaintyPx_lowFitProb(NULL),
 h_constraintPx_uncertaintyPx_midFitProb(NULL),
 h_constraintPx_uncertaintyPx_highFitProb(NULL),
@@ -666,8 +684,9 @@ void ZHllqq5CFit::init()
 	m_pTTree_3->Branch("lepton_SigmaTheta",&m_lepton_SigmaTheta);
 	m_pTTree_3->Branch("lepton_SigmaPhi",&m_lepton_SigmaPhi);
 	m_pTTree_3->Branch("lepton_SigmaInvpT",&m_lepton_SigmaInvpT);
-	m_pTTree_4 = new TTree("JetUncertainties","JetUncertainties");
+	m_pTTree_4 = new TTree("Uncertainties","Uncertainties");
 	m_pTTree_4->SetDirectory(m_pTFile);
+	m_pTTree_4->Branch("probability_best",&m_probability_best,"probability_best/F") ;
 	m_pTTree_4->Branch("SigmaPx2",&m_SigmaPx2);
 	m_pTTree_4->Branch("SigmaPxSigmaPy",&m_SigmaPxPy);
 	m_pTTree_4->Branch("SigmaPxSigmaPz",&m_SigmaPxPz);
@@ -678,6 +697,16 @@ void ZHllqq5CFit::init()
 	m_pTTree_4->Branch("SigmaPz2",&m_SigmaPz2);
 	m_pTTree_4->Branch("SigmaPzSigmaE",&m_SigmaPzE);
 	m_pTTree_4->Branch("SigmaE2",&m_SigmaE2);
+	m_pTTree_4->Branch("TotalSigmaPx2",&m_TotalSigmaPx2,"TotalSigmaPx2/F");
+	m_pTTree_4->Branch("TotalSigmaPy2",&m_TotalSigmaPy2,"TotalSigmaPy2/F");
+	m_pTTree_4->Branch("TotalSigmaPz2",&m_TotalSigmaPz2,"TotalSigmaPz2/F");
+	m_pTTree_4->Branch("TotalSigmaE2",&m_TotalSigmaE2,"TotalSigmaE2/F");
+	m_pTTree_4->Branch("TotalSigmaPxPy",&m_TotalSigmaPxPy,"TotalSigmaPxPy/F");
+	m_pTTree_4->Branch("TotalSigmaPxPz",&m_TotalSigmaPxPz,"TotalSigmaPxPz/F");
+	m_pTTree_4->Branch("TotalSigmaPxE",&m_TotalSigmaPxE,"TotalSigmaPxE/F");
+	m_pTTree_4->Branch("TotalSigmaPyPz",&m_TotalSigmaPyPz,"TotalSigmaPyPz/F");
+	m_pTTree_4->Branch("TotalSigmaPyE",&m_TotalSigmaPyE,"TotalSigmaPyE/F");
+	m_pTTree_4->Branch("TotalSigmaPzE",&m_TotalSigmaPzE,"TotalSigmaPzE/F");
 
 	h_HDecayMode = new TH1I("h_HDecayMode", "Decay mode of Higgs boson", 4, 0, 4);
 	h_HDecayMode->GetXaxis()->SetBinLabel(1,"H #rightarrow b#bar{b}");
@@ -777,34 +806,42 @@ void ZHllqq5CFit::init()
 	h_SigmaPyE->SetDirectory(m_pTFile);
 	h_SigmaPzE = new TH1F("h_SigmaPzE", "; #sigma(p_{z}E); n_{jet}", 400, -0.01, 0.01);
 	h_SigmaPzE->SetDirectory(m_pTFile);
-	h_fitProbability_diJetAngle = new TH2F("h_fitProbability_diJetAngle", "fit probability vs di-jet angle (best fit); di-jet angle [deg]; fit probability", 90, 0., 180., 40, 0., 0.2);
+	h_fitProbability_diJetAngle = new TH2F("h_fitProbability_diJetAngle", "fit probability vs di-jet angle (best fit); di-jet angle [deg]; fit probability", 90, 0., 180., 200, 0., 1.0);
 	h_fitProbability_diJetAngle->SetDirectory(m_pTFile);
-	h_fitProbability_Ejet = new TH2F("h_fitProbability_Ejet", "fit probability vs jet energy (best fit); jet energy [GeV]; fit probability", 75, 0., 150., 40, 0., 0.2);
+	h_fitProbability_Ejet = new TH2F("h_fitProbability_Ejet", "fit probability vs jet energy (best fit); jet energy [GeV]; fit probability", 75, 0., 150., 200, 0., 1.0);
 	h_fitProbability_Ejet->SetDirectory(m_pTFile);
-	h_fitProbability_Thetajet = new TH2F("h_fitProbability_Thetajet", "fit probability vs jet theta (best fit); #theta_{jet} [deg]; fit probability", 90, 0., 180., 40, 0., 0.2);
+	h_fitProbability_Thetajet = new TH2F("h_fitProbability_Thetajet", "fit probability vs jet theta (best fit); #theta_{jet} [deg]; fit probability", 90, 0., 180., 200, 0., 1.0);
 	h_fitProbability_Thetajet->SetDirectory(m_pTFile);
-	h_fitProbability_Phijet = new TH2F("h_fitProbability_Phijet", "fit probability vs jet phi (best fit); #phi_{jet} [deg]; fit probability", 90, -180., 180., 40, 0., 0.2);
+	h_fitProbability_Phijet = new TH2F("h_fitProbability_Phijet", "fit probability vs jet phi (best fit); #phi_{jet} [deg]; fit probability", 90, -180., 180., 200, 0., 1.0);
 	h_fitProbability_Phijet->SetDirectory(m_pTFile);
-	h_fitProbability_SigmaEjet = new TH2F("h_fitProbability_SigmaEjet", "fit probability vs #sigma(E_{jet}) (best fit); #sigma(E_{jet}) [GeV]; fit probability", 50, 0., 50., 40, 0., 0.2);
+	h_fitProbability_SigmaEjet = new TH2F("h_fitProbability_SigmaEjet", "fit probability vs #sigma(E_{jet}) (best fit); #sigma(E_{jet}) [GeV]; fit probability", 50, 0., 50., 200, 0., 1.0);
 	h_fitProbability_SigmaEjet->SetDirectory(m_pTFile);
-	h_fitProbability_SigmaThetajet = new TH2F("h_fitProbability_SigmaThetajet", "fit probability vs #sigma(#theta_{jet}) (best fit); #sigma(#theta_{jet}) [radian]; fit probability", 100, 0., 0.02, 40, 0., 0.2);
+	h_fitProbability_SigmaThetajet = new TH2F("h_fitProbability_SigmaThetajet", "fit probability vs #sigma(#theta_{jet}) (best fit); #sigma(#theta_{jet}) [radian]; fit probability", 100, 0., 0.02, 200, 0., 1.0);
 	h_fitProbability_SigmaThetajet->SetDirectory(m_pTFile);
-	h_fitProbability_SigmaPhijet = new TH2F("h_fitProbability_SigmaPhijet", "fit probability vs #sigma(#phi_{jet}) (best fit); #sigma(#phi_{jet}) [radian]; fit probability", 100, 0., 0.02, 40, 0., 0.2);
+	h_fitProbability_SigmaPhijet = new TH2F("h_fitProbability_SigmaPhijet", "fit probability vs #sigma(#phi_{jet}) (best fit); #sigma(#phi_{jet}) [radian]; fit probability", 100, 0., 0.02, 200, 0., 1.0);
 	h_fitProbability_SigmaPhijet->SetDirectory(m_pTFile);
-	h_fitProbability_pullEjet = new TH2F("h_fitProbability_pullEjet", "fit probability vs pull E_{jet} (best fit); pull E_{jet}; fit probability", 100, -10., 10., 40, 0., 0.2);
+	h_fitProbability_pullEjet = new TH2F("h_fitProbability_pullEjet", "fit probability vs pull E_{jet} (best fit); pull E_{jet}; fit probability", 100, -10., 10., 200, 0., 1.0);
 	h_fitProbability_pullEjet->SetDirectory(m_pTFile);
-	h_fitProbability_pullThetajet = new TH2F("h_fitProbability_pullThetajet", "fit probability vs pull #theta_{jet} (best fit); pull #theta_{jet}; fit probability", 100, -10., 10., 40, 0., 0.2);
+	h_fitProbability_pullThetajet = new TH2F("h_fitProbability_pullThetajet", "fit probability vs pull #theta_{jet} (best fit); pull #theta_{jet}; fit probability", 100, -10., 10., 200, 0., 1.0);
 	h_fitProbability_pullThetajet->SetDirectory(m_pTFile);
-	h_fitProbability_pullPhijet = new TH2F("h_fitProbability_pullPhijet", "fit probability vs pull #phi_{jet} (best fit); pull #phi_{jet}; fit probability", 100, -10., 10., 40, 0., 0.2);
+	h_fitProbability_pullPhijet = new TH2F("h_fitProbability_pullPhijet", "fit probability vs pull #phi_{jet} (best fit); pull #phi_{jet}; fit probability", 100, -10., 10., 200, 0., 1.0);
 	h_fitProbability_pullPhijet->SetDirectory(m_pTFile);
-	h_fitProbability_constraintPx = new TH2F("h_fitProbability_constraintPx", "fit probability vs #Sigma p_{x} (best fit); p_{x} constraint [GeV]; fit probability", 100, -50., 50., 40, 0., 0.2);
+	h_fitProbability_constraintPx = new TH2F("h_fitProbability_constraintPx", "fit probability vs #Sigma p_{x} (best fit); #Sigma p_{x} [GeV]; fit probability", 100, -50., 50., 200, 0., 1.0);
 	h_fitProbability_constraintPx->SetDirectory(m_pTFile);
-	h_fitProbability_constraintPy = new TH2F("h_fitProbability_constraintPy", "fit probability vs #Sigma p_{y} (best fit); p_{y} constraint [GeV]; fit probability", 100, -50., 50., 40, 0., 0.2);
+	h_fitProbability_constraintPy = new TH2F("h_fitProbability_constraintPy", "fit probability vs #Sigma p_{y} (best fit); #Sigma p_{y} [GeV]; fit probability", 100, -50., 50., 200, 0., 1.0);
 	h_fitProbability_constraintPy->SetDirectory(m_pTFile);
-	h_fitProbability_constraintPz = new TH2F("h_fitProbability_constraintPz", "fit probability vs #Sigma p_{z} (best fit); p_{z} constraint [GeV]; fit probability", 100, -50., 50., 40, 0., 0.2);
+	h_fitProbability_constraintPz = new TH2F("h_fitProbability_constraintPz", "fit probability vs #Sigma p_{z} (best fit); #Sigma p_{z} [GeV]; fit probability", 100, -50., 50., 200, 0., 1.0);
 	h_fitProbability_constraintPz->SetDirectory(m_pTFile);
-	h_fitProbability_constraintE = new TH2F("h_fitProbability_constraintE", "fit probability vs #Sigma E (best fit); E constraint [GeV]; fit probability", 100, -50., 50., 40, 0., 0.2);
+	h_fitProbability_constraintE = new TH2F("h_fitProbability_constraintE", "fit probability vs #Sigma E (best fit); #Sigma E [GeV]; fit probability", 100, -50., 50., 200, 0., 1.0);
 	h_fitProbability_constraintE->SetDirectory(m_pTFile);
+	h_fitProbability_sigmaPx = new TH2F("h_fitProbability_sigmaPx", ";total #sigma_{p_{x}} [GeV]; fit probability", 200, 0., 5., 200, 0., 1.0);
+	h_fitProbability_sigmaPx->SetDirectory(m_pTFile);
+	h_fitProbability_sigmaPy = new TH2F("h_fitProbability_sigmaPy", ";total #sigma_{p_{y}} [GeV]; fit probability", 200, 0., 5., 200, 0., 1.0);
+	h_fitProbability_sigmaPy->SetDirectory(m_pTFile);
+	h_fitProbability_sigmaPz = new TH2F("h_fitProbability_sigmaPz", ";total #sigma_{p_{z}} [GeV]; fit probability", 200, 0., 5., 200, 0., 1.0);
+	h_fitProbability_sigmaPz->SetDirectory(m_pTFile);
+	h_fitProbability_sigmaE = new TH2F("h_fitProbability_sigmaE", ";total #sigma_{E} [GeV]; fit probability", 200, 0., 10., 200, 0., 1.0);
+	h_fitProbability_sigmaE->SetDirectory(m_pTFile);
 	h_constraintPx_lowFitProb = new TH1F("h_constraintPx_lowFitProb", "fit Probability < 0.1; #Sigma p_{x} [GeV]; n_{events}", 400, -50.0, 50.0);
 	h_constraintPx_lowFitProb->SetDirectory(m_pTFile);
 	h_constraintPx_midFitProb = new TH1F("h_constraintPx_midFitProb", "0.1 < fit Probability < 0.9; #Sigma p_{x} [GeV]; n_{events}", 400, -50.0, 50.0);
@@ -829,29 +866,37 @@ void ZHllqq5CFit::init()
 	h_constraintE_midFitProb->SetDirectory(m_pTFile);
 	h_constraintE_highFitProb = new TH1F("h_constraintE_highFitProb", "0.9 < fit Probability; #Sigma E [GeV]; n_{events}", 400, -50.0, 50.0);
 	h_constraintE_highFitProb->SetDirectory(m_pTFile);
-	h_constraintPx_uncertaintyPx_lowFitProb = new TH2F("h_constraintPx_uncertaintyPx_lowFitProb", "fit probability < 0.1; #Sigma p_{x} [GeV]; #sigma^{2}(p_{x}^{jj})", 100, -50., 50., 50, 0., 0.001);
+	h_constraintPx_uncertaintyPx = new TH2F("h_constraintPx_uncertaintyPx", "; #Sigma p_{x} [GeV]; #sigma_{p_{x}} [GeV]", 200, -10., 10., 200, 0., 5.);
+	h_constraintPx_uncertaintyPx->SetDirectory(m_pTFile);
+	h_constraintPy_uncertaintyPy = new TH2F("h_constraintPy_uncertaintyPy", "; #Sigma p_{y} [GeV]; #sigma_{p_{y}} [GeV]", 200, -10., 10., 200, 0., 5.);
+	h_constraintPy_uncertaintyPy->SetDirectory(m_pTFile);
+	h_constraintPz_uncertaintyPz = new TH2F("h_constraintPz_uncertaintyPz", "; #Sigma p_{z} [GeV]; #sigma_{p_{z}} [GeV]", 200, -10., 10., 200, 0., 5.);
+	h_constraintPz_uncertaintyPz->SetDirectory(m_pTFile);
+	h_constraintE_uncertaintyE = new TH2F("h_constraintE_uncertaintyE", "; #Sigma E [GeV]; #sigma_{E} [GeV]", 200, -50., 50., 200, 0., 10.);
+	h_constraintE_uncertaintyE->SetDirectory(m_pTFile);
+	h_constraintPx_uncertaintyPx_lowFitProb = new TH2F("h_constraintPx_uncertaintyPx_lowFitProb", "fit probability < 0.1; #Sigma p_{x} [GeV]; #sigma_{p_{x}} [GeV]", 200, -10., 10., 200, 0., 5.0);
 	h_constraintPx_uncertaintyPx_lowFitProb->SetDirectory(m_pTFile);
-	h_constraintPx_uncertaintyPx_midFitProb = new TH2F("h_constraintPx_uncertaintyPx_midFitProb", "0.1 #leq fit probability < 0.9; #Sigma p_{x} [GeV]; #sigma^{2}(p_{x}^{jj})", 100, -50., 50., 50, 0., 0.001);
+	h_constraintPx_uncertaintyPx_midFitProb = new TH2F("h_constraintPx_uncertaintyPx_midFitProb", "0.1 #leq fit probability < 0.9; #Sigma p_{x} [GeV]; #sigma_{p_{x}} [GeV]", 200, -10., 10., 200, 0., 5.0);
 	h_constraintPx_uncertaintyPx_midFitProb->SetDirectory(m_pTFile);
-	h_constraintPx_uncertaintyPx_highFitProb = new TH2F("h_constraintPx_uncertaintyPx_highFitProb", "0.9 #leq fit probability; #Sigma p_{x} [GeV]; #sigma^{2}(p_{x}^{jj})", 100, -50., 50., 50, 0., 0.001);
+	h_constraintPx_uncertaintyPx_highFitProb = new TH2F("h_constraintPx_uncertaintyPx_highFitProb", "0.9 #leq fit probability; #Sigma p_{x} [GeV]; #sigma_{p_{x}} [GeV]", 200, -10., 10., 200, 0., 5.0);
 	h_constraintPx_uncertaintyPx_highFitProb->SetDirectory(m_pTFile);
-	h_constraintPy_uncertaintyPy_lowFitProb = new TH2F("h_constraintPy_uncertaintyPy_lowFitProb", "fit probability < 0.1; #Sigma p_{y} [GeV]; #sigma^{2}(p_{y}^{jj})", 100, -50., 50., 50, 0., 0.001);
+	h_constraintPy_uncertaintyPy_lowFitProb = new TH2F("h_constraintPy_uncertaintyPy_lowFitProb", "fit probability < 0.1; #Sigma p_{y} [GeV]; #sigma_{p_{y}} [GeV]", 200, -10., 10., 200, 0., 5.0);
 	h_constraintPy_uncertaintyPy_lowFitProb->SetDirectory(m_pTFile);
-	h_constraintPy_uncertaintyPy_midFitProb = new TH2F("h_constraintPy_uncertaintyPy_midFitProb", "0.1 #leq fit probability < 0.9; #Sigma p_{y} [GeV]; #sigma^{2}(p_{y}^{jj})", 100, -50., 50., 50, 0., 0.001);
+	h_constraintPy_uncertaintyPy_midFitProb = new TH2F("h_constraintPy_uncertaintyPy_midFitProb", "0.1 #leq fit probability < 0.9; #Sigma p_{y} [GeV]; #sigma_{p_{y}} [GeV]", 200, -10., 10., 200, 0., 5.0);
 	h_constraintPy_uncertaintyPy_midFitProb->SetDirectory(m_pTFile);
-	h_constraintPy_uncertaintyPy_highFitProb = new TH2F("h_constraintPy_uncertaintyPy_highFitProb", "0.9 #leq fit probability; #Sigma p_{y} [GeV]; #sigma^{2}(p_{y}^{jj})", 100, -50., 50., 50, 0., 0.001);
+	h_constraintPy_uncertaintyPy_highFitProb = new TH2F("h_constraintPy_uncertaintyPy_highFitProb", "0.9 #leq fit probability; #Sigma p_{y} [GeV]; #sigma_{p_{y}} [GeV]", 200, -10., 10., 200, 0., 5.0);
 	h_constraintPy_uncertaintyPy_highFitProb->SetDirectory(m_pTFile);
-	h_constraintPz_uncertaintyPz_lowFitProb = new TH2F("h_constraintPz_uncertaintyPz_lowFitProb", "fit probability < 0.1; #Sigma p_{z} [GeV]; #sigma^{2}(p_{z}^{jj})", 100, -50., 50., 50, 0., 0.001);
+	h_constraintPz_uncertaintyPz_lowFitProb = new TH2F("h_constraintPz_uncertaintyPz_lowFitProb", "fit probability < 0.1; #Sigma p_{z} [GeV]; #sigma_{p_{z}} [GeV]", 200, -10., 10., 200, 0., 5.0);
 	h_constraintPz_uncertaintyPz_lowFitProb->SetDirectory(m_pTFile);
-	h_constraintPz_uncertaintyPz_midFitProb = new TH2F("h_constraintPz_uncertaintyPz_midFitProb", "0.1 #leq fit probability < 0.9; #Sigma p_{z} [GeV]; #sigma^{2}(p_{z}^{jj})", 100, -50., 50., 50, 0., 0.001);
+	h_constraintPz_uncertaintyPz_midFitProb = new TH2F("h_constraintPz_uncertaintyPz_midFitProb", "0.1 #leq fit probability < 0.9; #Sigma p_{z} [GeV]; #sigma_{p_{z}} [GeV]", 200, -10., 10., 200, 0., 5.0);
 	h_constraintPz_uncertaintyPz_midFitProb->SetDirectory(m_pTFile);
-	h_constraintPz_uncertaintyPz_highFitProb = new TH2F("h_constraintPz_uncertaintyPz_highFitProb", "0.9 #leq fit probability; #Sigma p_{z} [GeV]; #sigma^{2}(p_{z}^{jj})", 100, -50., 50., 50, 0., 0.001);
+	h_constraintPz_uncertaintyPz_highFitProb = new TH2F("h_constraintPz_uncertaintyPz_highFitProb", "0.9 #leq fit probability; #Sigma p_{z} [GeV]; #sigma_{p_{z}} [GeV]", 200, -10., 10., 200, 0., 5.0);
 	h_constraintPz_uncertaintyPz_highFitProb->SetDirectory(m_pTFile);
-	h_constraintE_uncertaintyE_lowFitProb = new TH2F("h_constraintE_uncertaintyE_lowFitProb", "fit probability < 0.1; #Sigma E [GeV]; #sigma^{2}(E^{jj})", 100, -50., 50., 50, 0., 50.0);
+	h_constraintE_uncertaintyE_lowFitProb = new TH2F("h_constraintE_uncertaintyE_lowFitProb", "fit probability < 0.1; #Sigma E [GeV]; #sigma_{E} [GeV]", 200, -50., 50., 200, 0., 10.0);
 	h_constraintE_uncertaintyE_lowFitProb->SetDirectory(m_pTFile);
-	h_constraintE_uncertaintyE_midFitProb = new TH2F("h_constraintE_uncertaintyE_midFitProb", "0.1 #leq fit probability < 0.9; #Sigma E [GeV]; #sigma^{2}(E^{jj})", 100, -50., 50., 50, 0., 50.0);
+	h_constraintE_uncertaintyE_midFitProb = new TH2F("h_constraintE_uncertaintyE_midFitProb", "0.1 #leq fit probability < 0.9; #Sigma E [GeV]; #sigma_{E} [GeV]", 200, -50., 50., 200, 0., 10.0);
 	h_constraintE_uncertaintyE_midFitProb->SetDirectory(m_pTFile);
-	h_constraintE_uncertaintyE_highFitProb = new TH2F("h_constraintE_uncertaintyE_highFitProb", "0.9 #leq fit probability; #Sigma E [GeV]; #sigma^{2}(E^{jj})", 100, -50., 50., 50, 0., 50.0);
+	h_constraintE_uncertaintyE_highFitProb = new TH2F("h_constraintE_uncertaintyE_highFitProb", "0.9 #leq fit probability; #Sigma E [GeV]; #sigma_{E} [GeV]", 200, -50., 50., 200, 0., 10.0);
 	h_constraintE_uncertaintyE_highFitProb->SetDirectory(m_pTFile);
 }
 
@@ -1033,6 +1078,16 @@ void ZHllqq5CFit::Clear()
 	m_ISR_startPx_woNu = NAN;
 	m_ISR_startPy_woNu = NAN;
 	m_ISR_startPz_woNu = NAN;
+	m_TotalSigmaPx2 = 0.;
+	m_TotalSigmaPy2 = 0.;
+	m_TotalSigmaPz2 = 0.;
+	m_TotalSigmaE2 = 0.;
+	m_TotalSigmaPxPy = 0.;
+	m_TotalSigmaPxPz = 0.;
+	m_TotalSigmaPxE = 0.;
+	m_TotalSigmaPyPz = 0.;
+	m_TotalSigmaPyE = 0.;
+	m_TotalSigmaPzE = 0.;
 	m_SigmaPx2.clear();
 	m_SigmaPxPy.clear();
 	m_SigmaPxPz.clear();
@@ -1267,7 +1322,43 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 			m_SigmaE2.push_back( jet_EF->getCovMatrix()[9] );
 			h_SigmaE2->Fill( jet_EF->getCovMatrix()[9] );
 		}
-		m_pTTree_4->Fill();
+		for (int i_lep = 0; i_lep < m_nLeptons; i_lep++)
+		{
+			ReconstructedParticle* lep_EF = dynamic_cast<ReconstructedParticle*>( inputLeptonCollection->getElementAt( i_lep ) ) ;
+			m_SigmaPx2.push_back( lep_EF->getCovMatrix()[0] );
+			h_SigmaPx2->Fill( lep_EF->getCovMatrix()[0] );
+
+			m_SigmaPxPy.push_back( lep_EF->getCovMatrix()[1] );
+			h_SigmaPxPy->Fill( lep_EF->getCovMatrix()[1] );
+
+			m_SigmaPxPz.push_back( lep_EF->getCovMatrix()[3] );
+			h_SigmaPxPz->Fill( lep_EF->getCovMatrix()[3] );
+
+			m_SigmaPxE.push_back( lep_EF->getCovMatrix()[6] );
+			h_SigmaPxE->Fill( lep_EF->getCovMatrix()[6] );
+
+			m_SigmaPy2.push_back( lep_EF->getCovMatrix()[2] );
+			h_SigmaPy2->Fill( lep_EF->getCovMatrix()[2] );
+
+			m_SigmaPyPz.push_back( lep_EF->getCovMatrix()[4] );
+			h_SigmaPyPz->Fill( lep_EF->getCovMatrix()[4] );
+
+			m_SigmaPyE.push_back( lep_EF->getCovMatrix()[7] );
+			h_SigmaPyE->Fill( lep_EF->getCovMatrix()[7] );
+
+			m_SigmaPz2.push_back( lep_EF->getCovMatrix()[5] );
+			h_SigmaPz2->Fill( lep_EF->getCovMatrix()[5] );
+
+			m_SigmaPzE.push_back( lep_EF->getCovMatrix()[8] );
+			h_SigmaPzE->Fill( lep_EF->getCovMatrix()[8] );
+
+			m_SigmaE2.push_back( lep_EF->getCovMatrix()[9] );
+			h_SigmaE2->Fill( lep_EF->getCovMatrix()[9] );
+		}
+		streamlog_out(DEBUG) << " SigmaPx2[jet1]  = " << m_SigmaPx2[0] << std::endl ;
+		streamlog_out(DEBUG) << " SigmaPx2[jet2]  = " << m_SigmaPx2[1] << std::endl ;
+		streamlog_out(DEBUG) << " SigmaPx2[lep1]  = " << m_SigmaPx2[2] << std::endl ;
+		streamlog_out(DEBUG) << " SigmaPx2[lep2]  = " << m_SigmaPx2[3] << std::endl ;
 
 
 
@@ -1424,6 +1515,128 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 		float Hpz_best = 0.;
 		float HE_best = 0.;
 
+		Jet0_Nutlv = TLorentzVector(0.,0.,0.,0.);
+		Jet1_Nutlv = TLorentzVector(0.,0.,0.,0.);
+
+		streamlog_out(MESSAGE) << "***********************************************************************************************************************************************" << std::endl;
+		streamlog_out(MESSAGE) << "********************************************* Perform fit without neutrino correction *********************************************************" << std::endl;
+		streamlog_out(MESSAGE) << "***********************************************************************************************************************************************" << std::endl;
+//		FitResultwoNu = this->performFIT( pLCEvent , 0. , 0. );
+		FitResultwoNu = this->performFIT( pLCEvent , Jet0_Nutlv , Jet1_Nutlv );
+		fitStartValueswoNu = FitResultwoNu[0];
+		fitOutputswoNu = FitResultwoNu[1];
+		fittedParticleswoNu = FitResultwoNu[2];
+		pullswoNu = FitResultwoNu[3];
+		constraintswoNu = FitResultwoNu[4];
+		uncertaintieswoNu = FitResultwoNu[5];
+		diJetSystemwoNu = FitResultwoNu[6];
+		streamlog_out(DEBUG)  << "FitResult without neutrino correction received from fit successfully: " << std::endl ;
+
+		m_iError_woNu = fitOutputswoNu[0];
+		h_fitError_woNu->Fill(m_iError_woNu);
+		if ( m_iError_woNu == 0 )
+		{
+			m_probability_woNu = fitOutputswoNu[1];
+			bestfitprob_woNu = m_probability_woNu;
+			m_n_itter_woNu = fitOutputswoNu[2];
+			m_startmassZ_woNu = fitOutputswoNu[3];
+			m_startmassH_woNu = fitOutputswoNu[4];
+			m_beststartmassZ_woNu = fitOutputswoNu[5];
+			m_beststartmassH_woNu = fitOutputswoNu[6];
+			m_Zmass_after_fit_woNu = fitOutputswoNu[7];
+			m_Hmass_after_fit_woNu = fitOutputswoNu[8];
+			m_chi2startmassZ_woNu = fitOutputswoNu[9];
+			m_chi2startmassH_woNu = fitOutputswoNu[10];
+			m_chi2best_woNu = fitOutputswoNu[11];
+			m_bestphotonenergy_woNu = fitOutputswoNu[12];
+			m_pull_jet_E_woNu.push_back(pullswoNu[0]);
+			m_pull_jet_E_woNu.push_back(pullswoNu[1]);
+			m_pull_jet_th_woNu.push_back(pullswoNu[2]);
+			m_pull_jet_th_woNu.push_back(pullswoNu[3]);
+			m_pull_jet_phi_woNu.push_back(pullswoNu[4]);
+			m_pull_jet_phi_woNu.push_back(pullswoNu[5]);
+			m_pull_lepton_InvpT_woNu.push_back(pullswoNu[6]);
+			m_pull_lepton_InvpT_woNu.push_back(pullswoNu[7]);
+			m_pull_lepton_th_woNu.push_back(pullswoNu[8]);
+			m_pull_lepton_th_woNu.push_back(pullswoNu[9]);
+			m_pull_lepton_phi_woNu.push_back(pullswoNu[10]);
+			m_pull_lepton_phi_woNu.push_back(pullswoNu[11]);
+			ISRpx_woNu = fittedParticleswoNu[0];
+			ISRpy_woNu = fittedParticleswoNu[1];
+			ISRpz_woNu = fittedParticleswoNu[2];
+			Zpx_woNu = fittedParticleswoNu[3];
+			Zpy_woNu = fittedParticleswoNu[4];
+			Zpz_woNu = fittedParticleswoNu[5];
+			ZE_woNu = fittedParticleswoNu[6];
+			Hpx_woNu = fittedParticleswoNu[7];
+			Hpy_woNu = fittedParticleswoNu[8];
+			Hpz_woNu = fittedParticleswoNu[9];
+			HE_woNu = fittedParticleswoNu[10];
+			m_pxc_before_ISR_woNu = constraintswoNu[0];
+			m_pyc_before_ISR_woNu = constraintswoNu[1];
+			m_pzc_before_ISR_woNu = constraintswoNu[2];
+			m_ec_before_ISR_woNu = constraintswoNu[3];
+			m_pxc_before_fit_woNu = constraintswoNu[4];
+			m_pyc_before_fit_woNu = constraintswoNu[5];
+			m_pzc_before_fit_woNu = constraintswoNu[6];
+			m_ec_before_fit_woNu = constraintswoNu[7];
+			m_pxc_after_fit_woNu = constraintswoNu[8];
+			m_pyc_after_fit_woNu = constraintswoNu[9];
+			m_pzc_after_fit_woNu = constraintswoNu[10];
+			m_ec_after_fit_woNu = constraintswoNu[11];
+			m_jet_startPx_woNu.push_back(fitStartValueswoNu[0]);
+			m_jet_startPx_woNu.push_back(fitStartValueswoNu[1]);
+			m_jet_startPy_woNu.push_back(fitStartValueswoNu[2]);
+			m_jet_startPy_woNu.push_back(fitStartValueswoNu[3]);
+			m_jet_startPz_woNu.push_back(fitStartValueswoNu[4]);
+			m_jet_startPz_woNu.push_back(fitStartValueswoNu[5]);
+			m_jet_startE_woNu.push_back(fitStartValueswoNu[6]);
+			m_jet_startE_woNu.push_back(fitStartValueswoNu[7]);
+			m_lepton_startPx_woNu.push_back(fitStartValueswoNu[8]);
+			m_lepton_startPx_woNu.push_back(fitStartValueswoNu[9]);
+			m_lepton_startPy_woNu.push_back(fitStartValueswoNu[10]);
+			m_lepton_startPy_woNu.push_back(fitStartValueswoNu[11]);
+			m_lepton_startPz_woNu.push_back(fitStartValueswoNu[12]);
+			m_lepton_startPz_woNu.push_back(fitStartValueswoNu[13]);
+			m_lepton_startE_woNu.push_back(fitStartValueswoNu[14]);
+			m_lepton_startE_woNu.push_back(fitStartValueswoNu[15]);
+			m_jet_startTheta_woNu.push_back(diJetSystemwoNu[1]);
+			m_jet_startTheta_woNu.push_back(diJetSystemwoNu[7]);
+			m_jet_startPhi_woNu.push_back(diJetSystemwoNu[2]);
+			m_jet_startPhi_woNu.push_back(diJetSystemwoNu[8]);
+			m_dijet_angle_woNu = diJetSystemwoNu[12];
+		}
+		m_jet_SigmaTheta.push_back(uncertaintieswoNu[0]);
+		m_jet_SigmaTheta.push_back(uncertaintieswoNu[1]);
+		m_jet_SigmaPhi.push_back(uncertaintieswoNu[2]);
+		m_jet_SigmaPhi.push_back(uncertaintieswoNu[3]);
+		m_jet_SigmaE.push_back(uncertaintieswoNu[4]);
+		m_jet_SigmaE.push_back(uncertaintieswoNu[5]);
+		m_lepton_SigmaTheta.push_back(uncertaintieswoNu[6]);
+		m_lepton_SigmaTheta.push_back(uncertaintieswoNu[7]);
+		m_lepton_SigmaPhi.push_back(uncertaintieswoNu[8]);
+		m_lepton_SigmaPhi.push_back(uncertaintieswoNu[9]);
+		m_lepton_SigmaInvpT.push_back(uncertaintieswoNu[10]);
+		m_lepton_SigmaInvpT.push_back(uncertaintieswoNu[11]);
+		m_ISR_startPx_woNu = uncertaintieswoNu[12];
+		m_ISR_startPy_woNu = uncertaintieswoNu[13];
+		m_ISR_startPz_woNu = uncertaintieswoNu[14];
+		h_error_jet_E->Fill(m_jet_SigmaE[0]);
+		h_error_jet_E->Fill(m_jet_SigmaE[1]);
+		h_error_jet_Theta->Fill(m_jet_SigmaTheta[0]);
+		h_error_jet_Theta->Fill(m_jet_SigmaTheta[1]);
+		h_error_jet_Phi->Fill(m_jet_SigmaPhi[0]);
+		h_error_jet_Phi->Fill(m_jet_SigmaPhi[1]);
+		h_error_lepton_InvpT->Fill(m_lepton_SigmaInvpT[0]);
+		h_error_lepton_InvpT->Fill(m_lepton_SigmaInvpT[1]);
+		h_error_lepton_Theta->Fill(m_lepton_SigmaTheta[0]);
+		h_error_lepton_Theta->Fill(m_lepton_SigmaTheta[1]);
+		h_error_lepton_Phi->Fill(m_lepton_SigmaPhi[0]);
+		h_error_lepton_Phi->Fill(m_lepton_SigmaPhi[1]);
+
+		streamlog_out(DEBUG) << "size of FitResult without neutrino = " << FitResultwoNu.size() << endl;
+		streamlog_out(DEBUG) << "Fit probability without neutrino correction = " << FitResultwoNu[0][1] << endl;
+
 		for (int i_perm_B = 0; i_perm_B < n_B_perm; i_perm_B++)
 		{
 			ENeutrinoJet0_BSLD = 0.;
@@ -1523,6 +1736,7 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 				m_iError_wNu.push_back(fitOutputswNu[0]);
 				ierr = fitOutputswNu[0];
 				h_fitError_wNu->Fill(ierr);
+				h_ErrorCode_wNu_woNu->Fill( ierr , m_iError_woNu );
 				if ( ierr == 0 )//&& ( ENeutrinoJet0 != 0 || ENeutrinoJet1 !=0 ) )
 				{
 					m_probability_wNu.push_back(fitOutputswNu[1]);
@@ -1716,129 +1930,7 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 		{
 			m_bestNuCombination.push_back(best_E_nu_permut[m_nSLDecayBHadron + m_nSLDecayCHadron - i - 1]);
 		}
-		Jet0_Nutlv = TLorentzVector(0.,0.,0.,0.);
-		Jet1_Nutlv = TLorentzVector(0.,0.,0.,0.);
 
-		streamlog_out(MESSAGE) << "***********************************************************************************************************************************************" << std::endl;
-		streamlog_out(MESSAGE) << "********************************************* Perform fit without neutrino correction *********************************************************" << std::endl;
-		streamlog_out(MESSAGE) << "***********************************************************************************************************************************************" << std::endl;
-//		FitResultwoNu = this->performFIT( pLCEvent , 0. , 0. );
-		FitResultwoNu = this->performFIT( pLCEvent , Jet0_Nutlv , Jet1_Nutlv );
-		fitStartValueswoNu = FitResultwoNu[0];
-		fitOutputswoNu = FitResultwoNu[1];
-		fittedParticleswoNu = FitResultwoNu[2];
-		pullswoNu = FitResultwoNu[3];
-		constraintswoNu = FitResultwoNu[4];
-		uncertaintieswoNu = FitResultwoNu[5];
-		diJetSystemwoNu = FitResultwoNu[6];
-		streamlog_out(DEBUG)  << "FitResult without neutrino correction received from fit successfully: " << std::endl ;
-
-		m_iError_woNu = fitOutputswoNu[0];
-		ierr = fitOutputswoNu[0];
-		h_fitError_woNu->Fill(m_iError_woNu);
-		if ( ierr == 0 )
-		{
-			m_probability_woNu = fitOutputswoNu[1];
-			bestfitprob_woNu = m_probability_woNu;
-			m_n_itter_woNu = fitOutputswoNu[2];
-			m_startmassZ_woNu = fitOutputswoNu[3];
-			m_startmassH_woNu = fitOutputswoNu[4];
-			m_beststartmassZ_woNu = fitOutputswoNu[5];
-			m_beststartmassH_woNu = fitOutputswoNu[6];
-			m_Zmass_after_fit_woNu = fitOutputswoNu[7];
-			m_Hmass_after_fit_woNu = fitOutputswoNu[8];
-			m_chi2startmassZ_woNu = fitOutputswoNu[9];
-			m_chi2startmassH_woNu = fitOutputswoNu[10];
-			m_chi2best_woNu = fitOutputswoNu[11];
-			m_bestphotonenergy_woNu = fitOutputswoNu[12];
-			m_pull_jet_E_woNu.push_back(pullswoNu[0]);
-			m_pull_jet_E_woNu.push_back(pullswoNu[1]);
-			m_pull_jet_th_woNu.push_back(pullswoNu[2]);
-			m_pull_jet_th_woNu.push_back(pullswoNu[3]);
-			m_pull_jet_phi_woNu.push_back(pullswoNu[4]);
-			m_pull_jet_phi_woNu.push_back(pullswoNu[5]);
-			m_pull_lepton_InvpT_woNu.push_back(pullswoNu[6]);
-			m_pull_lepton_InvpT_woNu.push_back(pullswoNu[7]);
-			m_pull_lepton_th_woNu.push_back(pullswoNu[8]);
-			m_pull_lepton_th_woNu.push_back(pullswoNu[9]);
-			m_pull_lepton_phi_woNu.push_back(pullswoNu[10]);
-			m_pull_lepton_phi_woNu.push_back(pullswoNu[11]);
-			ISRpx_woNu = fittedParticleswoNu[0];
-			ISRpy_woNu = fittedParticleswoNu[1];
-			ISRpz_woNu = fittedParticleswoNu[2];
-			Zpx_woNu = fittedParticleswoNu[3];
-			Zpy_woNu = fittedParticleswoNu[4];
-			Zpz_woNu = fittedParticleswoNu[5];
-			ZE_woNu = fittedParticleswoNu[6];
-			Hpx_woNu = fittedParticleswoNu[7];
-			Hpy_woNu = fittedParticleswoNu[8];
-			Hpz_woNu = fittedParticleswoNu[9];
-			HE_woNu = fittedParticleswoNu[10];
-			m_pxc_before_ISR_woNu = constraintswoNu[0];
-			m_pyc_before_ISR_woNu = constraintswoNu[1];
-			m_pzc_before_ISR_woNu = constraintswoNu[2];
-			m_ec_before_ISR_woNu = constraintswoNu[3];
-			m_pxc_before_fit_woNu = constraintswoNu[4];
-			m_pyc_before_fit_woNu = constraintswoNu[5];
-			m_pzc_before_fit_woNu = constraintswoNu[6];
-			m_ec_before_fit_woNu = constraintswoNu[7];
-			m_pxc_after_fit_woNu = constraintswoNu[8];
-			m_pyc_after_fit_woNu = constraintswoNu[9];
-			m_pzc_after_fit_woNu = constraintswoNu[10];
-			m_ec_after_fit_woNu = constraintswoNu[11];
-			m_jet_startPx_woNu.push_back(fitStartValueswoNu[0]);
-			m_jet_startPx_woNu.push_back(fitStartValueswoNu[1]);
-			m_jet_startPy_woNu.push_back(fitStartValueswoNu[2]);
-			m_jet_startPy_woNu.push_back(fitStartValueswoNu[3]);
-			m_jet_startPz_woNu.push_back(fitStartValueswoNu[4]);
-			m_jet_startPz_woNu.push_back(fitStartValueswoNu[5]);
-			m_jet_startE_woNu.push_back(fitStartValueswoNu[6]);
-			m_jet_startE_woNu.push_back(fitStartValueswoNu[7]);
-			m_lepton_startPx_woNu.push_back(fitStartValueswoNu[8]);
-			m_lepton_startPx_woNu.push_back(fitStartValueswoNu[9]);
-			m_lepton_startPy_woNu.push_back(fitStartValueswoNu[10]);
-			m_lepton_startPy_woNu.push_back(fitStartValueswoNu[11]);
-			m_lepton_startPz_woNu.push_back(fitStartValueswoNu[12]);
-			m_lepton_startPz_woNu.push_back(fitStartValueswoNu[13]);
-			m_lepton_startE_woNu.push_back(fitStartValueswoNu[14]);
-			m_lepton_startE_woNu.push_back(fitStartValueswoNu[15]);
-			m_jet_startTheta_woNu.push_back(diJetSystemwNu[1]);
-			m_jet_startTheta_woNu.push_back(diJetSystemwNu[7]);
-			m_jet_startPhi_woNu.push_back(diJetSystemwNu[2]);
-			m_jet_startPhi_woNu.push_back(diJetSystemwNu[8]);
-			m_dijet_angle_woNu = diJetSystemwoNu[12];
-		}
-		m_jet_SigmaTheta.push_back(uncertaintieswoNu[0]);
-		m_jet_SigmaTheta.push_back(uncertaintieswoNu[1]);
-		m_jet_SigmaPhi.push_back(uncertaintieswoNu[2]);
-		m_jet_SigmaPhi.push_back(uncertaintieswoNu[3]);
-		m_jet_SigmaE.push_back(uncertaintieswoNu[4]);
-		m_jet_SigmaE.push_back(uncertaintieswoNu[5]);
-		m_lepton_SigmaTheta.push_back(uncertaintieswoNu[6]);
-		m_lepton_SigmaTheta.push_back(uncertaintieswoNu[7]);
-		m_lepton_SigmaPhi.push_back(uncertaintieswoNu[8]);
-		m_lepton_SigmaPhi.push_back(uncertaintieswoNu[9]);
-		m_lepton_SigmaInvpT.push_back(uncertaintieswoNu[10]);
-		m_lepton_SigmaInvpT.push_back(uncertaintieswoNu[11]);
-		m_ISR_startPx_woNu = uncertaintieswoNu[12];
-		m_ISR_startPy_woNu = uncertaintieswoNu[13];
-		m_ISR_startPz_woNu = uncertaintieswoNu[14];
-		h_error_jet_E->Fill(m_jet_SigmaE[0]);
-		h_error_jet_E->Fill(m_jet_SigmaE[1]);
-		h_error_jet_Theta->Fill(m_jet_SigmaTheta[0]);
-		h_error_jet_Theta->Fill(m_jet_SigmaTheta[1]);
-		h_error_jet_Phi->Fill(m_jet_SigmaPhi[0]);
-		h_error_jet_Phi->Fill(m_jet_SigmaPhi[1]);
-		h_error_lepton_InvpT->Fill(m_lepton_SigmaInvpT[0]);
-		h_error_lepton_InvpT->Fill(m_lepton_SigmaInvpT[1]);
-		h_error_lepton_Theta->Fill(m_lepton_SigmaTheta[0]);
-		h_error_lepton_Theta->Fill(m_lepton_SigmaTheta[1]);
-		h_error_lepton_Phi->Fill(m_lepton_SigmaPhi[0]);
-		h_error_lepton_Phi->Fill(m_lepton_SigmaPhi[1]);
-
-		streamlog_out(DEBUG) << "size of FitResult without neutrino = " << FitResultwoNu.size() << endl;
-		streamlog_out(DEBUG) << "Fit probability without neutrino correction = " << FitResultwoNu[0][1] << endl;
-		h_ErrorCode_wNu_woNu->Fill( m_iError_wNu_bestfit , m_iError_woNu );
 //		m_iError_best = m_iError_wNu_bestfit;
 
 		if ( m_iError_wNu_bestfit == 0 && bestfitprob_woNu < bestfitprob_wNu )
@@ -2074,16 +2166,44 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 			h_fitProbability_constraintPy->Fill( m_pyc_before_ISR_wNu , m_probability_best );
 			h_fitProbability_constraintPz->Fill( m_pzc_before_ISR_wNu , m_probability_best );
 			h_fitProbability_constraintE->Fill( m_ec_before_ISR_wNu , m_probability_best );
+
+			m_TotalSigmaPx2 = m_SigmaPx2[0] + m_SigmaPx2[1] + m_SigmaPx2[2] + m_SigmaPx2[3];
+			m_TotalSigmaPy2 = m_SigmaPy2[0] + m_SigmaPy2[1] + m_SigmaPy2[2] + m_SigmaPy2[3];
+			m_TotalSigmaPz2 = m_SigmaPz2[0] + m_SigmaPz2[1] + m_SigmaPz2[2] + m_SigmaPz2[3];
+			m_TotalSigmaE2 = m_SigmaE2[0] + m_SigmaE2[1] + m_SigmaE2[2] + m_SigmaE2[3];
+			m_TotalSigmaPxPy = m_SigmaPxPy[0] + m_SigmaPxPy[1] + m_SigmaPxPy[2] + m_SigmaPxPy[3];
+			m_TotalSigmaPxPz = m_SigmaPxPz[0] + m_SigmaPxPz[1] + m_SigmaPxPz[2] + m_SigmaPxPz[3];
+			m_TotalSigmaPxE = m_SigmaPxE[0] + m_SigmaPxE[1] + m_SigmaPxE[2] + m_SigmaPxE[3];
+			m_TotalSigmaPyPz = m_SigmaPyPz[0] + m_SigmaPyPz[1] + m_SigmaPyPz[2] + m_SigmaPyPz[3];
+			m_TotalSigmaPyE = m_SigmaPyE[0] + m_SigmaPyE[1] + m_SigmaPyE[2] + m_SigmaPyE[3];
+			m_TotalSigmaPzE = m_SigmaPzE[0] + m_SigmaPzE[1] + m_SigmaPzE[2] + m_SigmaPzE[3];
+			
+			streamlog_out(DEBUG) << " SigmaPx2[jet1]  = " << m_SigmaPx2[0] << std::endl ;
+			streamlog_out(DEBUG) << " SigmaPx2[jet2]  = " << m_SigmaPx2[1] << std::endl ;
+			streamlog_out(DEBUG) << " SigmaPx2[lep1]  = " << m_SigmaPx2[2] << std::endl ;
+			streamlog_out(DEBUG) << " SigmaPx2[lep2]  = " << m_SigmaPx2[3] << std::endl ;
+			streamlog_out(DEBUG) << " TotalSigmaPx2[lep1]  = " << m_TotalSigmaPx2 << std::endl ;
+			
+			h_fitProbability_sigmaPx->Fill( std::sqrt( m_TotalSigmaPx2 ) , m_probability_best );
+			h_fitProbability_sigmaPy->Fill( std::sqrt( m_TotalSigmaPy2 ) , m_probability_best );
+			h_fitProbability_sigmaPz->Fill( std::sqrt( m_TotalSigmaPz2 ) , m_probability_best );
+			h_fitProbability_sigmaE->Fill( std::sqrt( m_TotalSigmaE2 ) , m_probability_best );
+			
+			h_constraintPx_uncertaintyPx->Fill( m_pxc_before_ISR_wNu , std::sqrt( m_TotalSigmaPx2 ) );
+			h_constraintPy_uncertaintyPy->Fill( m_pyc_before_ISR_wNu , std::sqrt( m_TotalSigmaPy2 ) );
+			h_constraintPz_uncertaintyPz->Fill( m_pzc_before_ISR_wNu , std::sqrt( m_TotalSigmaPz2 ) );
+			h_constraintE_uncertaintyE->Fill( m_ec_before_ISR_wNu , std::sqrt( m_TotalSigmaE2 ) );
+
 			if ( m_probability_best < 0.1 )
 			{
 				h_constraintPx_lowFitProb->Fill( m_pxc_before_ISR_wNu );
 				h_constraintPy_lowFitProb->Fill( m_pyc_before_ISR_wNu );
 				h_constraintPz_lowFitProb->Fill( m_pzc_before_ISR_wNu );
 				h_constraintE_lowFitProb->Fill( m_ec_before_ISR_wNu );
-				h_constraintPx_uncertaintyPx_lowFitProb->Fill( m_pxc_before_ISR_wNu , m_SigmaPx2[0] + m_SigmaPx2[1] );
-				h_constraintPy_uncertaintyPy_lowFitProb->Fill( m_pyc_before_ISR_wNu , m_SigmaPy2[0] + m_SigmaPy2[1] );
-				h_constraintPz_uncertaintyPz_lowFitProb->Fill( m_pzc_before_ISR_wNu , m_SigmaPz2[0] + m_SigmaPz2[1] );
-				h_constraintE_uncertaintyE_lowFitProb->Fill( m_ec_before_ISR_wNu , m_SigmaE2[0] + m_SigmaE2[1] );
+				h_constraintPx_uncertaintyPx_lowFitProb->Fill( m_pxc_before_ISR_wNu , std::sqrt( m_TotalSigmaPx2 ) );
+				h_constraintPy_uncertaintyPy_lowFitProb->Fill( m_pyc_before_ISR_wNu , std::sqrt( m_TotalSigmaPy2 ) );
+				h_constraintPz_uncertaintyPz_lowFitProb->Fill( m_pzc_before_ISR_wNu , std::sqrt( m_TotalSigmaPz2 ) );
+				h_constraintE_uncertaintyE_lowFitProb->Fill( m_ec_before_ISR_wNu , std::sqrt( m_TotalSigmaE2 ) );
 			}
 			else if ( 0.1 <= m_probability_best && m_probability_best < 0.9 )
 			{
@@ -2091,10 +2211,10 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 				h_constraintPy_midFitProb->Fill( m_pyc_before_ISR_wNu );
 				h_constraintPz_midFitProb->Fill( m_pzc_before_ISR_wNu );
 				h_constraintE_midFitProb->Fill( m_ec_before_ISR_wNu );
-				h_constraintPx_uncertaintyPx_midFitProb->Fill( m_pxc_before_ISR_wNu , m_SigmaPx2[0] + m_SigmaPx2[1] );
-				h_constraintPy_uncertaintyPy_midFitProb->Fill( m_pyc_before_ISR_wNu , m_SigmaPy2[0] + m_SigmaPy2[1] );
-				h_constraintPz_uncertaintyPz_midFitProb->Fill( m_pzc_before_ISR_wNu , m_SigmaPz2[0] + m_SigmaPz2[1] );
-				h_constraintE_uncertaintyE_midFitProb->Fill( m_ec_before_ISR_wNu , m_SigmaE2[0] + m_SigmaE2[1] );
+				h_constraintPx_uncertaintyPx_midFitProb->Fill( m_pxc_before_ISR_wNu , std::sqrt( m_TotalSigmaPx2 ) );
+				h_constraintPy_uncertaintyPy_midFitProb->Fill( m_pyc_before_ISR_wNu , std::sqrt( m_TotalSigmaPy2 ) );
+				h_constraintPz_uncertaintyPz_midFitProb->Fill( m_pzc_before_ISR_wNu , std::sqrt( m_TotalSigmaPz2 ) );
+				h_constraintE_uncertaintyE_midFitProb->Fill( m_ec_before_ISR_wNu , std::sqrt( m_TotalSigmaE2 ) );
 			}
 			else
 			{
@@ -2102,10 +2222,10 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 				h_constraintPy_highFitProb->Fill( m_pyc_before_ISR_wNu );
 				h_constraintPz_highFitProb->Fill( m_pzc_before_ISR_wNu );
 				h_constraintE_highFitProb->Fill( m_ec_before_ISR_wNu );
-				h_constraintPx_uncertaintyPx_highFitProb->Fill( m_pxc_before_ISR_wNu , m_SigmaPx2[0] + m_SigmaPx2[1] );
-				h_constraintPy_uncertaintyPy_highFitProb->Fill( m_pyc_before_ISR_wNu , m_SigmaPy2[0] + m_SigmaPy2[1] );
-				h_constraintPz_uncertaintyPz_highFitProb->Fill( m_pzc_before_ISR_wNu , m_SigmaPz2[0] + m_SigmaPz2[1] );
-				h_constraintE_uncertaintyE_highFitProb->Fill( m_ec_before_ISR_wNu , m_SigmaE2[0] + m_SigmaE2[1] );
+				h_constraintPx_uncertaintyPx_highFitProb->Fill( m_pxc_before_ISR_wNu , std::sqrt( m_TotalSigmaPx2 ) );
+				h_constraintPy_uncertaintyPy_highFitProb->Fill( m_pyc_before_ISR_wNu , std::sqrt( m_TotalSigmaPy2 ) );
+				h_constraintPz_uncertaintyPz_highFitProb->Fill( m_pzc_before_ISR_wNu , std::sqrt( m_TotalSigmaPz2 ) );
+				h_constraintE_uncertaintyE_highFitProb->Fill( m_ec_before_ISR_wNu , std::sqrt( m_TotalSigmaE2 ) );
 			}
 
 			LCCollectionVec *OutputCol = new LCCollectionVec(LCIO::RECONSTRUCTEDPARTICLE);
@@ -2161,6 +2281,7 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 			m_pTTree_0->Fill();
 			m_pTTree_1->Fill();
 			m_pTTree_2->Fill();
+			m_pTTree_4->Fill();
 		}
 		m_pTTree_3->Fill();
 		FitResultwoNu.clear();
@@ -3066,6 +3187,10 @@ void ZHllqq5CFit::end()
 	h_fitProbability_constraintPy->Write();
 	h_fitProbability_constraintPz->Write();
 	h_fitProbability_constraintE->Write();
+	h_fitProbability_sigmaPx->Write();
+	h_fitProbability_sigmaPy->Write();
+	h_fitProbability_sigmaPz->Write();
+	h_fitProbability_sigmaE->Write();
 	h_constraintPx_lowFitProb->Write();
 	h_constraintPx_midFitProb->Write();
 	h_constraintPx_highFitProb->Write();
@@ -3078,6 +3203,10 @@ void ZHllqq5CFit::end()
 	h_constraintE_lowFitProb->Write();
 	h_constraintE_midFitProb->Write();
 	h_constraintE_highFitProb->Write();
+	h_constraintPx_uncertaintyPx->Write();
+	h_constraintPy_uncertaintyPy->Write();
+	h_constraintPz_uncertaintyPz->Write();
+	h_constraintE_uncertaintyE->Write();
 	h_constraintPx_uncertaintyPx_lowFitProb->Write();
 	h_constraintPx_uncertaintyPx_midFitProb->Write();
 	h_constraintPx_uncertaintyPx_highFitProb->Write();

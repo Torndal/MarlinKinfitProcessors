@@ -283,6 +283,16 @@ class ZHllqq5CFit : public Processor
 		floatVector				m_SigmaPz2{};
 		floatVector				m_SigmaPzE{};
 		floatVector				m_SigmaE2{};
+		float					m_TotalSigmaPx2;
+		float					m_TotalSigmaPy2;
+		float					m_TotalSigmaPz2;
+		float					m_TotalSigmaE2;
+		float					m_TotalSigmaPxPy;
+		float					m_TotalSigmaPxPz;
+		float					m_TotalSigmaPxE;
+		float					m_TotalSigmaPyPz;
+		float					m_TotalSigmaPyE;
+		float					m_TotalSigmaPzE;
 
 
 		TFile					*m_pTFile;
@@ -353,6 +363,10 @@ class ZHllqq5CFit : public Processor
 		TH2F					*h_fitProbability_constraintPy{};
 		TH2F					*h_fitProbability_constraintPz{};
 		TH2F					*h_fitProbability_constraintE{};
+		TH2F					*h_fitProbability_sigmaPx{};
+		TH2F					*h_fitProbability_sigmaPy{};
+		TH2F					*h_fitProbability_sigmaPz{};
+		TH2F					*h_fitProbability_sigmaE{};
 		TH1F					*h_constraintPx_lowFitProb{};
 		TH1F					*h_constraintPx_midFitProb{};
 		TH1F					*h_constraintPx_highFitProb{};
@@ -365,6 +379,10 @@ class ZHllqq5CFit : public Processor
 		TH1F					*h_constraintE_lowFitProb{};
 		TH1F					*h_constraintE_midFitProb{};
 		TH1F					*h_constraintE_highFitProb{};
+		TH2F					*h_constraintPx_uncertaintyPx{};
+		TH2F					*h_constraintPy_uncertaintyPy{};
+		TH2F					*h_constraintPz_uncertaintyPz{};
+		TH2F					*h_constraintE_uncertaintyE{};
 		TH2F					*h_constraintPx_uncertaintyPx_lowFitProb{};
 		TH2F					*h_constraintPx_uncertaintyPx_midFitProb{};
 		TH2F					*h_constraintPx_uncertaintyPx_highFitProb{};
