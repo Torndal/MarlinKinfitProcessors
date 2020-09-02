@@ -1,6 +1,7 @@
 #ifndef ZHllqq5CFit_h
 #define ZHllqq5CFit_h 1
 
+#include "EVENT/LCStrVec.h"
 #include "marlin/Processor.h"
 #include "lcio.h"
 #include <string>
@@ -38,11 +39,13 @@ class ZHllqq5CFit : public Processor
 		virtual void				check( LCEvent * evt ) ;
 		virtual void				end() ;
 		int					FindMatchingJettoSLD(EVENT::LCEvent *pLCEvent, int had_index);
-		std::vector<std::vector<float>>		performFIT(EVENT::LCEvent *pLCEvent, TLorentzVector Jet0_Nutlv, TLorentzVector Jet1_Nutlv);
+		std::vector<std::vector<float>>	performFIT(EVENT::LCEvent *pLCEvent, TLorentzVector Jet0_Nutlv, TLorentzVector Jet1_Nutlv);
 
 		double					JetEnergyResolution(double E);
 		void					compcorrect();
 		void					Setvalues();
+		virtual void				getJetAngleResolution( EVENT::LCEvent *pLCEvent ) ;
+		virtual void				getHmumu4Momentum( EVENT::LCEvent *pLCEvent ) ;
 		void					Clear();
 
 	private:
@@ -53,9 +56,11 @@ class ZHllqq5CFit : public Processor
 		std::string				SLDecayCollection{};
 		std::string				NuEnergyCollectionB{};
 		std::string				NuEnergyCollectionC{};
-		std::string				MCPCcollection{} ;
+		std::string				MCPCollection{} ;
 		std::string				errorflowcollection{};
 		std::string				outputFitcollection{};
+		std::string				mcjetcollection_wNu{} ;
+		std::string				mcjetcollection_woNu{} ;
 		bool					m_includeHbb;
 		bool					m_includeHcc;
 		bool					m_includeHgg;
@@ -243,6 +248,9 @@ class ZHllqq5CFit : public Processor
 		float					m_pyc_after_fit_wNu;
 		float					m_pzc_after_fit_wNu;
 		float					m_ec_after_fit_wNu;
+		float					m_zc_before_ISR_wNu;
+		float					m_zc_before_fit_wNu;
+		float					m_zc_after_fit_wNu;
 		float					m_pxc_before_ISR_woNu;
 		float					m_pyc_before_ISR_woNu;
 		float					m_pzc_before_ISR_woNu;
@@ -255,6 +263,9 @@ class ZHllqq5CFit : public Processor
 		float					m_pyc_after_fit_woNu;
 		float					m_pzc_after_fit_woNu;
 		float					m_ec_after_fit_woNu;
+		float					m_zc_before_ISR_woNu;
+		float					m_zc_before_fit_woNu;
+		float					m_zc_after_fit_woNu;
 		float					m_pxc_before_ISR_best;
 		float					m_pyc_before_ISR_best;
 		float					m_pzc_before_ISR_best;
@@ -267,6 +278,27 @@ class ZHllqq5CFit : public Processor
 		float					m_pyc_after_fit_best;
 		float					m_pzc_after_fit_best;
 		float					m_ec_after_fit_best;
+		float					m_zc_before_ISR_best;
+		float					m_zc_before_fit_best;
+		float					m_zc_after_fit_best;
+		float					m_mcHmumuPx;
+		float					m_mcHmumuPy;
+		float					m_mcHmumuPz;
+		float					m_mcHmumuPt;
+		float					m_mcHmumuP;
+		float					m_mcHmumuE;
+		float					m_mcISR1Px;
+		float					m_mcISR1Py;
+		float					m_mcISR1Pz;
+		float					m_mcISR1E;
+		float					m_mcISR2Px;
+		float					m_mcISR2Py;
+		float					m_mcISR2Pz;
+		float					m_mcISR2E;
+		float					m_mcISRPx;
+		float					m_mcISRPy;
+		float					m_mcISRPz;
+		float					m_mcISRE;
 		float					m_ISR_startPx_wNu;
 		float					m_ISR_startPy_wNu;
 		float					m_ISR_startPz_wNu;
@@ -283,6 +315,12 @@ class ZHllqq5CFit : public Processor
 		floatVector				m_SigmaPz2{};
 		floatVector				m_SigmaPzE{};
 		floatVector				m_SigmaE2{};
+		floatVector				m_SigmaTheta_mcQuark_mcJet{};
+		floatVector				m_SigmaPhi_mcQuark_mcJet{};
+		floatVector				m_SigmaTheta_mcJet_recoJet{};
+		floatVector				m_SigmaPhi_mcJet_recoJet{};
+		floatVector				m_SigmaTheta_mcQuark_recoJet{};
+		floatVector				m_SigmaPhi_mcQuark_recoJet{};
 		float					m_TotalSigmaPx2;
 		float					m_TotalSigmaPy2;
 		float					m_TotalSigmaPz2;
@@ -327,6 +365,10 @@ class ZHllqq5CFit : public Processor
 		TH2F					*h_ISR_pzc_wNu{};
 		TH2F					*h_ISR_pzc_woNu{};
 		TH2F					*h_ISR_pzc_best{};
+		TH2F					*h_mcpISRPx{};
+		TH2F					*h_mcpISRPy{};
+		TH2F					*h_mcpISRPz{};
+		TH2F					*h_mcpISRE{};
 		TH1F					*h_pull_jet_E{};
 		TH1F					*h_pull_jet_theta{};
 		TH1F					*h_pull_jet_phi{};

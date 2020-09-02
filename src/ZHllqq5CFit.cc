@@ -42,6 +42,7 @@
 #include "TH2I.h"
 #include "TH2F.h"
 #include "TTree.h"
+#define PI 3.14159265
 
 using namespace lcio ;
 using namespace marlin ;
@@ -144,6 +145,9 @@ m_pxc_after_fit_wNu(0.),
 m_pyc_after_fit_wNu(0.),
 m_pzc_after_fit_wNu(0.),
 m_ec_after_fit_wNu(0.),
+m_zc_before_ISR_wNu(0.),
+m_zc_before_fit_wNu(0.),
+m_zc_after_fit_wNu(0.),
 m_pxc_before_ISR_woNu(0.),
 m_pyc_before_ISR_woNu(0.),
 m_pzc_before_ISR_woNu(0.),
@@ -156,6 +160,9 @@ m_pxc_after_fit_woNu(0.),
 m_pyc_after_fit_woNu(0.),
 m_pzc_after_fit_woNu(0.),
 m_ec_after_fit_woNu(0.),
+m_zc_before_ISR_woNu(0.),
+m_zc_before_fit_woNu(0.),
+m_zc_after_fit_woNu(0.),
 m_pxc_before_ISR_best(0.),
 m_pyc_before_ISR_best(0.),
 m_pzc_before_ISR_best(0.),
@@ -168,6 +175,27 @@ m_pxc_after_fit_best(0.),
 m_pyc_after_fit_best(0.),
 m_pzc_after_fit_best(0.),
 m_ec_after_fit_best(0.),
+m_zc_before_ISR_best(0.),
+m_zc_before_fit_best(0.),
+m_zc_after_fit_best(0.),
+m_mcHmumuPx(0.),
+m_mcHmumuPy(0.),
+m_mcHmumuPz(0.),
+m_mcHmumuPt(0.),
+m_mcHmumuP(0.),
+m_mcHmumuE(0.),
+m_mcISR1Px(0.),
+m_mcISR1Py(0.),
+m_mcISR1Pz(0.),
+m_mcISR1E(0.),
+m_mcISR2Px(0.),
+m_mcISR2Py(0.),
+m_mcISR2Pz(0.),
+m_mcISR2E(0.),
+m_mcISRPx(0.),
+m_mcISRPy(0.),
+m_mcISRPz(0.),
+m_mcISRE(0.),
 m_ISR_startPx_wNu(0.),
 m_ISR_startPy_wNu(0.),
 m_ISR_startPz_wNu(0.),
@@ -216,6 +244,10 @@ h_ISRpz_2mcp_fit(NULL),
 h_ISR_pzc_wNu(NULL),
 h_ISR_pzc_woNu(NULL),
 h_ISR_pzc_best(NULL),
+h_mcpISRPx(NULL),
+h_mcpISRPy(NULL),
+h_mcpISRPz(NULL),
+h_mcpISRE(NULL),
 h_pull_jet_E(NULL),
 h_pull_jet_theta(NULL),
 h_pull_jet_phi(NULL),
@@ -344,8 +376,22 @@ h_constraintE_uncertaintyE_highFitProb(NULL)
 	registerInputCollection( LCIO::MCPARTICLE,
 				"MCParticleCollection" ,
 				"Name of the MCParticle collection"  ,
-				MCPCcollection ,
+				MCPCollection ,
 				std::string("MCParticle")
+				);
+
+	registerInputCollection( LCIO::RECONSTRUCTEDPARTICLE,
+				"MCJetCollectionwNuName" ,
+				"Name of the MCJet collection with neutrinos"  ,
+				mcjetcollection_wNu ,
+				std::string("MCTruthJets_wNu")
+				);
+
+	registerInputCollection( LCIO::RECONSTRUCTEDPARTICLE,
+				"MCJetCollectionwoNuName" ,
+				"Name of the MCJet collection without neutrinos"  ,
+				mcjetcollection_woNu ,
+				std::string("MCTruthJets_woNu")
 				);
 
 	registerOutputCollection( LCIO::RECONSTRUCTEDPARTICLE,
@@ -562,6 +608,7 @@ void ZHllqq5CFit::init()
 	m_pTTree_0->Branch("bestphotonenergy_best",&m_bestphotonenergy_best,"bestphotonenergy_best/F") ;
 	m_pTTree_1 = new TTree("pulls","pulls");
 	m_pTTree_1->SetDirectory(m_pTFile);
+	m_pTTree_1->Branch("probability_best",&m_probability_best,"probability_best/F") ;
 	m_pTTree_1->Branch("pull_jet_E_wNu",&m_pull_jet_E_wNu) ;
 	m_pTTree_1->Branch("pull_jet_th_wNu",&m_pull_jet_th_wNu) ;
 	m_pTTree_1->Branch("pull_jet_phi_wNu",&m_pull_jet_phi_wNu) ;
@@ -588,43 +635,71 @@ void ZHllqq5CFit::init()
 	m_pTTree_1->Branch("pull_lepton_phi_best",&m_pull_lepton_phi_best);
 	m_pTTree_2 = new TTree("constraints","constraints");
 	m_pTTree_2->SetDirectory(m_pTFile);
+	m_pTTree_2->Branch("nSLDecayTotal",&m_nSLDecayTotal,"nSLDecayTotal/I") ;
 	m_pTTree_2->Branch("probability_best",&m_probability_best,"probability_best/F") ;
 	m_pTTree_2->Branch("pxc_before_ISR_wNu",&m_pxc_before_ISR_wNu,"pxc_before_ISR_wNu/F") ;
 	m_pTTree_2->Branch("pyc_before_ISR_wNu",&m_pyc_before_ISR_wNu,"pyc_before_ISR_wNu/F") ;
 	m_pTTree_2->Branch("pzc_before_ISR_wNu",&m_pzc_before_ISR_wNu,"pzc_before_ISR_wNu/F") ;
 	m_pTTree_2->Branch("ec_before_ISR_wNu",&m_ec_before_ISR_wNu,"ec_before_ISR_wNu/F") ;
+	m_pTTree_2->Branch("zc_before_ISR_wNu",&m_zc_before_ISR_wNu,"zc_before_ISR_wNu/F") ;
 	m_pTTree_2->Branch("pxc_before_fit_wNu",&m_pxc_before_fit_wNu,"pxc_before_fit_wNu/F") ;
 	m_pTTree_2->Branch("pyc_before_fit_wNu",&m_pyc_before_fit_wNu,"pyc_before_fit_wNu/F") ;
 	m_pTTree_2->Branch("pzc_before_fit_wNu",&m_pzc_before_fit_wNu,"pzc_before_fit_wNu/F") ;
 	m_pTTree_2->Branch("ec_before_fit_wNu",&m_ec_before_fit_wNu,"ec_before_fit_wNu/F") ;
+	m_pTTree_2->Branch("zc_before_fit_wNu",&m_zc_before_fit_wNu,"zc_before_fit_wNu/F") ;
 	m_pTTree_2->Branch("pxc_after_fit_wNu",&m_pxc_after_fit_wNu,"pxc_after_fit_wNu/F") ;
 	m_pTTree_2->Branch("pyc_after_fit_wNu",&m_pyc_after_fit_wNu,"pyc_after_fit_wNu/F") ;
 	m_pTTree_2->Branch("pzc_after_fit_wNu",&m_pzc_after_fit_wNu,"pzc_after_fit_wNu/F") ;
 	m_pTTree_2->Branch("ec_after_fit_wNu",&m_ec_after_fit_wNu,"ec_after_fit_wNu/F") ;
+	m_pTTree_2->Branch("zc_after_fit_wNu",&m_zc_after_fit_wNu,"zc_after_fit_wNu/F") ;
 	m_pTTree_2->Branch("pxc_before_ISR_woNu",&m_pxc_before_ISR_woNu,"pxc_before_ISR_woNu/F") ;
 	m_pTTree_2->Branch("pyc_before_ISR_woNu",&m_pyc_before_ISR_woNu,"pyc_before_ISR_woNu/F") ;
 	m_pTTree_2->Branch("pzc_before_ISR_woNu",&m_pzc_before_ISR_woNu,"pzc_before_ISR_woNu/F") ;
 	m_pTTree_2->Branch("ec_before_ISR_woNu",&m_ec_before_ISR_woNu,"ec_before_ISR_woNu/F") ;
+	m_pTTree_2->Branch("zc_before_ISR_woNu",&m_zc_before_ISR_woNu,"zc_before_ISR_woNu/F") ;
 	m_pTTree_2->Branch("pxc_before_fit_woNu",&m_pxc_before_fit_woNu,"pxc_before_fit_woNu/F") ;
 	m_pTTree_2->Branch("pyc_before_fit_woNu",&m_pyc_before_fit_woNu,"pyc_before_fit_woNu/F") ;
 	m_pTTree_2->Branch("pzc_before_fit_woNu",&m_pzc_before_fit_woNu,"pzc_before_fit_woNu/F") ;
 	m_pTTree_2->Branch("ec_before_fit_woNu",&m_ec_before_fit_woNu,"ec_before_fit_woNu/F") ;
+	m_pTTree_2->Branch("zc_before_fit_woNu",&m_zc_before_fit_woNu,"zc_before_fit_woNu/F") ;
 	m_pTTree_2->Branch("pxc_after_fit_woNu",&m_pxc_after_fit_woNu,"pxc_after_fit_woNu/F") ;
 	m_pTTree_2->Branch("pyc_after_fit_woNu",&m_pyc_after_fit_woNu,"pyc_after_fit_woNu/F") ;
 	m_pTTree_2->Branch("pzc_after_fit_woNu",&m_pzc_after_fit_woNu,"pzc_after_fit_woNu/F") ;
 	m_pTTree_2->Branch("ec_after_fit_woNu",&m_ec_after_fit_woNu,"ec_after_fit_woNu/F") ;
+	m_pTTree_2->Branch("zc_after_fit_woNu",&m_zc_after_fit_woNu,"zc_after_fit_woNu/F") ;
 	m_pTTree_2->Branch("pxc_before_ISR_best",&m_pxc_before_ISR_best,"pxc_before_ISR_best/F") ;
 	m_pTTree_2->Branch("pyc_before_ISR_best",&m_pyc_before_ISR_best,"pyc_before_ISR_best/F") ;
 	m_pTTree_2->Branch("pzc_before_ISR_best",&m_pzc_before_ISR_best,"pzc_before_ISR_best/F") ;
 	m_pTTree_2->Branch("ec_before_ISR_best",&m_ec_before_ISR_best,"ec_before_ISR_best/F") ;
+	m_pTTree_2->Branch("zc_before_ISR_best",&m_zc_before_ISR_best,"zc_before_ISR_best/F") ;
 	m_pTTree_2->Branch("pxc_before_fit_best",&m_pxc_before_fit_best,"pxc_before_fit_best/F") ;
 	m_pTTree_2->Branch("pyc_before_fit_best",&m_pyc_before_fit_best,"pyc_before_fit_best/F") ;
 	m_pTTree_2->Branch("pzc_before_fit_best",&m_pzc_before_fit_best,"pzc_before_fit_best/F") ;
 	m_pTTree_2->Branch("ec_before_fit_best",&m_ec_before_fit_best,"ec_before_fit_best/F") ;
+	m_pTTree_2->Branch("zc_before_fit_best",&m_zc_before_fit_best,"zc_before_fit_best/F") ;
 	m_pTTree_2->Branch("pxc_after_fit_best",&m_pxc_after_fit_best,"pxc_after_fit_best/F") ;
 	m_pTTree_2->Branch("pyc_after_fit_best",&m_pyc_after_fit_best,"pyc_after_fit_best/F") ;
 	m_pTTree_2->Branch("pzc_after_fit_best",&m_pzc_after_fit_best,"pzc_after_fit_best/F") ;
 	m_pTTree_2->Branch("ec_after_fit_best",&m_ec_after_fit_best,"ec_after_fit_best/F") ;
+	m_pTTree_2->Branch("zc_after_fit_best",&m_zc_after_fit_best,"zc_after_fit_best/F") ;
+	m_pTTree_2->Branch("mcHmumuPx",&m_mcHmumuPx,"mcHmumuPx/F") ;
+	m_pTTree_2->Branch("mcHmumuPy",&m_mcHmumuPy,"mcHmumuPy/F") ;
+	m_pTTree_2->Branch("mcHmumuPz",&m_mcHmumuPz,"mcHmumuPz/F") ;
+	m_pTTree_2->Branch("mcHmumuPt",&m_mcHmumuPt,"mcHmumuPt/F") ;
+	m_pTTree_2->Branch("mcHmumuP",&m_mcHmumuP,"mcHmumuP/F") ;
+	m_pTTree_2->Branch("mcHmumuE",&m_mcHmumuE,"mcHmumuE/F") ;
+	m_pTTree_2->Branch("mcISR1Px",&m_mcISR1Px,"mcISR1Px/F") ;
+	m_pTTree_2->Branch("mcISR1Py",&m_mcISR1Py,"mcISR1Py/F") ;
+	m_pTTree_2->Branch("mcISR1Pz",&m_mcISR1Pz,"mcISR1Pz/F") ;
+	m_pTTree_2->Branch("mcISR1E",&m_mcISR1E,"mcISR1E/F") ;
+	m_pTTree_2->Branch("mcISR2Px",&m_mcISR2Px,"mcISR2Px/F") ;
+	m_pTTree_2->Branch("mcISR2Py",&m_mcISR2Py,"mcISR2Py/F") ;
+	m_pTTree_2->Branch("mcISR2Pz",&m_mcISR2Pz,"mcISR2Pz/F") ;
+	m_pTTree_2->Branch("mcISR2E",&m_mcISRE,"mcISR2E/F") ;
+	m_pTTree_2->Branch("mcISRPx",&m_mcISRPx,"mcISRPx/F") ;
+	m_pTTree_2->Branch("mcISRPy",&m_mcISRPy,"mcISRPy/F") ;
+	m_pTTree_2->Branch("mcISRPz",&m_mcISRPz,"mcISRPz/F") ;
+	m_pTTree_2->Branch("mcISRE",&m_mcISRE,"mcISRE/F") ;
 	m_pTTree_3 = new TTree("StartFitObjects","StartFitObjects");
 	m_pTTree_3->SetDirectory(m_pTFile);
 	m_pTTree_3->Branch("fitError",&m_iError_woNu) ;
@@ -707,6 +782,14 @@ void ZHllqq5CFit::init()
 	m_pTTree_4->Branch("TotalSigmaPyPz",&m_TotalSigmaPyPz,"TotalSigmaPyPz/F");
 	m_pTTree_4->Branch("TotalSigmaPyE",&m_TotalSigmaPyE,"TotalSigmaPyE/F");
 	m_pTTree_4->Branch("TotalSigmaPzE",&m_TotalSigmaPzE,"TotalSigmaPzE/F");
+	m_pTTree_4->Branch("SigmaTheta_mcQuark_mcJet",&m_SigmaTheta_mcQuark_mcJet);
+	m_pTTree_4->Branch("SigmaPhi_mcQuark_mcJet",&m_SigmaPhi_mcQuark_mcJet);
+	m_pTTree_4->Branch("SigmaTheta_mcJet_recoJet",&m_SigmaTheta_mcJet_recoJet);
+	m_pTTree_4->Branch("SigmaPhi_mcJet_recoJet",&m_SigmaPhi_mcJet_recoJet);
+	m_pTTree_4->Branch("SigmaTheta_mcQuark_recoJet",&m_SigmaTheta_mcQuark_recoJet);
+	m_pTTree_4->Branch("SigmaPhi_mcQuark_recoJet",&m_SigmaPhi_mcQuark_recoJet);
+	m_pTTree_4->Branch("SigmaTheta_ErrorFlow",&m_jet_SigmaTheta);
+	m_pTTree_4->Branch("SigmaPhi_ErrorFlow",&m_jet_SigmaPhi);
 
 	h_HDecayMode = new TH1I("h_HDecayMode", "Decay mode of Higgs boson", 4, 0, 4);
 	h_HDecayMode->GetXaxis()->SetBinLabel(1,"H #rightarrow b#bar{b}");
@@ -748,13 +831,13 @@ void ZHllqq5CFit::init()
 	h_nLeptons->SetDirectory(m_pTFile);
 	h_nLeptons_nJets = new TH2I("h_nLeptons_nJets", "nISOleptons vs nJets per event; n_{ISOLeptons}; n_{Jets}", 8, -0.5, 7.5, 8, -0.5, 7.5);
 	h_nLeptons_nJets->SetDirectory(m_pTFile);
-	h_ISRE_1mcp_fit = new TH2F("h_ISRE_1mcp_fit", "ISR energy MCP(p_{z}^{max}) vs FIT; ISR_{MCP}; ISR_{FIT}", 100, 0., m_isrpzmax * 1.5, 100, 0., m_isrpzmax * 1.5);
+	h_ISRE_1mcp_fit = new TH2F("h_ISRE_1mcp_fit", "ISR energy MCP(p_{z}^{max}) vs FIT; ISR_{MCP} E [GeV]; ISR_{FIT} E [GeV]", 100, 0., m_isrpzmax * 1.5, 100, 0., m_isrpzmax * 1.5);
 	h_ISRE_1mcp_fit->SetDirectory(m_pTFile);
-	h_ISRE_2mcp_fit = new TH2F("h_ISRE_2mcp_fit", "ISR energy MCP(#Sigma E_{ISR}) vs FIT; ISR_{MCP}; ISR_{FIT}", 100, 0., m_isrpzmax * 1.5, 100, 0., m_isrpzmax * 1.5);
+	h_ISRE_2mcp_fit = new TH2F("h_ISRE_2mcp_fit", "ISR energy MCP(#Sigma E_{ISR}) vs FIT; ISR_{MCP} E [GeV]; ISR_{FIT} E [GeV]", 100, 0., m_isrpzmax * 1.5, 100, 0., m_isrpzmax * 1.5);
 	h_ISRE_2mcp_fit->SetDirectory(m_pTFile);
-	h_ISRpz_1mcp_fit = new TH2F("h_ISRpz_1mcp_fit", "ISR p_{z} MCP(p_{z}^{max}) vs FIT; ISR_{MCP}; ISR_{FIT}", 100, -1.5 * m_isrpzmax , 1.5 * m_isrpzmax , 100, -1.5 * m_isrpzmax , 1.5 * m_isrpzmax);
+	h_ISRpz_1mcp_fit = new TH2F("h_ISRpz_1mcp_fit", "ISR p_{z} MCP(p_{z}^{max}) vs FIT; ISR_{MCP} p_{z} [GeV]; ISR_{FIT} p_{z} [GeV]", 100, -1.5 * m_isrpzmax , 1.5 * m_isrpzmax , 100, -1.5 * m_isrpzmax , 1.5 * m_isrpzmax);
 	h_ISRpz_1mcp_fit->SetDirectory(m_pTFile);
-	h_ISRpz_2mcp_fit = new TH2F("h_ISRpz_2mcp_fit", "ISR p_{z} MCP(#Sigma #vec{p}_{z}) vs FIT; ISR_{MCP}; ISR_{FIT}", 100, -1.5 * m_isrpzmax , 1.5 * m_isrpzmax , 100, -1.5 * m_isrpzmax , 1.5 * m_isrpzmax);
+	h_ISRpz_2mcp_fit = new TH2F("h_ISRpz_2mcp_fit", "ISR p_{z} MCP(#Sigma #vec{p}_{z}) vs FIT; ISR_{MCP} p_{z} [GeV]; ISR_{FIT} p_{z} [GeV]", 100, -1.5 * m_isrpzmax , 1.5 * m_isrpzmax , 100, -1.5 * m_isrpzmax , 1.5 * m_isrpzmax);
 	h_ISRpz_2mcp_fit->SetDirectory(m_pTFile);
 	h_ISR_pzc_wNu = new TH2F("h_ISR_pzc_wNu", "ISR momentum vs p_{z} constraint with #nu correction; #Sigma p_{z} [GeV]; p_{z}^{ISR} [GeV]", 80, -40., 40., 80, -40., 40.);
 	h_ISR_pzc_wNu->SetDirectory(m_pTFile);
@@ -762,6 +845,14 @@ void ZHllqq5CFit::init()
 	h_ISR_pzc_woNu->SetDirectory(m_pTFile);
 	h_ISR_pzc_best = new TH2F("h_ISR_pzc_best", "ISR momentum vs p_{z} constraint (best fit); #Sigma p_{z} [GeV]; p_{z}^{ISR} [GeV]", 80, -40., 40., 80, -40., 40.);
 	h_ISR_pzc_best->SetDirectory(m_pTFile);
+	h_mcpISRPx = new TH2F("h_mcpISRPx", "ISR Px; MCP ISR_{1} P_{x} [GeV]; MCP ISR_{2} P_{x} [GeV]", 1000, -m_isrpzmax * 1.5, m_isrpzmax * 1.5, 1000, -m_isrpzmax * 1.5, m_isrpzmax * 1.5);
+	h_mcpISRPx->SetDirectory(m_pTFile);
+	h_mcpISRPy = new TH2F("h_mcpISRPy", "ISR Py; MCP ISR_{1} P_{y} [GeV]; MCP ISR_{2} P_{y} [GeV]", 1000, -m_isrpzmax * 1.5, m_isrpzmax * 1.5, 1000, -m_isrpzmax * 1.5, m_isrpzmax * 1.5);
+	h_mcpISRPy->SetDirectory(m_pTFile);
+	h_mcpISRPz = new TH2F("h_mcpISRPz", "ISR Pz; MCP ISR_{1} P_{z} [GeV]; MCP ISR_{2} P_{z} [GeV]", 1000, -m_isrpzmax * 1.5, m_isrpzmax * 1.5, 1000, -m_isrpzmax * 1.5, m_isrpzmax * 1.5);
+	h_mcpISRPz->SetDirectory(m_pTFile);
+	h_mcpISRE = new TH2F("h_mcpISRE", "ISR Energy; MCP ISR_{1} Energy [GeV]; MCP ISR_{2} Energy [GeV]", 1000, 0., m_isrpzmax * 1.5, 1000, 0., m_isrpzmax * 1.5);
+	h_mcpISRE->SetDirectory(m_pTFile);
 	h_pull_jet_E = new TH1F("h_pull_jet_E", "pull of E for jets after successful fit; pull E_{jet} [GeV]; n_{jets}", 100, -10., 10.);
 	h_pull_jet_E->SetDirectory(m_pTFile);
 	h_pull_jet_theta = new TH1F("h_pull_jet_theta", "pull of #theta for jets after successful fit; pull #theta_{jet}; n_{jets}", 100, -10., 10.);
@@ -1040,38 +1131,65 @@ void ZHllqq5CFit::Clear()
 	m_pyc_before_ISR_wNu = 0.;
 	m_pzc_before_ISR_wNu = 0.;
 	m_ec_before_ISR_wNu = 0.;
+	m_zc_before_ISR_wNu = 0.;
 	m_pxc_before_fit_wNu = 0.;
 	m_pyc_before_fit_wNu = 0.;
 	m_pzc_before_fit_wNu = 0.;
 	m_ec_before_fit_wNu = 0.;
+	m_zc_before_fit_wNu = 0.;
 	m_pxc_after_fit_wNu = 0.;
 	m_pyc_after_fit_wNu = 0.;
 	m_pzc_after_fit_wNu = 0.;
 	m_ec_after_fit_wNu = 0.;
+	m_zc_after_fit_wNu = 0.;
 	m_pxc_before_ISR_woNu = 0.;
 	m_pyc_before_ISR_woNu = 0.;
 	m_pzc_before_ISR_woNu = 0.;
 	m_ec_before_ISR_woNu = 0.;
+	m_zc_before_ISR_woNu = 0.;
 	m_pxc_before_fit_woNu = 0.;
 	m_pyc_before_fit_woNu = 0.;
 	m_pzc_before_fit_woNu = 0.;
 	m_ec_before_fit_woNu = 0.;
+	m_zc_before_fit_woNu = 0.;
 	m_pxc_after_fit_woNu = 0.;
 	m_pyc_after_fit_woNu = 0.;
 	m_pzc_after_fit_woNu = 0.;
 	m_ec_after_fit_woNu = 0.;
+	m_zc_after_fit_woNu = 0.;
 	m_pxc_before_ISR_best = 0.;
 	m_pyc_before_ISR_best = 0.;
 	m_pzc_before_ISR_best = 0.;
 	m_ec_before_ISR_best = 0.;
+	m_zc_before_ISR_best = 0.;
 	m_pxc_before_fit_best = 0.;
 	m_pyc_before_fit_best = 0.;
 	m_pzc_before_fit_best = 0.;
 	m_ec_before_fit_best = 0.;
+	m_zc_before_fit_best = 0.;
 	m_pxc_after_fit_best = 0.;
 	m_pyc_after_fit_best = 0.;
 	m_pzc_after_fit_best = 0.;
 	m_ec_after_fit_best = 0.;
+	m_zc_after_fit_best = 0.;
+	m_mcHmumuPx = 0.;
+	m_mcHmumuPy = 0.;
+	m_mcHmumuPz = 0.;
+	m_mcHmumuPt = 0.;
+	m_mcHmumuP = 0.;
+	m_mcHmumuE = 0.;
+	m_mcISR1Px = 0.;
+	m_mcISR1Py = 0.;
+	m_mcISR1Pz = 0.;
+	m_mcISR1E = 0.;
+	m_mcISR2Px = 0.;
+	m_mcISR2Py = 0.;
+	m_mcISR2Pz = 0.;
+	m_mcISR2E = 0.;
+	m_mcISRPx = 0.;
+	m_mcISRPy = 0.;
+	m_mcISRPz = 0.;
+	m_mcISRE = 0.;
 	m_ISR_startPx_wNu = NAN;
 	m_ISR_startPy_wNu = NAN;
 	m_ISR_startPz_wNu = NAN;
@@ -1098,6 +1216,12 @@ void ZHllqq5CFit::Clear()
 	m_SigmaPz2.clear();
 	m_SigmaPzE.clear();
 	m_SigmaE2.clear();
+	m_SigmaTheta_mcQuark_mcJet.clear();
+	m_SigmaPhi_mcQuark_mcJet.clear();
+	m_SigmaTheta_mcJet_recoJet.clear();
+	m_SigmaPhi_mcJet_recoJet.clear();
+	m_SigmaTheta_mcQuark_recoJet.clear();
+	m_SigmaPhi_mcQuark_recoJet.clear();
 }
 
 void ZHllqq5CFit::processRunHeader()
@@ -1162,6 +1286,212 @@ void ZHllqq5CFit::Setvalues()
 	chi2best=0.;
 	errorcode=0.;
 	streamlog_out(DEBUG)  << "Values set to defaults" <<std::endl;
+
+}
+
+void ZHllqq5CFit::getHmumu4Momentum( EVENT::LCEvent *pLCEvent )
+{
+	LCCollection *MCPCol{};
+	m_nEvt = pLCEvent->getEventNumber();
+	try
+	{
+		MCPCol			= pLCEvent->getCollection( MCPCollection );
+		MCParticle* ISR1 = dynamic_cast<MCParticle*>(MCPCol->getElementAt(6));
+		MCParticle* ISR2 = dynamic_cast<MCParticle*>(MCPCol->getElementAt(7));
+		MCParticle* Muon1 = dynamic_cast<MCParticle*>(MCPCol->getElementAt(8));
+		MCParticle* Muon2 = dynamic_cast<MCParticle*>(MCPCol->getElementAt(9));
+		MCParticle* Higgs = dynamic_cast<MCParticle*>(MCPCol->getElementAt(10));
+		if ( ISR1->getPDG() == 22 )
+		{
+			m_mcISR1Px = ISR1->getMomentum()[0];
+			m_mcISR1Py = ISR1->getMomentum()[1];
+			m_mcISR1Pz = ISR1->getMomentum()[2];
+			m_mcISR1E = ISR1->getEnergy();
+		}
+		if ( ISR2->getPDG() == 22 )
+		{
+			m_mcISR2Px = ISR2->getMomentum()[0];
+			m_mcISR2Py = ISR2->getMomentum()[1];
+			m_mcISR2Pz = ISR2->getMomentum()[2];
+			m_mcISR2E = ISR2->getEnergy();
+		}
+		m_mcISRPx = ISR1->getMomentum()[0] + ISR2->getMomentum()[0];
+		m_mcISRPy = ISR1->getMomentum()[1] + ISR2->getMomentum()[1];
+		m_mcISRPz = ISR1->getMomentum()[2] + ISR2->getMomentum()[2];
+		m_mcISRE = ISR1->getEnergy() + ISR2->getEnergy();
+		h_mcpISRPx->Fill( m_mcISR1Px , m_mcISR2Px );
+		h_mcpISRPy->Fill( m_mcISR1Py , m_mcISR2Py );
+		h_mcpISRPz->Fill( m_mcISR1Pz , m_mcISR2Pz );
+		h_mcpISRE->Fill( m_mcISR1E , m_mcISR2E );
+		if ( abs(Muon1->getPDG()) == 13 && abs(Muon2->getPDG()) == 13 && abs(Higgs->getPDG()) == 25 )
+		{
+			m_mcHmumuPx = Muon1->getMomentum()[0] + Muon2->getMomentum()[0] + Higgs->getMomentum()[0];
+			m_mcHmumuPy = Muon1->getMomentum()[1] + Muon2->getMomentum()[1] + Higgs->getMomentum()[1];
+			m_mcHmumuPz = Muon1->getMomentum()[2] + Muon2->getMomentum()[2] + Higgs->getMomentum()[2];
+			m_mcHmumuPt = std::sqrt( pow( m_mcHmumuPx , 2 ) + pow( m_mcHmumuPy , 2 ) );
+			m_mcHmumuP = std::sqrt( pow( m_mcHmumuPx , 2 ) + pow( m_mcHmumuPy , 2 )  + pow( m_mcHmumuPz , 2 ) );
+			m_mcHmumuE = Muon1->getEnergy() + Muon2->getEnergy() + Higgs->getEnergy();
+		}
+	}
+	catch(DataNotAvailableException &e)
+	{
+		streamlog_out(MESSAGE) << "Input collections not found in event " << m_nEvt << std::endl;
+	}
+
+}
+
+
+void ZHllqq5CFit::getJetAngleResolution( EVENT::LCEvent *pLCEvent )
+{
+	LCCollection *RecoJetCol{};
+	LCCollection *MCPCol{};
+	LCCollection *TrueJet_wNuCol{};
+	LCCollection *TrueJet_woNuCol{};
+	m_nEvt = pLCEvent->getEventNumber();
+	try
+	{
+		RecoJetCol		= pLCEvent->getCollection( jetcollection );
+		MCPCol			= pLCEvent->getCollection( MCPCollection );
+		TrueJet_wNuCol		= pLCEvent->getCollection( mcjetcollection_wNu );
+		TrueJet_woNuCol	= pLCEvent->getCollection( mcjetcollection_woNu );
+		int n_MCPs		= MCPCol->getNumberOfElements();
+		int n_RecoJets		= RecoJetCol->getNumberOfElements();
+		int n_TrueJetswNu	= TrueJet_wNuCol->getNumberOfElements();
+		int n_TrueJetswoNu	= TrueJet_woNuCol->getNumberOfElements();
+		if ( !( n_RecoJets == 2 && n_TrueJetswoNu == 2 && n_TrueJetswNu == 2 ) )
+		{
+			streamlog_out(MESSAGE) << "Number of n_TrueJets mis-match n_RecoJets in event " << m_nEvt << std::endl;
+			return;
+		}
+		int i_mcHiggs = 0;
+		for (int i_mcp = 0 ; i_mcp < n_MCPs ; ++i_mcp )
+		{
+			MCParticle* mcp = dynamic_cast<MCParticle*>(MCPCol->getElementAt(i_mcp));
+			if ( mcp->getPDG() == 25 ) i_mcHiggs = i_mcp;
+		}
+		streamlog_out(MESSAGE) << "Found Higgs boson at index " << i_mcHiggs << " in MCParticle Collection" << std::endl;
+		MCParticle *mcHiggs = dynamic_cast<MCParticle*>(MCPCol->getElementAt(i_mcHiggs));
+		std::vector<const EVENT::MCParticle*> mcQuark;
+		std::vector<const EVENT::ReconstructedParticle *> mcJet_wNu;
+		std::vector<const EVENT::ReconstructedParticle *> mcJet_woNu;
+		std::vector<const EVENT::ReconstructedParticle *> recoJet;
+
+		MCParticle *mcQ1 = mcHiggs->getDaughters()[0];
+		MCParticle *mcQ2 = mcHiggs->getDaughters()[1];
+		TVector3 QuarkMomentum1( mcQ1->getMomentum() ); QuarkMomentum1.SetMag(1.0);
+		TVector3 QuarkMomentum2( mcQ2->getMomentum() ); QuarkMomentum2.SetMag(1.0);
+		mcQuark.push_back( mcQ1 );
+		mcQuark.push_back( mcQ2 );
+			
+		ReconstructedParticle *trueJet_wNu1 = dynamic_cast<ReconstructedParticle*>( TrueJet_wNuCol->getElementAt( 0 ) ) ;
+		ReconstructedParticle *trueJet_wNu2 = dynamic_cast<ReconstructedParticle*>( TrueJet_wNuCol->getElementAt( 1 ) ) ;
+		TVector3 trueJet_wNuMomentum1( trueJet_wNu1->getMomentum() ); trueJet_wNuMomentum1.SetMag(1.0);
+		TVector3 trueJet_wNuMomentum2( trueJet_wNu2->getMomentum() ); trueJet_wNuMomentum2.SetMag(1.0);
+		if ( trueJet_wNuMomentum1.Dot( QuarkMomentum1 ) >= trueJet_wNuMomentum2.Dot( QuarkMomentum1 ) && trueJet_wNuMomentum2.Dot( QuarkMomentum2 ) >= trueJet_wNuMomentum1.Dot( QuarkMomentum2 ) )
+		{
+			mcJet_wNu.push_back( trueJet_wNu1 );
+			mcJet_wNu.push_back( trueJet_wNu2 );
+			streamlog_out(MESSAGE) << "MCJet_wNu1 corresponds to MCQuark1 and MCJet_wNu2 corresponds to MCQuark2" << std::endl;
+		}
+		else
+		{
+			mcJet_wNu.push_back( trueJet_wNu2 );
+			mcJet_wNu.push_back( trueJet_wNu1 );
+			streamlog_out(MESSAGE) << "MCJet_wNu1 corresponds to MCQuark2 and MCJet_wNu2 corresponds to MCQuark1" << std::endl;
+		}
+
+		ReconstructedParticle *trueJet_woNu1 = dynamic_cast<ReconstructedParticle*>( TrueJet_woNuCol->getElementAt( 0 ) ) ;
+		ReconstructedParticle *trueJet_woNu2 = dynamic_cast<ReconstructedParticle*>( TrueJet_woNuCol->getElementAt( 1 ) ) ;
+		TVector3 trueJet_woNuMomentum1( trueJet_woNu1->getMomentum() ); trueJet_woNuMomentum1.SetMag(1.0);
+		TVector3 trueJet_woNuMomentum2( trueJet_woNu2->getMomentum() ); trueJet_woNuMomentum2.SetMag(1.0);
+		if ( trueJet_woNuMomentum1.Dot( QuarkMomentum1 ) >= trueJet_woNuMomentum2.Dot( QuarkMomentum1 ) && trueJet_woNuMomentum2.Dot( QuarkMomentum2 ) >= trueJet_woNuMomentum1.Dot( QuarkMomentum2 ) )
+		{
+			mcJet_woNu.push_back( trueJet_woNu1 );
+			mcJet_woNu.push_back( trueJet_woNu2 );
+			streamlog_out(MESSAGE) << "MCJet_woNu1 corresponds to MCQuark1 and MCJet_woNu2 corresponds to MCQuark2" << std::endl;
+		}
+		else
+		{
+			mcJet_woNu.push_back( trueJet_woNu2 );
+			mcJet_woNu.push_back( trueJet_woNu1 );
+			streamlog_out(MESSAGE) << "MCJet_woNu1 corresponds to MCQuark2 and MCJet_woNu2 corresponds to MCQuark1" << std::endl;
+		}
+
+		ReconstructedParticle *RecoJet1 = dynamic_cast<ReconstructedParticle*>( RecoJetCol->getElementAt( 0 ) ) ;
+		ReconstructedParticle *RecoJet2 = dynamic_cast<ReconstructedParticle*>( RecoJetCol->getElementAt( 1 ) ) ;
+		TVector3 RecoJetMomentum1( RecoJet1->getMomentum() ); RecoJetMomentum1.SetMag(1.0);
+		TVector3 RecoJetMomentum2( RecoJet2->getMomentum() ); RecoJetMomentum2.SetMag(1.0);
+		if ( RecoJetMomentum1.Dot( QuarkMomentum1 ) >= RecoJetMomentum2.Dot( QuarkMomentum1 ) && RecoJetMomentum2.Dot( QuarkMomentum2 ) >= RecoJetMomentum1.Dot( QuarkMomentum2 ) )
+		{
+			recoJet.push_back( RecoJet1 );
+			recoJet.push_back( RecoJet2 );
+			streamlog_out(MESSAGE) << "RecoJet1 corresponds to MCQuark1 and RecoJet2 corresponds to MCQuark2" << std::endl;
+		}
+		else
+		{
+			recoJet.push_back( RecoJet2 );
+			recoJet.push_back( RecoJet1 );
+			streamlog_out(MESSAGE) << "RecoJet1 corresponds to MCQuark2 and RecoJet2 corresponds to MCQuark1" << std::endl;
+		}
+		for ( int i_jet = 0 ; i_jet < 2 ; ++i_jet )
+		{
+			TVector3 mcQuarkP( ( mcQuark[ i_jet ] )->getMomentum() );
+			TVector3 mcJetwNuP( ( mcJet_wNu[ i_jet ] )->getMomentum() );
+			TVector3 mcJetwoNuP( ( mcJet_woNu[ i_jet ] )->getMomentum() );
+			TVector3 recoJetP( ( recoJet[ i_jet ] )->getMomentum() );
+			
+			float mcQuark_Theta = mcQuarkP.Theta();
+			float mcQuark_Phi = mcQuarkP.Phi();
+			float mcJetwNu_Theta = mcJetwNuP.Theta();
+			float mcJetwNu_Phi = mcJetwNuP.Phi();
+			float mcJetwoNu_Theta = mcJetwoNuP.Theta();
+			float mcJetwoNu_Phi = mcJetwoNuP.Phi();
+			float recoJet_Theta = recoJetP.Theta();
+			float recoJet_Phi = recoJetP.Phi();
+			
+			m_SigmaTheta_mcQuark_mcJet.push_back( mcJetwNu_Theta - mcQuark_Theta );
+			streamlog_out(MESSAGE) << "mcJetwNu_Theta - mcQuark_Theta = " << mcJetwNu_Theta << " - " << mcQuark_Theta << std::endl;
+			streamlog_out(MESSAGE) << "mcJetwNu_Phi - mcQuark_Phi = " << mcJetwNu_Phi << " - " << mcQuark_Phi << std::endl;
+			if ( abs( mcJetwNu_Phi - mcQuark_Phi ) < PI )
+			{
+				m_SigmaPhi_mcQuark_mcJet.push_back( mcJetwNu_Phi - mcQuark_Phi );
+			}
+			else
+			{
+				m_SigmaPhi_mcQuark_mcJet.push_back( mcQuark_Phi - mcJetwNu_Phi );
+			}
+
+			m_SigmaTheta_mcJet_recoJet.push_back( recoJet_Theta - mcJetwoNu_Theta );
+			streamlog_out(MESSAGE) << "recoJet_Theta - mcJetwoNu_Theta = " << recoJet_Theta << " - " << mcJetwoNu_Theta << std::endl;
+			streamlog_out(MESSAGE) << "recoJet_Phi - mcJetwoNu_Phi = " << recoJet_Phi << " - " << mcJetwoNu_Phi << std::endl;
+			if ( abs( recoJet_Phi - mcJetwoNu_Phi ) < PI )
+			{
+				m_SigmaPhi_mcJet_recoJet.push_back( recoJet_Phi - mcJetwoNu_Phi );
+			}
+			else
+			{
+				m_SigmaPhi_mcJet_recoJet.push_back( mcJetwoNu_Phi - recoJet_Phi );
+			}
+
+			m_SigmaTheta_mcQuark_recoJet.push_back( recoJet_Theta - mcQuark_Theta );
+			streamlog_out(MESSAGE) << "recoJet_Theta - mcQuark_Theta = " << recoJet_Theta << " - " << mcQuark_Theta << std::endl;
+			streamlog_out(MESSAGE) << "recoJet_Phi - mcQuark_Phi = " << recoJet_Phi << " - " << mcQuark_Phi << std::endl;
+			if ( abs( recoJet_Phi - mcQuark_Phi ) < PI )
+			{
+				m_SigmaPhi_mcQuark_recoJet.push_back( recoJet_Phi - mcQuark_Phi );
+			}
+			else
+			{
+				m_SigmaPhi_mcQuark_recoJet.push_back( mcQuark_Phi - recoJet_Phi );
+			}
+		}
+		streamlog_out(MESSAGE) << "Residuals of jet angles calculated in event " << m_nEvt << std::endl;
+
+	}
+	catch(DataNotAvailableException &e)
+	{
+		streamlog_out(MESSAGE) << "Input collections not found in event " << m_nEvt << std::endl;
+	}
 
 }
 
@@ -1256,7 +1586,10 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 		}
 		h_nLeptons_nJets->Fill( m_nLeptons , m_nJets );
 		if (m_nJets != 2 || m_nLeptons != 2) return;
-
+		
+		this->getJetAngleResolution( pLCEvent );
+		this->getHmumu4Momentum( pLCEvent );
+		
 		if ( ISR1E_mcp > ISR2E_mcp)
 		{
 			ISRE_mcp_max = ISR1E_mcp;
@@ -1584,6 +1917,9 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 			m_pyc_after_fit_woNu = constraintswoNu[9];
 			m_pzc_after_fit_woNu = constraintswoNu[10];
 			m_ec_after_fit_woNu = constraintswoNu[11];
+			m_zc_before_ISR_woNu = constraintswoNu[12];
+			m_zc_before_fit_woNu = constraintswoNu[13];
+			m_zc_after_fit_woNu = constraintswoNu[14];
 			m_jet_startPx_woNu.push_back(fitStartValueswoNu[0]);
 			m_jet_startPx_woNu.push_back(fitStartValueswoNu[1]);
 			m_jet_startPy_woNu.push_back(fitStartValueswoNu[2]);
@@ -1838,6 +2174,9 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 					m_pyc_after_fit_wNu = constraintswNu[9];
 					m_pzc_after_fit_wNu = constraintswNu[10];
 					m_ec_after_fit_wNu = constraintswNu[11];
+					m_zc_before_ISR_wNu = constraintswNu[12];
+					m_zc_before_fit_wNu = constraintswNu[13];
+					m_zc_after_fit_wNu = constraintswNu[14];
 					m_jet_startPx_wNu_bestfit.push_back(fitStartValueswNu[0]);
 					m_jet_startPx_wNu_bestfit.push_back(fitStartValueswNu[1]);
 					m_jet_startPy_wNu_bestfit.push_back(fitStartValueswNu[2]);
@@ -2014,14 +2353,17 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 			m_pyc_before_ISR_best = m_pyc_before_ISR_wNu;
 			m_pzc_before_ISR_best = m_pzc_before_ISR_wNu;
 			m_ec_before_ISR_best = m_ec_before_ISR_wNu;
+			m_zc_before_ISR_best = m_zc_before_ISR_wNu;
 			m_pxc_before_fit_best = m_pxc_before_fit_wNu;
 			m_pyc_before_fit_best = m_pyc_before_fit_wNu;
 			m_pzc_before_fit_best = m_pzc_before_fit_wNu;
 			m_ec_before_fit_best = m_ec_before_fit_wNu;
+			m_zc_before_fit_best = m_zc_before_fit_wNu;
 			m_pxc_after_fit_best = m_pxc_after_fit_wNu;
 			m_pyc_after_fit_best = m_pyc_after_fit_wNu;
 			m_pzc_after_fit_best = m_pzc_after_fit_wNu;
 			m_ec_after_fit_best = m_ec_after_fit_wNu;
+			m_zc_after_fit_best = m_zc_after_fit_wNu;
 		}
 		else if ( m_iError_woNu == 0 )
 		{
@@ -2105,14 +2447,17 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 			m_pyc_before_ISR_best = m_pyc_before_ISR_woNu;
 			m_pzc_before_ISR_best = m_pzc_before_ISR_woNu;
 			m_ec_before_ISR_best = m_ec_before_ISR_woNu;
+			m_zc_before_ISR_best = m_zc_before_ISR_woNu;
 			m_pxc_before_fit_best = m_pxc_before_fit_woNu;
 			m_pyc_before_fit_best = m_pyc_before_fit_woNu;
 			m_pzc_before_fit_best = m_pzc_before_fit_woNu;
 			m_ec_before_fit_best = m_ec_before_fit_woNu;
+			m_zc_before_fit_best = m_zc_before_fit_woNu;
 			m_pxc_after_fit_best = m_pxc_after_fit_woNu;
 			m_pyc_after_fit_best = m_pyc_after_fit_woNu;
 			m_pzc_after_fit_best = m_pzc_after_fit_woNu;
 			m_ec_after_fit_best = m_ec_after_fit_woNu;
+			m_zc_after_fit_best = m_zc_after_fit_woNu;
 		}
 //		if ( m_iError_woNu == 0 && m_iError_wNu_bestfit == 0 )
 		if ( m_iError_woNu == 0 )
@@ -2298,7 +2643,7 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 int ZHllqq5CFit::FindMatchingJettoSLD(EVENT::LCEvent *pLCEvent, int had_index)
 {
 	LCCollection *inputJetCollection = pLCEvent->getCollection( jetcollection );
-	LCCollection *inputMCPCollection = pLCEvent->getCollection( MCPCcollection );
+	LCCollection *inputMCPCollection = pLCEvent->getCollection( MCPCollection );
 	int nJets = inputJetCollection->getNumberOfElements();
 	MCParticle* mcpHadron = dynamic_cast<MCParticle*>( inputMCPCollection->getElementAt(had_index));
 	MCParticleVec mcpDaughters = mcpHadron->getDaughters();
@@ -2430,16 +2775,19 @@ std::vector<std::vector<float>> ZHllqq5CFit::performFIT(EVENT::LCEvent *pLCEvent
 	float pyc_before_ISR = 0.;
 	float pzc_before_ISR = 0.;
 	float ec_before_ISR = 0.;
+	float zc_before_ISR = 0.;
 
 	float pxc_before_fit = 0.;
 	float pyc_before_fit = 0.;
 	float pzc_before_fit = 0.;
 	float ec_before_fit = 0.;
+	float zc_before_fit = 0.;
 
 	float pxc_after_fit = 0.;
 	float pyc_after_fit = 0.;
 	float pzc_after_fit = 0.;
 	float ec_after_fit = 0.;
+	float zc_after_fit = 0.;
 	float jet0_Px,jet0_Py,jet0_Pz,jet0_E;
 	float jet1_Px,jet1_Py,jet1_Pz,jet1_E;
 	float lepton0_Px,lepton0_Py,lepton0_Pz,lepton0_E;
@@ -2784,6 +3132,8 @@ std::vector<std::vector<float>> ZHllqq5CFit::performFIT(EVENT::LCEvent *pLCEvent
 	SoftGaussMassConstraint z(91.2,2.4952/2);
 	z.addToFOList(*(leptons[0]), 1);
 	z.addToFOList(*(leptons[1]), 1);
+	zc_before_ISR = z.getValue();
+	zc_before_fit = z.getValue();
 
 	MassConstraint h(125.);
 	h.addToFOList(*(jets[0]), 1);
@@ -2885,6 +3235,7 @@ std::vector<std::vector<float>> ZHllqq5CFit::performFIT(EVENT::LCEvent *pLCEvent
 	pyc_after_fit = pyc.getValue();
 	pzc_after_fit = pzc.getValue();
 	ec_after_fit = ec.getValue();
+	zc_after_fit = z.getValue();
 
 
 	if (ierr <= 0)
@@ -3079,6 +3430,9 @@ std::vector<std::vector<float>> ZHllqq5CFit::performFIT(EVENT::LCEvent *pLCEvent
 	constraints.push_back(pyc_after_fit);
 	constraints.push_back(pzc_after_fit);
 	constraints.push_back(ec_after_fit);
+	constraints.push_back(zc_before_ISR);
+	constraints.push_back(zc_before_fit);
+	constraints.push_back(zc_after_fit);
 
 	uncertainties.push_back(jet0_SigmaTheta);
 	uncertainties.push_back(jet1_SigmaTheta);
@@ -3151,6 +3505,10 @@ void ZHllqq5CFit::end()
 	h_ISR_pzc_woNu->Write();
 	h_ISR_pzc_wNu->Write();
 	h_ISR_pzc_best->Write();
+	h_mcpISRPx->Write();
+	h_mcpISRPy->Write();
+	h_mcpISRPz->Write();
+	h_mcpISRE->Write();
 	h_pull_jet_E->Write();
 	h_pull_jet_theta->Write();
 	h_pull_jet_phi->Write();
