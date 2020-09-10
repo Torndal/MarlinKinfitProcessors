@@ -45,6 +45,7 @@ class ZHllqq5CFit : public Processor
 		void					compcorrect();
 		void					Setvalues();
 		virtual void				getJetAngleResolution( EVENT::LCEvent *pLCEvent ) ;
+		virtual void				getMCISRFSR( EVENT::LCEvent *pLCEvent ) ;
 		virtual void				getHmumu4Momentum( EVENT::LCEvent *pLCEvent ) ;
 		void					Clear();
 
@@ -61,6 +62,8 @@ class ZHllqq5CFit : public Processor
 		std::string				outputFitcollection{};
 		std::string				mcjetcollection_wNu{} ;
 		std::string				mcjetcollection_woNu{} ;
+		std::string				mcISRcol{} ;
+		std::string				mcFSRcol{} ;
 		bool					m_includeHbb;
 		bool					m_includeHcc;
 		bool					m_includeHgg;
@@ -317,10 +320,13 @@ class ZHllqq5CFit : public Processor
 		floatVector				m_SigmaE2{};
 		floatVector				m_SigmaTheta_mcQuark_mcJet{};
 		floatVector				m_SigmaPhi_mcQuark_mcJet{};
+		floatVector				m_SigmaEnergy_mcQuark_mcJet{};
 		floatVector				m_SigmaTheta_mcJet_recoJet{};
 		floatVector				m_SigmaPhi_mcJet_recoJet{};
+		floatVector				m_SigmaEnergy_mcJet_recoJet{};
 		floatVector				m_SigmaTheta_mcQuark_recoJet{};
 		floatVector				m_SigmaPhi_mcQuark_recoJet{};
+		floatVector				m_SigmaEnergy_mcQuark_recoJet{};
 		float					m_TotalSigmaPx2;
 		float					m_TotalSigmaPy2;
 		float					m_TotalSigmaPz2;
@@ -331,6 +337,26 @@ class ZHllqq5CFit : public Processor
 		float					m_TotalSigmaPyPz;
 		float					m_TotalSigmaPyE;
 		float					m_TotalSigmaPzE;
+		floatVector				m_ISRPx{};
+		floatVector				m_ISRPy{};
+		floatVector				m_ISRPz{};
+		floatVector				m_ISRPt{};
+		floatVector				m_ISRE{};
+		float					m_ISRPx_total;
+		float					m_ISRPy_total;
+		float					m_ISRPz_total;
+		float					m_ISRPt_total;
+		float					m_ISRE_total;
+		floatVector				m_FSRPx{};
+		floatVector				m_FSRPy{};
+		floatVector				m_FSRPz{};
+		floatVector				m_FSRPt{};
+		floatVector				m_FSRE{};
+		float					m_FSRPx_total;
+		float					m_FSRPy_total;
+		float					m_FSRPz_total;
+		float					m_FSRPt_total;
+		float					m_FSRE_total;
 
 
 		TFile					*m_pTFile;
@@ -340,6 +366,7 @@ class ZHllqq5CFit : public Processor
 	        TTree					*m_pTTree_2;
 	        TTree					*m_pTTree_3;
 	        TTree					*m_pTTree_4;
+		TTree					*m_pTTree_5;
 		TH1I					*h_HDecayMode{};
 		TH1F					*h_Zmass_beforefit_woNu{};
 		TH1F					*h_Hmass_beforefit_woNu{};
@@ -437,6 +464,24 @@ class ZHllqq5CFit : public Processor
 		TH2F					*h_constraintE_uncertaintyE_lowFitProb{};
 		TH2F					*h_constraintE_uncertaintyE_midFitProb{};
 		TH2F					*h_constraintE_uncertaintyE_highFitProb{};
+		TH2F					*h_pull_jet_theta_jet_phi_lowFitProb{};
+		TH2F					*h_pull_jet_theta_jet_phi_midFitProb{};
+		TH2F					*h_pull_jet_theta_jet_phi_highFitProb{};
+		TH2F					*h_SigmaTheta_mcQmcJ_Theta_mcQ{};
+		TH2F					*h_SigmaPhi_mcQmcJ_Phi_mcQ{};
+		TH2F					*h_SigmaEnergy_mcQmcJ_Energy_mcQ{};
+		TH2F					*h_SigmaTheta_mcQmcJ_Energy_mcQ{};
+		TH2F					*h_SigmaPhi_mcQmcJ_Energy_mcQ{};
+		TH2F					*h_SigmaTheta_mcJrecJ_Theta_mcJ{};
+		TH2F					*h_SigmaPhi_mcJrecJ_Phi_mcJ{};
+		TH2F					*h_SigmaEnergy_mcJrecJ_Energy_mcJ{};
+		TH2F					*h_SigmaTheta_mcJrecJ_Energy_mcJ{};
+		TH2F					*h_SigmaPhi_mcJrecJ_Energy_mcJ{};
+		TH2F					*h_SigmaTheta_mcQrecJ_Theta_mcQ{};
+		TH2F					*h_SigmaPhi_mcQrecJ_Phi_mcQ{};
+		TH2F					*h_SigmaEnergy_mcQrecJ_Energy_mcQ{};
+		TH2F					*h_SigmaTheta_mcQrecJ_Energy_mcQ{};
+		TH2F					*h_SigmaPhi_mcQrecJ_Energy_mcQ{};
 
 
 		std::string				_name{};
