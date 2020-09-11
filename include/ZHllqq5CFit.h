@@ -123,6 +123,9 @@ class ZHllqq5CFit : public Processor
 		floatVector				m_jet_startE_wNu{};
 		floatVector				m_jet_startTheta_wNu{};
 		floatVector				m_jet_startPhi_wNu{};
+		floatVector				m_jet_fittedE_wNu{};
+		floatVector				m_jet_fittedTheta_wNu{};
+		floatVector				m_jet_fittedPhi_wNu{};
 		floatVector				m_dijet_angle_wNu{};
 		floatVector				m_jet_startPx_wNu_bestfit{};
 		floatVector				m_jet_startPy_wNu_bestfit{};
@@ -130,6 +133,9 @@ class ZHllqq5CFit : public Processor
 		floatVector				m_jet_startE_wNu_bestfit{};
 		floatVector				m_jet_startTheta_wNu_bestfit{};
 		floatVector				m_jet_startPhi_wNu_bestfit{};
+		floatVector				m_jet_fittedE_wNu_bestfit{};
+		floatVector				m_jet_fittedTheta_wNu_bestfit{};
+		floatVector				m_jet_fittedPhi_wNu_bestfit{};
 		float					m_dijet_angle_wNu_bestfit;
 		floatVector				m_jet_startPx_woNu{};
 		floatVector				m_jet_startPy_woNu{};
@@ -137,6 +143,9 @@ class ZHllqq5CFit : public Processor
 		floatVector				m_jet_startE_woNu{};
 		floatVector				m_jet_startTheta_woNu{};
 		floatVector				m_jet_startPhi_woNu{};
+		floatVector				m_jet_fittedE_woNu{};
+		floatVector				m_jet_fittedTheta_woNu{};
+		floatVector				m_jet_fittedPhi_woNu{};
 		float					m_dijet_angle_woNu;
 		floatVector				m_jet_startPx_best{};
 		floatVector				m_jet_startPy_best{};
@@ -144,6 +153,9 @@ class ZHllqq5CFit : public Processor
 		floatVector				m_jet_startE_best{};
 		floatVector				m_jet_startTheta_best{};
 		floatVector				m_jet_startPhi_best{};
+		floatVector				m_jet_fittedE_best{};
+		floatVector				m_jet_fittedTheta_best{};
+		floatVector				m_jet_fittedPhi_best{};
 		float					m_dijet_angle_best;
 		floatVector				m_lepton_startPx_wNu{};
 		floatVector				m_lepton_startPy_wNu{};
@@ -482,6 +494,11 @@ class ZHllqq5CFit : public Processor
 		TH2F					*h_SigmaEnergy_mcQrecJ_Energy_mcQ{};
 		TH2F					*h_SigmaTheta_mcQrecJ_Energy_mcQ{};
 		TH2F					*h_SigmaPhi_mcQrecJ_Energy_mcQ{};
+		TH1F					*h_recE_fitE{};
+		TH2F					*h_recPhifitPhi_recThetafitTheta{};
+		TH2F					*h_recPhifitPhi_recThetafitTheta_lowfit{};
+		TH2F					*h_recPhifitPhi_recThetafitTheta_midfit{};
+		TH2F					*h_recPhifitPhi_recThetafitTheta_highfit{};
 
 
 		std::string				_name{};
