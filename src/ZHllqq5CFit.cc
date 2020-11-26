@@ -229,6 +229,7 @@ m_pTTree_2(NULL),
 m_pTTree_3(NULL),
 m_pTTree_4(NULL),
 m_pTTree_5(NULL),
+m_pTTree_6(NULL),
 h_HDecayMode(NULL),
 h_Zmass_beforefit_woNu(NULL),
 h_Hmass_beforefit_woNu(NULL),
@@ -329,26 +330,30 @@ h_constraintE_uncertaintyE_highFitProb(NULL),
 h_pull_jet_theta_jet_phi_lowFitProb(NULL),
 h_pull_jet_theta_jet_phi_midFitProb(NULL),
 h_pull_jet_theta_jet_phi_highFitProb(NULL),
-h_SigmaTheta_mcQmcJ_Theta_mcQ(NULL),
-h_SigmaPhi_mcQmcJ_Phi_mcQ(NULL),
-h_SigmaEnergy_mcQmcJ_Energy_mcQ(NULL),
-h_SigmaTheta_mcQmcJ_Energy_mcQ(NULL),
-h_SigmaPhi_mcQmcJ_Energy_mcQ(NULL),
-h_SigmaTheta_mcJrecJ_Theta_mcJ(NULL),
-h_SigmaPhi_mcJrecJ_Phi_mcJ(NULL),
-h_SigmaEnergy_mcJrecJ_Energy_mcJ(NULL),
-h_SigmaTheta_mcJrecJ_Energy_mcJ(NULL),
-h_SigmaPhi_mcJrecJ_Energy_mcJ(NULL),
-h_SigmaTheta_mcQrecJ_Theta_mcQ(NULL),
-h_SigmaPhi_mcQrecJ_Phi_mcQ(NULL),
-h_SigmaEnergy_mcQrecJ_Energy_mcQ(NULL),
-h_SigmaTheta_mcQrecJ_Energy_mcQ(NULL),
-h_SigmaPhi_mcQrecJ_Energy_mcQ(NULL),
+h_NormalizedResidualTheta_mcQmcJ_ThetaMcJet(NULL),
+h_NormalizedResidualPhi_mcQmcJ_PhiMcJet(NULL),
+h_NormalizedResidualEnergy_mcQmcJ_EnergyMcJet(NULL),
+h_NormalizedResidualTheta_mcQmcJ_EnergyMcJet(NULL),
+h_NormalizedResidualPhi_mcQmcJ_EnergyMcJet(NULL),
+h_NormalizedResidualTheta_mcJrecJ_ThetaRecJet(NULL),
+h_NormalizedResidualPhi_mcJrecJ_PhiRecJet(NULL),
+h_NormalizedResidualEnergy_mcJrecJ_EnergyRecJet(NULL),
+h_NormalizedResidualTheta_mcJrecJ_EnergyRecJet(NULL),
+h_NormalizedResidualPhi_mcJrecJ_EnergyRecJet(NULL),
+h_NormalizedResidualTheta_mcQrecJ_ThetaRecJet(NULL),
+h_NormalizedResidualPhi_mcQrecJ_PhiRecJet(NULL),
+h_NormalizedResidualEnergy_mcQrecJ_EnergyRecJet(NULL),
+h_NormalizedResidualTheta_mcQrecJ_EnergyRecJet(NULL),
+h_NormalizedResidualPhi_mcQrecJ_EnergyRecJet(NULL),
 h_recE_fitE(NULL),
 h_recPhifitPhi_recThetafitTheta(NULL),
 h_recPhifitPhi_recThetafitTheta_lowfit(NULL),
 h_recPhifitPhi_recThetafitTheta_midfit(NULL),
-h_recPhifitPhi_recThetafitTheta_highfit(NULL)
+h_recPhifitPhi_recThetafitTheta_highfit(NULL),
+h_recPhifitPhi_recThetafitTheta_SigmaThetaPhi(NULL),
+h_recPhifitPhi_recThetafitTheta_lowfit_SigmaThetaPhi(NULL),
+h_recPhifitPhi_recThetafitTheta_midfit_SigmaThetaPhi(NULL),
+h_recPhifitPhi_recThetafitTheta_highfit_SigmaThetaPhi(NULL)
 {
 
 //	modify processor description
@@ -759,6 +764,12 @@ void ZHllqq5CFit::init()
 	m_pTTree_3->Branch("probability_best",&m_probability_best,"probability_best/F") ;
 	m_pTTree_3->Branch("ISRE_total",&m_ISRE_total,"ISRE_total/F") ;
 	m_pTTree_3->Branch("FSRE_total",&m_FSRE_total,"FSRE_total/F") ;
+	m_pTTree_3->Branch("mcHmumuPx",&m_mcHmumuPx,"mcHmumuPx/F") ;
+	m_pTTree_3->Branch("mcHmumuPy",&m_mcHmumuPy,"mcHmumuPy/F") ;
+	m_pTTree_3->Branch("mcHmumuPz",&m_mcHmumuPz,"mcHmumuPz/F") ;
+	m_pTTree_3->Branch("mcHmumuPt",&m_mcHmumuPt,"mcHmumuPt/F") ;
+	m_pTTree_3->Branch("mcHmumuP",&m_mcHmumuP,"mcHmumuP/F") ;
+	m_pTTree_3->Branch("mcHmumuE",&m_mcHmumuE,"mcHmumuE/F") ;
 	m_pTTree_3->Branch("jet_startPx_wNu",&m_jet_startPx_wNu);
 	m_pTTree_3->Branch("jet_startPy_wNu",&m_jet_startPy_wNu);
 	m_pTTree_3->Branch("jet_startPz_wNu",&m_jet_startPz_wNu);
@@ -830,6 +841,15 @@ void ZHllqq5CFit::init()
 	m_pTTree_4->Branch("nSLDecayTotal",&m_nSLDecayTotal,"nSLDecayTotal/I") ;
 	m_pTTree_4->Branch("ISRE_total",&m_ISRE_total,"ISRE_total/F") ;
 	m_pTTree_4->Branch("FSRE_total",&m_FSRE_total,"FSRE_total/F") ;
+	m_pTTree_4->Branch("mcHmumuPx",&m_mcHmumuPx,"mcHmumuPx/F") ;
+	m_pTTree_4->Branch("mcHmumuPy",&m_mcHmumuPy,"mcHmumuPy/F") ;
+	m_pTTree_4->Branch("mcHmumuPz",&m_mcHmumuPz,"mcHmumuPz/F") ;
+	m_pTTree_4->Branch("mcHmumuPt",&m_mcHmumuPt,"mcHmumuPt/F") ;
+	m_pTTree_4->Branch("mcHmumuP",&m_mcHmumuP,"mcHmumuP/F") ;
+	m_pTTree_4->Branch("mcHmumuE",&m_mcHmumuE,"mcHmumuE/F") ;
+	m_pTTree_4->Branch("jet_startE_best",&m_jet_startE_best);
+	m_pTTree_4->Branch("jet_startTheta_best",&m_jet_startTheta_best);
+	m_pTTree_4->Branch("jet_startPhi_best",&m_jet_startPhi_best);
 	m_pTTree_4->Branch("SigmaPx2",&m_SigmaPx2);
 	m_pTTree_4->Branch("SigmaPxSigmaPy",&m_SigmaPxPy);
 	m_pTTree_4->Branch("SigmaPxSigmaPz",&m_SigmaPxPz);
@@ -850,17 +870,6 @@ void ZHllqq5CFit::init()
 	m_pTTree_4->Branch("TotalSigmaPyPz",&m_TotalSigmaPyPz,"TotalSigmaPyPz/F");
 	m_pTTree_4->Branch("TotalSigmaPyE",&m_TotalSigmaPyE,"TotalSigmaPyE/F");
 	m_pTTree_4->Branch("TotalSigmaPzE",&m_TotalSigmaPzE,"TotalSigmaPzE/F");
-	m_pTTree_4->Branch("SigmaTheta_mcQuark_mcJet",&m_SigmaTheta_mcQuark_mcJet);
-	m_pTTree_4->Branch("SigmaPhi_mcQuark_mcJet",&m_SigmaPhi_mcQuark_mcJet);
-	m_pTTree_4->Branch("SigmaEnergy_mcQuark_mcJet",&m_SigmaEnergy_mcQuark_mcJet);
-	m_pTTree_4->Branch("SigmaTheta_mcJet_recoJet",&m_SigmaTheta_mcJet_recoJet);
-	m_pTTree_4->Branch("SigmaPhi_mcJet_recoJet",&m_SigmaPhi_mcJet_recoJet);
-	m_pTTree_4->Branch("SigmaEnergy_mcJet_recoJet",&m_SigmaEnergy_mcJet_recoJet);
-	m_pTTree_4->Branch("SigmaTheta_mcQuark_recoJet",&m_SigmaTheta_mcQuark_recoJet);
-	m_pTTree_4->Branch("SigmaPhi_mcQuark_recoJet",&m_SigmaPhi_mcQuark_recoJet);
-	m_pTTree_4->Branch("SigmaEnergy_mcQuark_recoJet",&m_SigmaEnergy_mcQuark_recoJet);
-	m_pTTree_4->Branch("SigmaTheta_ErrorFlow",&m_jet_SigmaTheta);
-	m_pTTree_4->Branch("SigmaPhi_ErrorFlow",&m_jet_SigmaPhi);
 	m_pTTree_5 = new TTree("ISR_FSR","ISR_FSR");
 	m_pTTree_5->SetDirectory(m_pTFile);
 	m_pTTree_5->Branch("ISRPx",&m_ISRPx);
@@ -883,6 +892,59 @@ void ZHllqq5CFit::init()
 	m_pTTree_5->Branch("FSRPz_total",&m_FSRPz_total,"FSRPz_total/F") ;
 	m_pTTree_5->Branch("FSRPt_total",&m_FSRPt_total,"FSRPt_total/F") ;
 	m_pTTree_5->Branch("FSRE_total",&m_FSRE_total,"FSRE_total/F") ;
+	m_pTTree_6 = new TTree("ErrorFlow","ErrorFlow");
+	m_pTTree_6->SetDirectory(m_pTFile);
+	m_pTTree_6->Branch("probability_best",&m_probability_best,"probability_best/F") ;
+	m_pTTree_6->Branch("nSLDecayTotal",&m_nSLDecayTotal,"nSLDecayTotal/I") ;
+	m_pTTree_6->Branch("ISRE_total",&m_ISRE_total,"ISRE_total/F") ;
+	m_pTTree_6->Branch("FSRE_total",&m_FSRE_total,"FSRE_total/F") ;
+	m_pTTree_6->Branch("mcHmumuPt",&m_mcHmumuPt,"mcHmumuPt/F") ;
+	m_pTTree_6->Branch("mcHmumuP",&m_mcHmumuP,"mcHmumuP/F") ;
+	m_pTTree_6->Branch("mcHmumuE",&m_mcHmumuE,"mcHmumuE/F") ;
+	m_pTTree_6->Branch("Theta_mcQuark",&m_Theta_mcQuark);
+	m_pTTree_6->Branch("Phi_mcQuark",&m_Phi_mcQuark);
+	m_pTTree_6->Branch("Energy_mcQuark",&m_Energy_mcQuark);
+	m_pTTree_6->Branch("Theta_mcJet_wInvisibles",&m_Theta_mcJet_wInvisibles);
+	m_pTTree_6->Branch("Phi_mcJet_wInvisibles",&m_Phi_mcJet_wInvisibles);
+	m_pTTree_6->Branch("Energy_mcJet_wInvisibles",&m_Energy_mcJet_wInvisibles);
+	m_pTTree_6->Branch("Theta_mcJet_woInvisibles",&m_Theta_mcJet_woInvisibles);
+	m_pTTree_6->Branch("Phi_mcJet_woInvisibles",&m_Phi_mcJet_woInvisibles);
+	m_pTTree_6->Branch("Energy_mcJet_woInvisibles",&m_Energy_mcJet_woInvisibles);
+	m_pTTree_6->Branch("Theta_recoJet",&m_Theta_recoJet);
+	m_pTTree_6->Branch("Phi_recoJet",&m_Phi_recoJet);
+	m_pTTree_6->Branch("Energy_recoJet",&m_Energy_recoJet);
+	m_pTTree_6->Branch("nPFOs_NeutralHadrons",&m_nPFOs_NeutralHadrons);
+	m_pTTree_6->Branch("nPFOs_Photons",&m_nPFOs_Photons);
+	m_pTTree_6->Branch("nPFOs_ChargedPFOs",&m_nPFOs_ChargedPFOs);
+	m_pTTree_6->Branch("nPFOs_Total",&m_nPFOs_Total);
+	m_pTTree_6->Branch("PFOEnergy_NeutralHadrons",&m_PFOEnergy_NeutralHadrons);
+	m_pTTree_6->Branch("PFOEnergy_Photons",&m_PFOEnergy_Photons);
+	m_pTTree_6->Branch("PFOEnergy_ChargedPFOs",&m_PFOEnergy_ChargedPFOs);
+	m_pTTree_6->Branch("PFOEnergy_Total",&m_PFOEnergy_Total);
+	m_pTTree_6->Branch("EnergyFraction_NeutralHadrons",&m_EnergyFraction_NeutralHadrons);
+	m_pTTree_6->Branch("EnergyFraction_Photons",&m_EnergyFraction_Photons);
+	m_pTTree_6->Branch("EnergyFraction_ChargedPFOs",&m_EnergyFraction_ChargedPFOs);
+	m_pTTree_6->Branch("ResidualTheta_mcQuark_mcJet",&m_ResidualTheta_mcQuark_mcJet);
+	m_pTTree_6->Branch("ResidualPhi_mcQuark_mcJet",&m_ResidualPhi_mcQuark_mcJet);
+	m_pTTree_6->Branch("ResidualEnergy_mcQuark_mcJet",&m_ResidualEnergy_mcQuark_mcJet);
+	m_pTTree_6->Branch("ResidualTheta_mcJet_recoJet",&m_ResidualTheta_mcJet_recoJet);
+	m_pTTree_6->Branch("ResidualPhi_mcJet_recoJet",&m_ResidualPhi_mcJet_recoJet);
+	m_pTTree_6->Branch("ResidualEnergy_mcJet_recoJet",&m_ResidualEnergy_mcJet_recoJet);
+	m_pTTree_6->Branch("ResidualTheta_mcQuark_recoJet",&m_ResidualTheta_mcQuark_recoJet);
+	m_pTTree_6->Branch("ResidualPhi_mcQuark_recoJet",&m_ResidualPhi_mcQuark_recoJet);
+	m_pTTree_6->Branch("ResidualEnergy_mcQuark_recoJet",&m_ResidualEnergy_mcQuark_recoJet);
+	m_pTTree_6->Branch("NormalizedResidualTheta_mcQuark_mcJet",&m_NormalizedResidualTheta_mcQuark_mcJet);
+	m_pTTree_6->Branch("NormalizedResidualPhi_mcQuark_mcJet",&m_NormalizedResidualPhi_mcQuark_mcJet);
+	m_pTTree_6->Branch("NormalizedResidualEnergy_mcQuark_mcJet",&m_NormalizedResidualEnergy_mcQuark_mcJet);
+	m_pTTree_6->Branch("NormalizedResidualTheta_mcJet_recoJet",&m_NormalizedResidualTheta_mcJet_recoJet);
+	m_pTTree_6->Branch("NormalizedResidualPhi_mcJet_recoJet",&m_NormalizedResidualPhi_mcJet_recoJet);
+	m_pTTree_6->Branch("NormalizedResidualEnergy_mcJet_recoJet",&m_NormalizedResidualEnergy_mcJet_recoJet);
+	m_pTTree_6->Branch("NormalizedResidualTheta_mcQuark_recoJet",&m_NormalizedResidualTheta_mcQuark_recoJet);
+	m_pTTree_6->Branch("NormalizedResidualPhi_mcQuark_recoJet",&m_NormalizedResidualPhi_mcQuark_recoJet);
+	m_pTTree_6->Branch("NormalizedResidualEnergy_mcQuark_recoJet",&m_NormalizedResidualEnergy_mcQuark_recoJet);
+	m_pTTree_6->Branch("JetErrorTheta_ErrorFlow",&m_JetErrorTheta_ErrorFlow);
+	m_pTTree_6->Branch("JetErrorPhi_ErrorFlow",&m_JetErrorPhi_ErrorFlow);
+	m_pTTree_6->Branch("JetErrorEnergy_ErrorFlow",&m_JetErrorEnergy_ErrorFlow);
 
 	h_HDecayMode = new TH1I("h_HDecayMode", "Decay mode of Higgs boson", 4, 0, 4);
 	h_HDecayMode->GetXaxis()->SetBinLabel(1,"H #rightarrow b#bar{b}");
@@ -1000,9 +1062,9 @@ void ZHllqq5CFit::init()
 	h_fitProbability_Phijet->SetDirectory(m_pTFile);
 	h_fitProbability_SigmaEjet = new TH2F("h_fitProbability_SigmaEjet", "fit probability vs #sigma(E_{jet}) (best fit); #sigma(E_{jet}) [GeV]; fit probability", 50, 0., 50., 200, 0., 1.0);
 	h_fitProbability_SigmaEjet->SetDirectory(m_pTFile);
-	h_fitProbability_SigmaThetajet = new TH2F("h_fitProbability_SigmaThetajet", "fit probability vs #sigma(#theta_{jet}) (best fit); #sigma(#theta_{jet}) [radian]; fit probability", 100, 0., 0.02, 200, 0., 1.0);
+	h_fitProbability_SigmaThetajet = new TH2F("h_fitProbability_SigmaThetajet", "fit probability vs #sigma(#theta_{jet}) (best fit); #sigma(#theta_{jet}) [radian]; fit probability", 1000, 0., m_JetResThetaCoeff * 0.2, 200, 0., 1.0);
 	h_fitProbability_SigmaThetajet->SetDirectory(m_pTFile);
-	h_fitProbability_SigmaPhijet = new TH2F("h_fitProbability_SigmaPhijet", "fit probability vs #sigma(#phi_{jet}) (best fit); #sigma(#phi_{jet}) [radian]; fit probability", 100, 0., 0.02, 200, 0., 1.0);
+	h_fitProbability_SigmaPhijet = new TH2F("h_fitProbability_SigmaPhijet", "fit probability vs #sigma(#phi_{jet}) (best fit); #sigma(#phi_{jet}) [radian]; fit probability", 1000, 0., m_JetResPhiCoeff * 0.2, 200, 0., 1.0);
 	h_fitProbability_SigmaPhijet->SetDirectory(m_pTFile);
 	h_fitProbability_pullEjet = new TH2F("h_fitProbability_pullEjet", "fit probability vs pull E_{jet} (best fit); pull E_{jet}; fit probability", 100, -10., 10., 200, 0., 1.0);
 	h_fitProbability_pullEjet->SetDirectory(m_pTFile);
@@ -1089,38 +1151,39 @@ void ZHllqq5CFit::init()
 	h_pull_jet_theta_jet_phi_highFitProb = new TH2F("h_pull_jet_theta_jet_phi_highFitProb", "0.9 #leq fit probability; pull #theta_{jet}; pull #phi_{jet}", 200, -10.0, 10.0, 200, -10.0, 10.0);
 	h_pull_jet_theta_jet_phi_highFitProb->SetDirectory(m_pTFile);
 
-	h_SigmaTheta_mcQmcJ_Theta_mcQ = new TH2F("h_SigmaTheta_mcQmcJ_Theta_mcQ", "; #theta_{q}^{MC} [radian]; #theta_{j}^{MC} - #theta_{q}^{MC} [radian]", 200, 0.0, PI, 200, -0.10, 0.10);
-	h_SigmaTheta_mcQmcJ_Theta_mcQ->SetDirectory(m_pTFile);
-	h_SigmaPhi_mcQmcJ_Phi_mcQ = new TH2F("h_SigmaPhi_mcQmcJ_Phi_mcQ", "; #phi_{q}^{MC} [radian]; #phi_{j}^{MC} - #phi_{q}^{MC} [radian]", 200, -PI, PI, 200, -0.10, 0.10);
-	h_SigmaPhi_mcQmcJ_Phi_mcQ->SetDirectory(m_pTFile);
-	h_SigmaEnergy_mcQmcJ_Energy_mcQ = new TH2F("h_SigmaEnergy_mcQmcJ_Energy_mcQ", "; E_{q}^{MC} [GeV]; ( E_{j}^{MC} - E_{q}^{MC} ) / E_{q}^{MC}", 120, 0.0, 120.0, 2000, -1.0, 1.0);
-	h_SigmaEnergy_mcQmcJ_Energy_mcQ->SetDirectory(m_pTFile);
-	h_SigmaTheta_mcQmcJ_Energy_mcQ = new TH2F("h_SigmaTheta_mcQmcJ_Energy_mcQ", "; E_{q}^{MC} [GeV]; #theta_{j}^{MC} - #theta_{q}^{MC} [radian]", 120, 0.0, 120.0, 200, -0.10, 0.10);
-	h_SigmaTheta_mcQmcJ_Energy_mcQ->SetDirectory(m_pTFile);
-	h_SigmaPhi_mcQmcJ_Energy_mcQ = new TH2F("h_SigmaPhi_mcQmcJ_Energy_mcQ", "; E_{q}^{MC} [GeV]; #phi_{j}^{MC} - #phi_{q}^{MC} [radian]", 120, 0.0, 120.0, 200, -0.10, 0.10);
-	h_SigmaPhi_mcQmcJ_Energy_mcQ->SetDirectory(m_pTFile);
+	h_NormalizedResidualTheta_mcQmcJ_ThetaMcJet = new TH2F("h_NormalizedResidualTheta_mcQmcJ_ThetaMcJet", "; cos#theta_{j}^{MC} [radian]; (#theta_{j}^{MC} - #theta_{q}^{MC}) / #sigma_{#theta_{j}}", 100, -1.0, 1.0, 200, -10.0, 10.0);
+	h_NormalizedResidualTheta_mcQmcJ_ThetaMcJet->SetDirectory(m_pTFile);
+	h_NormalizedResidualPhi_mcQmcJ_PhiMcJet = new TH2F("h_NormalizedResidualPhi_mcQmcJ_PhiMcJet", "; #phi_{j}^{MC} [radian]; (#phi_{j}^{MC} - #phi_{q}^{MC}) / #sigma_{#phi_{j}}", 100, -PI, PI, 200, -10.0, 10.0);
+	h_NormalizedResidualPhi_mcQmcJ_PhiMcJet->SetDirectory(m_pTFile);
+	h_NormalizedResidualEnergy_mcQmcJ_EnergyMcJet = new TH2F("h_NormalizedResidualEnergy_mcQmcJ_EnergyMcJet", "; E_{j}^{MC} [GeV]; (E_{j}^{MC} - E_{q}^{MC}) / #sigma_{E_{j}}", 150, 0.0, 150.0, 200, -10.0, 10.0);
+	h_NormalizedResidualEnergy_mcQmcJ_EnergyMcJet->SetDirectory(m_pTFile);
+	h_NormalizedResidualTheta_mcQmcJ_EnergyMcJet = new TH2F("h_NormalizedResidualTheta_mcQmcJ_EnergyMcJet", "; E_{j}^{MC} [GeV]; (#theta_{j}^{MC} - #theta_{q}^{MC}) / #sigma_{#theta_{j}}", 150, 0.0, 150.0, 200, -10.0, 10.0);
+	h_NormalizedResidualTheta_mcQmcJ_EnergyMcJet->SetDirectory(m_pTFile);
+	h_NormalizedResidualPhi_mcQmcJ_EnergyMcJet = new TH2F("h_NormalizedResidualPhi_mcQmcJ_EnergyMcJet", "; E_{j}^{MC} [GeV]; (#phi_{j}^{MC} - #phi_{q}^{MC}) / #sigma_{#phi_{j}}", 150, 0.0, 150.0, 200, -10.0, 10.0);
+	h_NormalizedResidualPhi_mcQmcJ_EnergyMcJet->SetDirectory(m_pTFile);
 
-	h_SigmaTheta_mcJrecJ_Theta_mcJ = new TH2F("h_SigmaTheta_mcJrecJ_Theta_mcJ", "; #theta_{j}^{MC} [radian]; #theta_{j}^{Rec} - #theta_{j}^{MC} [radian]", 200, 0.0, PI, 200, -0.10, 0.10);
-	h_SigmaTheta_mcJrecJ_Theta_mcJ->SetDirectory(m_pTFile);
-	h_SigmaPhi_mcJrecJ_Phi_mcJ = new TH2F("h_SigmaPhi_mcJrecJ_Phi_mcJ", "; #phi_{j}^{MC} [radian]; #phi_{j}^{Rec} - #phi_{j}^{MC} [radian]", 200, PI, PI, 200, -0.10, 0.10);
-	h_SigmaPhi_mcJrecJ_Phi_mcJ->SetDirectory(m_pTFile);
-	h_SigmaEnergy_mcJrecJ_Energy_mcJ = new TH2F("h_SigmaEnergy_mcJrecJ_Energy_mcJ", "; E_{j}^{MC} [GeV]; ( E_{j}^{Rec} - E_{j}^{MC} ) / E_{q}^{MC}", 120, 0.0, 120.0, 2000, -1.0, 1.0);
-	h_SigmaEnergy_mcJrecJ_Energy_mcJ->SetDirectory(m_pTFile);
-	h_SigmaTheta_mcJrecJ_Energy_mcJ = new TH2F("h_SigmaTheta_mcJrecJ_Energy_mcJ", "; E_{j}^{MC} [GeV]; #theta_{j}^{Rec} - #theta_{j}^{MC} [radian]", 120, 0.0, 120.0, 200, -0.10, 0.10);
-	h_SigmaTheta_mcJrecJ_Energy_mcJ->SetDirectory(m_pTFile);
-	h_SigmaPhi_mcJrecJ_Energy_mcJ = new TH2F("h_SigmaPhi_mcJrecJ_Energy_mcJ", "; E_{j}^{MC} [GeV]; #phi_{j}^{Rec} - #phi_{j}^{MC} [radian]", 120, 0.0, 120, 200, -0.10, 0.10);
-	h_SigmaPhi_mcJrecJ_Energy_mcJ->SetDirectory(m_pTFile);
+	h_NormalizedResidualTheta_mcJrecJ_ThetaRecJet = new TH2F("h_NormalizedResidualTheta_mcJrecJ_ThetaRecJet", "; cos#theta_{j}^{REC} [radian]; (#theta_{j}^{REC} - #theta_{j}^{MC}) / #sigma_{#theta_{j}}", 100, -1.0, 1.0, 200, -10.0, 10.0);
+	h_NormalizedResidualTheta_mcJrecJ_ThetaRecJet->SetDirectory(m_pTFile);
+	h_NormalizedResidualPhi_mcJrecJ_PhiRecJet = new TH2F("h_NormalizedResidualPhi_mcJrecJ_PhiRecJet", "; #phi_{j}^{REC} [radian]; (#phi_{j}^{REC} - #phi_{j}^{MC}) / #sigma_{#phi_{j}}", 100, -PI, PI, 200, -10.0, 10.0);
+	h_NormalizedResidualPhi_mcJrecJ_PhiRecJet->SetDirectory(m_pTFile);
+	h_NormalizedResidualEnergy_mcJrecJ_EnergyRecJet = new TH2F("h_NormalizedResidualEnergy_mcJrecJ_EnergyRecJet", "; E_{j}^{REC} [GeV]; (E_{j}^{REC} - E_{j}^{MC}) / #sigma_{E_{j}}", 150, 0.0, 150.0, 200, -10.0, 10.0);
+	h_NormalizedResidualEnergy_mcJrecJ_EnergyRecJet->SetDirectory(m_pTFile);
+	h_NormalizedResidualTheta_mcJrecJ_EnergyRecJet = new TH2F("h_NormalizedResidualTheta_mcJrecJ_EnergyRecJet", "; E_{j}^{REC} [GeV]; (#theta_{j}^{REC} - #theta_{j}^{MC}) / #sigma_{#theta_{j}}", 150, 0.0, 150.0, 200, -10.0, 10.0);
+	h_NormalizedResidualTheta_mcJrecJ_EnergyRecJet->SetDirectory(m_pTFile);
+	h_NormalizedResidualPhi_mcJrecJ_EnergyRecJet = new TH2F("h_NormalizedResidualPhi_mcJrecJ_EnergyRecJet", "; E_{j}^{REC} [GeV]; (#phi_{j}^{REC} - #phi_{j}^{MC}) / #sigma_{#phi_{j}}", 150, 0.0, 150.0, 200, -10.0, 10.0);
+	h_NormalizedResidualPhi_mcJrecJ_EnergyRecJet->SetDirectory(m_pTFile);
 
-	h_SigmaTheta_mcQrecJ_Theta_mcQ = new TH2F("h_SigmaTheta_mcQrecJ_Theta_mcQ", "; #theta_{q}^{MC} [radian]; #theta_{j}^{Rec} - #theta_{q}^{MC} [radian]", 200, 0.0, PI, 200, -0.10, 0.10);
-	h_SigmaTheta_mcQrecJ_Theta_mcQ->SetDirectory(m_pTFile);
-	h_SigmaPhi_mcQrecJ_Phi_mcQ = new TH2F("h_SigmaPhi_mcQrecJ_Phi_mcQ", "; #phi_{q}^{MC} [radian]; #phi_{j}^{Rec} - #phi_{q}^{MC} [radian]", 200, PI, PI, 200, -0.10, 0.10);
-	h_SigmaPhi_mcQrecJ_Phi_mcQ->SetDirectory(m_pTFile);
-	h_SigmaEnergy_mcQrecJ_Energy_mcQ = new TH2F("h_SigmaEnergy_mcQrecJ_Energy_mcQ", "; E_{q}^{MC} [GeV]; ( E_{j}^{Rec} - E_{q}^{MC} ) / E_{q}^{MC}", 120, 0.0, 120.0, 2000, -1.0, 1.0);
-	h_SigmaEnergy_mcQrecJ_Energy_mcQ->SetDirectory(m_pTFile);
-	h_SigmaTheta_mcQrecJ_Energy_mcQ = new TH2F("h_SigmaTheta_mcQrecJ_Energy_mcQ", "; E_{q}^{MC} [GeV]; #theta_{j}^{Rec} - #theta_{q}^{MC} [radian]", 120, 0.0, 120, 200, -0.10, 0.10);
-	h_SigmaTheta_mcQrecJ_Energy_mcQ->SetDirectory(m_pTFile);
-	h_SigmaPhi_mcQrecJ_Energy_mcQ = new TH2F("h_SigmaPhi_mcQrecJ_Energy_mcQ", "; E_{q}^{MC} [GeV]; #phi_{j}^{Rec} - #phi_{q}^{MC} [radian]", 120, 0.0, 120, 200, -0.10, 0.10);
-	h_SigmaPhi_mcQrecJ_Energy_mcQ->SetDirectory(m_pTFile);
+	h_NormalizedResidualTheta_mcQrecJ_ThetaRecJet = new TH2F("h_NormalizedResidualTheta_mcQrecJ_ThetaRecJet", "; cos#theta_{j}^{REC} [radian]; (#theta_{j}^{REC} - #theta_{q}^{MC}) / #sigma_{#theta_{j}}", 100, -1.0, 1.0, 200, -10.0, 10.0);
+	h_NormalizedResidualTheta_mcQrecJ_ThetaRecJet->SetDirectory(m_pTFile);
+	h_NormalizedResidualPhi_mcQrecJ_PhiRecJet = new TH2F("h_NormalizedResidualPhi_mcQrecJ_PhiRecJet", "; #phi_{j}^{REC} [radian]; (#phi_{j}^{REC} - #phi_{q}^{MC}) / #sigma_{#phi_{j}}", 100, -PI, PI, 200, -10.0, 10.0);
+	h_NormalizedResidualPhi_mcQrecJ_PhiRecJet->SetDirectory(m_pTFile);
+	h_NormalizedResidualEnergy_mcQrecJ_EnergyRecJet = new TH2F("h_NormalizedResidualEnergy_mcQrecJ_EnergyRecJet", "; E_{j}^{REC} [GeV]; (E_{j}^{REC} - E_{q}^{MC}) / #sigma_{E_{j}}", 150, 0.0, 150.0, 200, -10.0, 10.0);
+	h_NormalizedResidualEnergy_mcQrecJ_EnergyRecJet->SetDirectory(m_pTFile);
+	h_NormalizedResidualTheta_mcQrecJ_EnergyRecJet = new TH2F("h_NormalizedResidualTheta_mcQrecJ_EnergyRecJet", "; E_{j}^{REC} [GeV]; (#theta_{j}^{REC} - #theta_{q}^{MC}) / #sigma_{#theta_{j}}", 150, 0.0, 150.0, 200, -10.0, 10.0);
+	h_NormalizedResidualTheta_mcQrecJ_EnergyRecJet->SetDirectory(m_pTFile);
+	h_NormalizedResidualPhi_mcQrecJ_EnergyRecJet = new TH2F("h_NormalizedResidualPhi_mcQrecJ_EnergyRecJet", "; E_{j}^{REC} [GeV]; (#phi_{j}^{REC} - #phi_{q}^{MC}) / #sigma_{#phi_{j}}", 150, 0.0, 150.0, 200, -10.0, 10.0);
+	h_NormalizedResidualPhi_mcQrecJ_EnergyRecJet->SetDirectory(m_pTFile);
+
 	h_recE_fitE = new TH1F("h_recE_fitE", "; ( E_{j}^{fit} - E_{j}^{rec} ) / E_{j}^{rec}; n_{events}", 400, -1.0, 1.0);
 	h_recE_fitE->SetDirectory(m_pTFile);
 	h_recPhifitPhi_recThetafitTheta = new TH2F("h_recPhifitPhi_recThetafitTheta", "; #phi_{j}^{fit} - #phi_{j}^{rec} [radian]; #theta_{j}^{fit} - #theta_{j}^{rec} [radian]", 200, -0.10, 0.10, 200, -0.10, 0.10);
@@ -1131,6 +1194,14 @@ void ZHllqq5CFit::init()
 	h_recPhifitPhi_recThetafitTheta_midfit->SetDirectory(m_pTFile);
 	h_recPhifitPhi_recThetafitTheta_highfit = new TH2F("h_recPhifitPhi_recThetafitTheta_highfit", "0.9 #leq fit probability; #phi_{j}^{fit} - #phi_{j}^{rec} [radian]; #theta_{j}^{fit} - #theta_{j}^{rec} [radian]", 200, -0.10, 0.10, 200, -0.10, 0.10);
 	h_recPhifitPhi_recThetafitTheta_highfit->SetDirectory(m_pTFile);
+	h_recPhifitPhi_recThetafitTheta_SigmaThetaPhi = new TH2F("h_recPhifitPhi_recThetafitTheta_SigmaThetaPhi", "; ( #phi_{j}^{fit} - #phi_{j}^{rec} ) / #sigma(#phi_{j}^{ErrFl}); (#theta_{j}^{fit} - #theta_{j}^{rec} ) / #sigma(#theta{j}^{ErrFl})", 100, -5.0, 5.0, 100, -5.0, 5.0);
+	h_recPhifitPhi_recThetafitTheta_SigmaThetaPhi->SetDirectory(m_pTFile);
+	h_recPhifitPhi_recThetafitTheta_lowfit_SigmaThetaPhi = new TH2F("h_recPhifitPhi_recThetafitTheta_lowfit_SigmaThetaPhi", "fit probability < 0.1; ( #phi_{j}^{fit} - #phi_{j}^{rec} ) / #sigma(#phi_{j}^{ErrFl}); (#theta_{j}^{fit} - #theta_{j}^{rec} ) / #sigma(#theta{j}^{ErrFl})", 100, -5.0, 5.0, 100, -5.0, 5.0);
+	h_recPhifitPhi_recThetafitTheta_lowfit_SigmaThetaPhi->SetDirectory(m_pTFile);
+	h_recPhifitPhi_recThetafitTheta_midfit_SigmaThetaPhi = new TH2F("h_recPhifitPhi_recThetafitTheta_midfit_SigmaThetaPhi", "0.1 #leq fit probability < 0.9; ( #phi_{j}^{fit} - #phi_{j}^{rec} ) / #sigma(#phi_{j}^{ErrFl}); (#theta_{j}^{fit} - #theta_{j}^{rec} ) / #sigma(#theta{j}^{ErrFl})", 100, -5.0, 5.0, 100, -5.0, 5.0);
+	h_recPhifitPhi_recThetafitTheta_midfit_SigmaThetaPhi->SetDirectory(m_pTFile);
+	h_recPhifitPhi_recThetafitTheta_highfit_SigmaThetaPhi = new TH2F("h_recPhifitPhi_recThetafitTheta_highfit_SigmaThetaPhi", "0.9 #leq fit probability; ( #phi_{j}^{fit} - #phi_{j}^{rec} ) / #sigma(#phi_{j}^{ErrFl}); (#theta_{j}^{fit} - #theta_{j}^{rec} ) / #sigma(#theta{j}^{ErrFl})", 100, -5.0, 5.0, 100, -5.0, 5.0);
+	h_recPhifitPhi_recThetafitTheta_highfit_SigmaThetaPhi->SetDirectory(m_pTFile);
 }
 
 void ZHllqq5CFit::Clear()
@@ -1390,15 +1461,50 @@ void ZHllqq5CFit::Clear()
 	m_SigmaPz2.clear();
 	m_SigmaPzE.clear();
 	m_SigmaE2.clear();
-	m_SigmaTheta_mcQuark_mcJet.clear();
-	m_SigmaPhi_mcQuark_mcJet.clear();
-	m_SigmaEnergy_mcQuark_mcJet.clear();
-	m_SigmaTheta_mcJet_recoJet.clear();
-	m_SigmaPhi_mcJet_recoJet.clear();
-	m_SigmaEnergy_mcJet_recoJet.clear();
-	m_SigmaTheta_mcQuark_recoJet.clear();
-	m_SigmaPhi_mcQuark_recoJet.clear();
-	m_SigmaEnergy_mcQuark_recoJet.clear();
+	m_Theta_mcQuark.clear();
+	m_Phi_mcQuark.clear();
+	m_Energy_mcQuark.clear();
+	m_Theta_mcJet_wInvisibles.clear();
+	m_Phi_mcJet_wInvisibles.clear();
+	m_Energy_mcJet_wInvisibles.clear();
+	m_Theta_mcJet_woInvisibles.clear();
+	m_Phi_mcJet_woInvisibles.clear();
+	m_Energy_mcJet_woInvisibles.clear();
+	m_Theta_recoJet.clear();
+	m_Phi_recoJet.clear();
+	m_Energy_recoJet.clear();
+	m_nPFOs_NeutralHadrons.clear();
+	m_nPFOs_Photons.clear();
+	m_nPFOs_ChargedPFOs.clear();
+	m_nPFOs_Total.clear();
+	m_PFOEnergy_NeutralHadrons.clear();
+	m_PFOEnergy_Photons.clear();
+	m_PFOEnergy_ChargedPFOs.clear();
+	m_PFOEnergy_Total.clear();
+	m_EnergyFraction_NeutralHadrons.clear();
+	m_EnergyFraction_Photons.clear();
+	m_EnergyFraction_ChargedPFOs.clear();
+	m_ResidualTheta_mcQuark_mcJet.clear();
+	m_ResidualPhi_mcQuark_mcJet.clear();
+	m_ResidualEnergy_mcQuark_mcJet.clear();
+	m_ResidualTheta_mcJet_recoJet.clear();
+	m_ResidualPhi_mcJet_recoJet.clear();
+	m_ResidualEnergy_mcJet_recoJet.clear();
+	m_ResidualTheta_mcQuark_recoJet.clear();
+	m_ResidualPhi_mcQuark_recoJet.clear();
+	m_ResidualEnergy_mcQuark_recoJet.clear();
+	m_NormalizedResidualTheta_mcQuark_mcJet.clear();
+	m_NormalizedResidualPhi_mcQuark_mcJet.clear();
+	m_NormalizedResidualEnergy_mcQuark_mcJet.clear();
+	m_NormalizedResidualTheta_mcJet_recoJet.clear();
+	m_NormalizedResidualPhi_mcJet_recoJet.clear();
+	m_NormalizedResidualEnergy_mcJet_recoJet.clear();
+	m_NormalizedResidualTheta_mcQuark_recoJet.clear();
+	m_NormalizedResidualPhi_mcQuark_recoJet.clear();
+	m_NormalizedResidualEnergy_mcQuark_recoJet.clear();
+	m_JetErrorEnergy_ErrorFlow.clear();
+	m_JetErrorTheta_ErrorFlow.clear();
+	m_JetErrorPhi_ErrorFlow.clear();
 }
 
 void ZHllqq5CFit::processRunHeader()
@@ -1512,7 +1618,7 @@ void ZHllqq5CFit::getHmumu4Momentum( EVENT::LCEvent *pLCEvent )
 	}
 	catch(DataNotAvailableException &e)
 	{
-		streamlog_out(MESSAGE) << "Input collections not found in event " << m_nEvt << std::endl;
+		streamlog_out(MESSAGE) << "getHmumu4Momentum : Input collections not found in event " << m_nEvt << std::endl;
 	}
 
 }
@@ -1570,11 +1676,11 @@ void ZHllqq5CFit::getMCISRFSR( EVENT::LCEvent *pLCEvent )
 	}
 	catch(DataNotAvailableException &e)
 	{
-		streamlog_out(MESSAGE) << "Input collections not found in event " << m_nEvt << std::endl;
+		streamlog_out(MESSAGE) << "getMCISRFSR : Input collections not found in event " << m_nEvt << std::endl;
 	}
 }
 
-void ZHllqq5CFit::getJetAngleResolution( EVENT::LCEvent *pLCEvent )
+void ZHllqq5CFit::getJetAngleResolution( EVENT::LCEvent *pLCEvent , int nSLDecayTotal )
 {
 	LCCollection *RecoJetCol{};
 	LCCollection *MCPCol{};
@@ -1666,6 +1772,12 @@ void ZHllqq5CFit::getJetAngleResolution( EVENT::LCEvent *pLCEvent )
 			recoJet.push_back( RecoJet1 );
 			streamlog_out(MESSAGE) << "RecoJet1 corresponds to MCQuark2 and RecoJet2 corresponds to MCQuark1" << std::endl;
 		}
+
+		float px, px2, py, py2, pz, pz2, pt, pt2, p, p2;
+		float Sigpx2, SigpxSigpy, Sigpy2, SigpxSigpz, SigpySigpz, Sigpz2, Sige2;
+		float Dth_Dpx, Dth_Dpy, Dth_Dpz;
+		float Dphi_Dpx, Dphi_Dpy;
+		float JetEnergyErr, JetThetaErr, JetPhiErr;
 		for ( int i_jet = 0 ; i_jet < 2 ; ++i_jet )
 		{
 			TVector3 mcQuarkP( ( mcQuark[ i_jet ] )->getMomentum() );
@@ -1683,79 +1795,182 @@ void ZHllqq5CFit::getJetAngleResolution( EVENT::LCEvent *pLCEvent )
 
 			float mcQuark_Theta = mcQuarkP.Theta();
 			float mcQuark_Phi = mcQuarkP.Phi();
+			m_Theta_mcQuark.push_back( mcQuark_Theta );
+			m_Phi_mcQuark.push_back( mcQuark_Phi );
+			m_Energy_mcQuark.push_back( ( mcQuark[ i_jet ] )->getEnergy() );
 			float mcJetwNu_Theta = mcJetwNuP.Theta();
 			float mcJetwNu_Phi = mcJetwNuP.Phi();
+			m_Theta_mcJet_wInvisibles.push_back( mcJetwNu_Theta );
+			m_Phi_mcJet_wInvisibles.push_back( mcJetwNu_Phi );
+			m_Energy_mcJet_wInvisibles.push_back( ( mcJet_wNu[ i_jet ] )->getEnergy() );
 			float mcJetwoNu_Theta = mcJetwoNuP.Theta();
 			float mcJetwoNu_Phi = mcJetwoNuP.Phi();
+			m_Theta_mcJet_woInvisibles.push_back( mcJetwoNu_Theta );
+			m_Phi_mcJet_woInvisibles.push_back( mcJetwoNu_Phi );
+			m_Energy_mcJet_woInvisibles.push_back( ( mcJet_woNu[ i_jet ] )->getEnergy() );
 			float recoJet_Theta = recoJetP.Theta();
 			float recoJet_Phi = recoJetP.Phi();
+			m_Theta_recoJet.push_back( recoJet_Theta );
+			m_Phi_recoJet.push_back( recoJet_Phi );
+			m_Energy_recoJet.push_back( ( recoJet[ i_jet ] )->getEnergy() );
 
-			m_SigmaTheta_mcQuark_mcJet.push_back( mcJetwNu_Theta - mcQuark_Theta );
-//			m_SigmaPhi_mcQuark_mcJet.push_back( acos( mcQuarkPt.Dot(mcJetwNuPt) ) );
+			px =	( recoJet[ i_jet ] )->getMomentum()[0];
+			px2 =	std::pow( px , 2 );
+			py =	( recoJet[ i_jet ] )->getMomentum()[1];
+			py2 =	std::pow( py , 2 );
+			pz =	( recoJet[ i_jet ] )->getMomentum()[2];
+			pz2 =	std::pow( pz , 2 );
+			pt2 =	px2 + py2;
+			pt =	std::sqrt( pt2 );
+			p =	std::sqrt( px2 + py2 + pz2 );
+			p2 =	std::pow( p , 2 );
+
+			Sigpx2 =		( recoJet[ i_jet ] )->getCovMatrix()[0];
+			SigpxSigpy =	( recoJet[ i_jet ] )->getCovMatrix()[1];
+			Sigpy2 =		( recoJet[ i_jet ] )->getCovMatrix()[2];
+			SigpxSigpz =	( recoJet[ i_jet ] )->getCovMatrix()[3];
+			SigpySigpz =	( recoJet[ i_jet ] )->getCovMatrix()[4];
+			Sigpz2 =		( recoJet[ i_jet ] )->getCovMatrix()[5];
+			Sige2 =		( recoJet[ i_jet ] )->getCovMatrix()[9];
+
+			Dth_Dpx =	px * pz / ( p2 * pt );
+			Dth_Dpy =	py * pz / ( p2 * pt );
+			Dth_Dpz =	-pt / p2;
+
+			Dphi_Dpx =	-py / pt2;
+			Dphi_Dpy =	px / pt2;
+
+			JetEnergyErr =	sigmaScaleFactor * std::sqrt( Sige2 );
+			JetThetaErr =	m_JetResThetaCoeff * std::sqrt( std::fabs( Sigpx2 * std::pow( Dth_Dpx , 2 ) + Sigpy2 * std::pow( Dth_Dpy , 2 ) + Sigpz2 * std::pow( Dth_Dpz , 2 ) + 2 * ( SigpxSigpy * Dth_Dpx * Dth_Dpy ) + 2 * ( SigpySigpz * Dth_Dpy * Dth_Dpz ) + 2 * ( SigpxSigpz * Dth_Dpx * Dth_Dpz ) ) );
+			JetPhiErr =	m_JetResPhiCoeff * std::sqrt( std::fabs( Sigpx2 * std::pow( Dphi_Dpx , 2 ) + Sigpy2 * std::pow( Dphi_Dpy , 2 ) + 2 * ( SigpxSigpy * Dphi_Dpx * Dphi_Dpy ) ) );
+
+			m_ResidualTheta_mcQuark_mcJet.push_back( mcJetwNu_Theta - mcQuark_Theta );
+			m_NormalizedResidualTheta_mcQuark_mcJet.push_back( ( mcJetwNu_Theta - mcQuark_Theta) / JetThetaErr );
+//			m_ResidualPhi_mcQuark_mcJet.push_back( acos( mcQuarkPt.Dot(mcJetwNuPt) ) );
 			streamlog_out(MESSAGE) << "mcJetwNu_Theta - mcQuark_Theta = " << mcJetwNu_Theta << " - " << mcQuark_Theta << std::endl;
 			streamlog_out(MESSAGE) << "mcJetwNu_Phi - mcQuark_Phi = " << mcJetwNu_Phi << " - " << mcQuark_Phi << std::endl;
-			if ( mcJetwNu_Phi < mcQuark_Phi )
+			streamlog_out(MESSAGE) << "mcJetwNu_Energy - mcQuark_Energy = " << ( mcJet_wNu[ i_jet ] )->getEnergy() << " - " << ( mcQuark[ i_jet ] )->getEnergy() << std::endl;
+			if ( mcJetwNu_Phi > mcQuark_Phi )
 			{
-				m_SigmaPhi_mcQuark_mcJet.push_back( acos( mcQuarkPt.Dot(mcJetwNuPt) ) );
+				m_ResidualPhi_mcQuark_mcJet.push_back( acos( mcQuarkPt.Dot(mcJetwNuPt) ) );
+				m_NormalizedResidualPhi_mcQuark_mcJet.push_back( acos( mcQuarkPt.Dot(mcJetwNuPt) ) / JetPhiErr );
 			}
 			else
 			{
-				m_SigmaPhi_mcQuark_mcJet.push_back( -acos( mcQuarkPt.Dot(mcJetwNuPt) ) );
+				m_ResidualPhi_mcQuark_mcJet.push_back( -acos( mcQuarkPt.Dot(mcJetwNuPt) ) );
+				m_NormalizedResidualPhi_mcQuark_mcJet.push_back( -acos( mcQuarkPt.Dot(mcJetwNuPt) ) / JetPhiErr );
 			}
-			m_SigmaEnergy_mcQuark_mcJet.push_back( ( ( mcJet_wNu[ i_jet ] )->getEnergy() - ( mcQuark[ i_jet ] )->getEnergy() ) / ( ( mcQuark[ i_jet ] )->getEnergy() ) );
+			m_ResidualEnergy_mcQuark_mcJet.push_back( ( mcJet_wNu[ i_jet ] )->getEnergy() - ( mcQuark[ i_jet ] )->getEnergy() );
+			m_NormalizedResidualEnergy_mcQuark_mcJet.push_back( ( ( mcJet_wNu[ i_jet ] )->getEnergy() - ( mcQuark[ i_jet ] )->getEnergy() ) / JetEnergyErr );
 
-			m_SigmaTheta_mcJet_recoJet.push_back( recoJet_Theta - mcJetwoNu_Theta );
-//			m_SigmaPhi_mcJet_recoJet.push_back( acos( mcJetwoNuPt.Dot(recoJetPt) ) );
+			m_ResidualTheta_mcJet_recoJet.push_back( recoJet_Theta - mcJetwoNu_Theta );
+			m_NormalizedResidualTheta_mcJet_recoJet.push_back( ( recoJet_Theta - mcJetwoNu_Theta ) / JetThetaErr );
+//			m_ResidualPhi_mcJet_recoJet.push_back( acos( mcJetwoNuPt.Dot(recoJetPt) ) );
 			streamlog_out(MESSAGE) << "recoJet_Theta - mcJetwoNu_Theta = " << recoJet_Theta << " - " << mcJetwoNu_Theta << std::endl;
 			streamlog_out(MESSAGE) << "recoJet_Phi - mcJetwoNu_Phi = " << recoJet_Phi << " - " << mcJetwoNu_Phi << std::endl;
-			if ( recoJet_Phi < mcJetwoNu_Phi )
+			streamlog_out(MESSAGE) << "recoJet_Energy - mcJetwoNu_Energy = " << ( recoJet[ i_jet ] )->getEnergy() << " - " << ( mcJet_woNu[ i_jet ] )->getEnergy() << std::endl;
+			if ( recoJet_Phi > mcJetwoNu_Phi )
 			{
-				m_SigmaPhi_mcJet_recoJet.push_back( acos( mcJetwoNuPt.Dot(recoJetPt) ) );
+				m_ResidualPhi_mcJet_recoJet.push_back( acos( mcJetwoNuPt.Dot(recoJetPt) ) );
+				m_NormalizedResidualPhi_mcJet_recoJet.push_back( acos( mcJetwoNuPt.Dot(recoJetPt) ) / JetPhiErr );
 			}
 			else
 			{
-				m_SigmaPhi_mcJet_recoJet.push_back( -acos( mcJetwoNuPt.Dot(recoJetPt) ) );
+				m_ResidualPhi_mcJet_recoJet.push_back( -acos( mcJetwoNuPt.Dot(recoJetPt) ) );
+				m_NormalizedResidualPhi_mcJet_recoJet.push_back( -acos( mcJetwoNuPt.Dot(recoJetPt) ) / JetPhiErr );
 			}
-			m_SigmaEnergy_mcJet_recoJet.push_back( ( ( recoJet[ i_jet ] )->getEnergy() - ( mcJet_woNu[ i_jet ] )->getEnergy() ) / ( ( mcJet_woNu[ i_jet ] )->getEnergy() ) );
+			m_ResidualEnergy_mcJet_recoJet.push_back( ( recoJet[ i_jet ] )->getEnergy() - ( mcJet_woNu[ i_jet ] )->getEnergy() );
+			m_NormalizedResidualEnergy_mcJet_recoJet.push_back( ( ( recoJet[ i_jet ] )->getEnergy() - ( mcJet_woNu[ i_jet ] )->getEnergy() ) / JetEnergyErr );
 
-			m_SigmaTheta_mcQuark_recoJet.push_back( recoJet_Theta - mcQuark_Theta );
-//			m_SigmaPhi_mcQuark_recoJet.push_back( acos( mcQuarkPt.Dot(recoJetPt) ) );
+			m_ResidualTheta_mcQuark_recoJet.push_back( recoJet_Theta - mcQuark_Theta );
+			m_NormalizedResidualTheta_mcQuark_recoJet.push_back( ( recoJet_Theta - mcQuark_Theta ) / JetThetaErr );
+//			m_ResidualPhi_mcQuark_recoJet.push_back( acos( mcQuarkPt.Dot(recoJetPt) ) );
 			streamlog_out(MESSAGE) << "recoJet_Theta - mcQuark_Theta = " << recoJet_Theta << " - " << mcQuark_Theta << std::endl;
 			streamlog_out(MESSAGE) << "recoJet_Phi - mcQuark_Phi = " << recoJet_Phi << " - " << mcQuark_Phi << std::endl;
-			if ( recoJet_Phi < mcQuark_Phi )
+			streamlog_out(MESSAGE) << "recoJet_Energy - mcQuark_Energy = " << ( recoJet[ i_jet ] )->getEnergy() << " - " << ( mcQuark[ i_jet ] )->getEnergy() << std::endl;
+			if ( recoJet_Phi > mcQuark_Phi )
 			{
-				m_SigmaPhi_mcQuark_recoJet.push_back( acos( mcQuarkPt.Dot(recoJetPt) ) );
+				m_ResidualPhi_mcQuark_recoJet.push_back( acos( mcQuarkPt.Dot(recoJetPt) ) );
+				m_NormalizedResidualPhi_mcQuark_recoJet.push_back( acos( mcQuarkPt.Dot(recoJetPt) ) / JetPhiErr );
 			}
 			else
 			{
-				m_SigmaPhi_mcQuark_recoJet.push_back( -acos( mcQuarkPt.Dot(recoJetPt) ) );
+				m_ResidualPhi_mcQuark_recoJet.push_back( -acos( mcQuarkPt.Dot(recoJetPt) ) );
+				m_NormalizedResidualPhi_mcQuark_recoJet.push_back( -acos( mcQuarkPt.Dot(recoJetPt) ) / JetPhiErr );
 			}
-			m_SigmaEnergy_mcQuark_recoJet.push_back( ( ( recoJet[ i_jet ] )->getEnergy() - ( mcQuark[ i_jet ] )->getEnergy() ) / ( ( mcQuark[ i_jet ] )->getEnergy() ) );
-			
-			h_SigmaTheta_mcQmcJ_Theta_mcQ->Fill( mcQuark_Theta , m_SigmaTheta_mcQuark_mcJet[ i_jet ] );
-			h_SigmaPhi_mcQmcJ_Phi_mcQ->Fill( mcQuark_Phi , m_SigmaPhi_mcQuark_mcJet[ i_jet ] );
-			h_SigmaEnergy_mcQmcJ_Energy_mcQ->Fill( ( mcQuark[ i_jet ] )->getEnergy() , m_SigmaEnergy_mcQuark_mcJet[ i_jet ] );
-			h_SigmaTheta_mcQmcJ_Energy_mcQ->Fill( ( mcQuark[ i_jet ] )->getEnergy() , m_SigmaTheta_mcQuark_mcJet[ i_jet ] );
-			h_SigmaPhi_mcQmcJ_Energy_mcQ->Fill( ( mcQuark[ i_jet ] )->getEnergy() , m_SigmaPhi_mcQuark_mcJet[ i_jet ] );
+			m_ResidualEnergy_mcQuark_recoJet.push_back( ( recoJet[ i_jet ] )->getEnergy() - ( mcQuark[ i_jet ] )->getEnergy() );
+			m_NormalizedResidualEnergy_mcQuark_recoJet.push_back( ( ( recoJet[ i_jet ] )->getEnergy() - ( mcQuark[ i_jet ] )->getEnergy() ) / JetEnergyErr );
+			m_JetErrorEnergy_ErrorFlow.push_back( JetEnergyErr );
+			m_JetErrorTheta_ErrorFlow.push_back( JetThetaErr );
+			m_JetErrorPhi_ErrorFlow.push_back( JetPhiErr );
 
-			h_SigmaTheta_mcJrecJ_Theta_mcJ->Fill( mcJetwoNu_Theta , m_SigmaTheta_mcJet_recoJet[ i_jet ] );
-			h_SigmaPhi_mcJrecJ_Phi_mcJ->Fill( mcJetwoNu_Phi , m_SigmaPhi_mcJet_recoJet[ i_jet ] );
-			h_SigmaEnergy_mcJrecJ_Energy_mcJ->Fill( ( mcJet_woNu[ i_jet ] )->getEnergy() , m_SigmaEnergy_mcJet_recoJet[ i_jet ] );
-			h_SigmaTheta_mcJrecJ_Energy_mcJ->Fill( ( mcJet_woNu[ i_jet ] )->getEnergy() , m_SigmaTheta_mcJet_recoJet[ i_jet ] );
-			h_SigmaPhi_mcJrecJ_Energy_mcJ->Fill( ( mcJet_woNu[ i_jet ] )->getEnergy() , m_SigmaPhi_mcJet_recoJet[ i_jet ] );
+			if ( nSLDecayTotal == 0 )
+			{
+				h_NormalizedResidualTheta_mcQmcJ_ThetaMcJet->Fill( cos( mcJetwNu_Theta ) , m_ResidualTheta_mcQuark_mcJet[ i_jet ] / JetThetaErr );
+				h_NormalizedResidualPhi_mcQmcJ_PhiMcJet->Fill( mcJetwNu_Phi , m_ResidualPhi_mcQuark_mcJet[ i_jet ] / JetPhiErr );
+				h_NormalizedResidualEnergy_mcQmcJ_EnergyMcJet->Fill( ( mcJet_wNu[ i_jet ] )->getEnergy() , m_ResidualEnergy_mcQuark_mcJet[ i_jet ] / JetEnergyErr );
+				h_NormalizedResidualTheta_mcQmcJ_EnergyMcJet->Fill( ( mcJet_wNu[ i_jet ] )->getEnergy() , m_ResidualTheta_mcQuark_mcJet[ i_jet ] / JetThetaErr );
+				h_NormalizedResidualPhi_mcQmcJ_EnergyMcJet->Fill( ( mcJet_wNu[ i_jet ] )->getEnergy() , m_ResidualPhi_mcQuark_mcJet[ i_jet ] / JetPhiErr );
 
-			h_SigmaTheta_mcQrecJ_Theta_mcQ->Fill( mcQuark_Theta , m_SigmaTheta_mcQuark_recoJet[ i_jet ] );
-			h_SigmaPhi_mcQrecJ_Phi_mcQ->Fill( mcQuark_Phi , m_SigmaPhi_mcQuark_recoJet[ i_jet ] );
-			h_SigmaEnergy_mcQrecJ_Energy_mcQ->Fill( ( mcQuark[ i_jet ] )->getEnergy() , m_SigmaEnergy_mcQuark_recoJet[ i_jet ] );
-			h_SigmaTheta_mcQrecJ_Energy_mcQ->Fill( ( mcQuark[ i_jet ] )->getEnergy() , m_SigmaTheta_mcQuark_recoJet[ i_jet ] );
-			h_SigmaPhi_mcQrecJ_Energy_mcQ->Fill( ( mcQuark[ i_jet ] )->getEnergy() , m_SigmaPhi_mcQuark_recoJet[ i_jet ] );
+				h_NormalizedResidualTheta_mcJrecJ_ThetaRecJet->Fill( cos( recoJet_Theta ) , m_ResidualTheta_mcJet_recoJet[ i_jet ] / JetThetaErr );
+				h_NormalizedResidualPhi_mcJrecJ_PhiRecJet->Fill( mcJetwNu_Phi , m_ResidualPhi_mcJet_recoJet[ i_jet ] / JetPhiErr );
+				h_NormalizedResidualEnergy_mcJrecJ_EnergyRecJet->Fill( ( recoJet[ i_jet ] )->getEnergy() , m_ResidualEnergy_mcJet_recoJet[ i_jet ] / JetEnergyErr );
+				h_NormalizedResidualTheta_mcJrecJ_EnergyRecJet->Fill( ( recoJet[ i_jet ] )->getEnergy() , m_ResidualTheta_mcJet_recoJet[ i_jet ] / JetThetaErr );
+				h_NormalizedResidualPhi_mcJrecJ_EnergyRecJet->Fill( ( recoJet[ i_jet ] )->getEnergy() , m_ResidualPhi_mcJet_recoJet[ i_jet ] / JetPhiErr );
+
+				h_NormalizedResidualTheta_mcQrecJ_ThetaRecJet->Fill( cos( recoJet_Theta ) , m_ResidualTheta_mcQuark_recoJet[ i_jet ] / JetThetaErr );
+				h_NormalizedResidualPhi_mcQrecJ_PhiRecJet->Fill( mcJetwNu_Phi , m_ResidualPhi_mcQuark_recoJet[ i_jet ] / JetPhiErr );
+				h_NormalizedResidualEnergy_mcQrecJ_EnergyRecJet->Fill( ( recoJet[ i_jet ] )->getEnergy() , m_ResidualEnergy_mcQuark_recoJet[ i_jet ] / JetEnergyErr );
+				h_NormalizedResidualTheta_mcQrecJ_EnergyRecJet->Fill( ( recoJet[ i_jet ] )->getEnergy() , m_ResidualTheta_mcQuark_recoJet[ i_jet ] / JetThetaErr );
+				h_NormalizedResidualPhi_mcQrecJ_EnergyRecJet->Fill( ( recoJet[ i_jet ] )->getEnergy() , m_ResidualPhi_mcQuark_recoJet[ i_jet ] / JetPhiErr );
+			}
+			ReconstructedParticleVec jetPFOs  = recoJet[ i_jet ]->getParticles();
+			int nPFOs = jetPFOs.size();
+			int n_Nh = 0;
+			int n_Ph = 0;
+			int n_Ch = 0;
+			float E_Nh = 0;
+			float E_Ph = 0;
+			float E_Ch = 0;
+			float E_tot = 0;
+			for ( int i_pfo = 0 ; i_pfo < nPFOs ; ++i_pfo )
+			{
+				ReconstructedParticle *pfo = jetPFOs[ i_pfo ];
+				E_tot += pfo->getEnergy();
+				if ( 0 != pfo->getCharge() )
+				{
+					E_Ch += pfo->getEnergy();
+					++n_Ch;
+				}
+				else if ( 22 == pfo->getType() )
+				{
+					E_Ph += pfo->getEnergy();
+					++n_Ph;
+				}
+				else
+				{
+					E_Nh += pfo->getEnergy();
+					++n_Nh;
+				}
+			}
+			m_nPFOs_NeutralHadrons.push_back( n_Nh );
+			m_nPFOs_Photons.push_back( n_Ph );
+			m_nPFOs_ChargedPFOs.push_back( n_Ch );
+			m_nPFOs_Total.push_back( nPFOs );
+			m_PFOEnergy_NeutralHadrons.push_back( E_Nh );
+			m_PFOEnergy_Photons.push_back( E_Ph );
+			m_PFOEnergy_ChargedPFOs.push_back( E_Ch );
+			m_PFOEnergy_Total.push_back( E_tot );
+			m_EnergyFraction_NeutralHadrons.push_back( E_Nh / E_tot );
+			m_EnergyFraction_Photons.push_back( E_Ph / E_tot );
+			m_EnergyFraction_ChargedPFOs.push_back( E_Ch / E_tot );
 		}
 		streamlog_out(MESSAGE) << "Residuals of jet angles calculated in event " << m_nEvt << std::endl;
 
 	}
 	catch(DataNotAvailableException &e)
 	{
-		streamlog_out(MESSAGE) << "Input collections not found in event " << m_nEvt << std::endl;
+		streamlog_out(MESSAGE) << "getJetAngleResolution : Input collections not found in event " << m_nEvt << std::endl;
 	}
 
 }
@@ -1852,7 +2067,6 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 		h_nLeptons_nJets->Fill( m_nLeptons , m_nJets );
 		if (m_nJets != 2 || m_nLeptons != 2) return;
 
-		this->getJetAngleResolution( pLCEvent );
 		this->getMCISRFSR( pLCEvent );
 		this->getHmumu4Momentum( pLCEvent );
 
@@ -1883,6 +2097,8 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 			streamlog_out(DEBUG)  << "Found " << m_nSLDecayBHadron << " semileptonic decay of B-hadron in event " << m_nEvt << std::endl;
 			streamlog_out(DEBUG)  << "Found " << m_nSLDecayCHadron << " semileptonic decay of C-hadron in event " << m_nEvt << std::endl;
 		}
+		this->getJetAngleResolution( pLCEvent , m_nSLDecayTotal );
+
 		float yminus = inputJetCollection->parameters().getFloatVal( "YMinus" );
 		streamlog_out(DEBUG)  << " Yminus = " << yminus << std::endl;
 		float yplus = inputJetCollection->parameters().getFloatVal( "YPlus" );
@@ -2793,10 +3009,10 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 			h_fitProbability_Phijet->Fill( m_jet_startPhi_best[1] * 45 / atan(1) , m_probability_best );
 			h_fitProbability_SigmaEjet->Fill( m_jet_SigmaE[0] , m_probability_best );
 			h_fitProbability_SigmaEjet->Fill( m_jet_SigmaE[1] , m_probability_best );
-			h_fitProbability_SigmaThetajet->Fill( m_jet_SigmaTheta[0] * 100 , m_probability_best );
-			h_fitProbability_SigmaThetajet->Fill( m_jet_SigmaTheta[1] * 100 , m_probability_best );
-			h_fitProbability_SigmaPhijet->Fill( m_jet_SigmaPhi[0] * 100 , m_probability_best );
-			h_fitProbability_SigmaPhijet->Fill( m_jet_SigmaPhi[1] * 100 , m_probability_best );
+			h_fitProbability_SigmaThetajet->Fill( m_jet_SigmaTheta[0] * m_JetResThetaCoeff , m_probability_best );
+			h_fitProbability_SigmaThetajet->Fill( m_jet_SigmaTheta[1] * m_JetResThetaCoeff , m_probability_best );
+			h_fitProbability_SigmaPhijet->Fill( m_jet_SigmaPhi[0] * m_JetResPhiCoeff , m_probability_best );
+			h_fitProbability_SigmaPhijet->Fill( m_jet_SigmaPhi[1] * m_JetResPhiCoeff , m_probability_best );
 			h_fitProbability_pullEjet->Fill( m_pull_jet_E_best[0] , m_probability_best );
 			h_fitProbability_pullEjet->Fill( m_pull_jet_E_best[1] , m_probability_best );
 			h_fitProbability_pullThetajet->Fill( m_pull_jet_th_best[0] , m_probability_best );
@@ -2834,11 +3050,13 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 			h_constraintPy_uncertaintyPy->Fill( m_pyc_before_ISR_wNu , std::sqrt( m_TotalSigmaPy2 ) );
 			h_constraintPz_uncertaintyPz->Fill( m_pzc_before_ISR_wNu , std::sqrt( m_TotalSigmaPz2 ) );
 			h_constraintE_uncertaintyE->Fill( m_ec_before_ISR_wNu , std::sqrt( m_TotalSigmaE2 ) );
-			
+
 			h_recE_fitE->Fill( ( m_jet_fittedE_best[0] - m_jet_startE_best[0] ) / m_jet_startE_best[0] );
 			h_recE_fitE->Fill( ( m_jet_fittedE_best[1] - m_jet_startE_best[1] ) / m_jet_startE_best[1] );
 			h_recPhifitPhi_recThetafitTheta->Fill( m_jet_fittedPhi_best[0] - m_jet_startPhi_best[0] , m_jet_fittedTheta_best[0] - m_jet_startTheta_best[0] );
 			h_recPhifitPhi_recThetafitTheta->Fill( m_jet_fittedPhi_best[1] - m_jet_startPhi_best[1] , m_jet_fittedTheta_best[1] - m_jet_startTheta_best[1] );
+			h_recPhifitPhi_recThetafitTheta_SigmaThetaPhi->Fill( ( m_jet_fittedPhi_best[0] - m_jet_startPhi_best[0] ) / m_jet_SigmaPhi[0] , ( m_jet_fittedTheta_best[0] - m_jet_startTheta_best[0] ) / m_jet_SigmaTheta[0] );
+			h_recPhifitPhi_recThetafitTheta_SigmaThetaPhi->Fill( ( m_jet_fittedPhi_best[1] - m_jet_startPhi_best[1] ) / m_jet_SigmaPhi[1] , ( m_jet_fittedTheta_best[1] - m_jet_startTheta_best[1] ) / m_jet_SigmaTheta[1] );
 
 			if ( m_probability_best < 0.1 )
 			{
@@ -2854,6 +3072,8 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 				h_pull_jet_theta_jet_phi_lowFitProb->Fill( m_pull_jet_th_best[1] , m_pull_jet_phi_best[1] );
 				h_recPhifitPhi_recThetafitTheta_lowfit->Fill( m_jet_fittedPhi_best[0] - m_jet_startPhi_best[0] , m_jet_fittedTheta_best[0] - m_jet_startTheta_best[0] );
 				h_recPhifitPhi_recThetafitTheta_lowfit->Fill( m_jet_fittedPhi_best[1] - m_jet_startPhi_best[1] , m_jet_fittedTheta_best[1] - m_jet_startTheta_best[1] );
+				h_recPhifitPhi_recThetafitTheta_lowfit_SigmaThetaPhi->Fill( ( m_jet_fittedPhi_best[0] - m_jet_startPhi_best[0] ) / m_jet_SigmaPhi[0] , ( m_jet_fittedTheta_best[0] - m_jet_startTheta_best[0] ) / m_jet_SigmaTheta[0] );
+				h_recPhifitPhi_recThetafitTheta_lowfit_SigmaThetaPhi->Fill( ( m_jet_fittedPhi_best[1] - m_jet_startPhi_best[1] ) / m_jet_SigmaPhi[1] , ( m_jet_fittedTheta_best[1] - m_jet_startTheta_best[1] ) / m_jet_SigmaTheta[1] );
 			}
 			else if ( 0.1 <= m_probability_best && m_probability_best < 0.9 )
 			{
@@ -2869,6 +3089,8 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 				h_pull_jet_theta_jet_phi_midFitProb->Fill( m_pull_jet_th_best[1] , m_pull_jet_phi_best[1] );
 				h_recPhifitPhi_recThetafitTheta_midfit->Fill( m_jet_fittedPhi_best[0] - m_jet_startPhi_best[0] , m_jet_fittedTheta_best[0] - m_jet_startTheta_best[0] );
 				h_recPhifitPhi_recThetafitTheta_midfit->Fill( m_jet_fittedPhi_best[1] - m_jet_startPhi_best[1] , m_jet_fittedTheta_best[1] - m_jet_startTheta_best[1] );
+				h_recPhifitPhi_recThetafitTheta_midfit_SigmaThetaPhi->Fill( ( m_jet_fittedPhi_best[0] - m_jet_startPhi_best[0] ) / m_jet_SigmaPhi[0] , ( m_jet_fittedTheta_best[0] - m_jet_startTheta_best[0] ) / m_jet_SigmaTheta[0] );
+				h_recPhifitPhi_recThetafitTheta_midfit_SigmaThetaPhi->Fill( ( m_jet_fittedPhi_best[1] - m_jet_startPhi_best[1] ) / m_jet_SigmaPhi[1] , ( m_jet_fittedTheta_best[1] - m_jet_startTheta_best[1] ) / m_jet_SigmaTheta[1] );
 			}
 			else
 			{
@@ -2884,6 +3106,8 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 				h_pull_jet_theta_jet_phi_highFitProb->Fill( m_pull_jet_th_best[1] , m_pull_jet_phi_best[1] );
 				h_recPhifitPhi_recThetafitTheta_highfit->Fill( m_jet_fittedPhi_best[0] - m_jet_startPhi_best[0] , m_jet_fittedTheta_best[0] - m_jet_startTheta_best[0] );
 				h_recPhifitPhi_recThetafitTheta_highfit->Fill( m_jet_fittedPhi_best[1] - m_jet_startPhi_best[1] , m_jet_fittedTheta_best[1] - m_jet_startTheta_best[1] );
+				h_recPhifitPhi_recThetafitTheta_highfit_SigmaThetaPhi->Fill( ( m_jet_fittedPhi_best[0] - m_jet_startPhi_best[0] ) / m_jet_SigmaPhi[0] , ( m_jet_fittedTheta_best[0] - m_jet_startTheta_best[0] ) / m_jet_SigmaTheta[0] );
+				h_recPhifitPhi_recThetafitTheta_highfit_SigmaThetaPhi->Fill( ( m_jet_fittedPhi_best[1] - m_jet_startPhi_best[1] ) / m_jet_SigmaPhi[1] , ( m_jet_fittedTheta_best[1] - m_jet_startTheta_best[1] ) / m_jet_SigmaTheta[1] );
 			}
 
 			LCCollectionVec *OutputCol = new LCCollectionVec(LCIO::RECONSTRUCTEDPARTICLE);
@@ -2940,6 +3164,7 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 			m_pTTree_1->Fill();
 			m_pTTree_2->Fill();
 			m_pTTree_4->Fill();
+			m_pTTree_6->Fill();
 		}
 		m_pTTree_3->Fill();
 		FitResultwoNu.clear();
@@ -2948,7 +3173,7 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 	}
 	catch(DataNotAvailableException &e)
 	{
-		streamlog_out(MESSAGE) << "Input collections not found in event " << m_nEvt << std::endl;
+		streamlog_out(MESSAGE) << "processEvent : Input collections not found in event " << m_nEvt << std::endl;
 	}
 
 }
@@ -3824,6 +4049,7 @@ void ZHllqq5CFit::end()
 	m_pTTree_3->Write();
 	m_pTTree_4->Write();
 	m_pTTree_5->Write();
+	m_pTTree_6->Write();
 	h_HDecayMode->Write();
 	h_Zmass_beforefit_woNu->Write();
 	h_Hmass_beforefit_woNu->Write();
@@ -3924,26 +4150,30 @@ void ZHllqq5CFit::end()
 	h_pull_jet_theta_jet_phi_lowFitProb->Write();
 	h_pull_jet_theta_jet_phi_midFitProb->Write();
 	h_pull_jet_theta_jet_phi_highFitProb->Write();
-	h_SigmaTheta_mcQmcJ_Theta_mcQ->Write();
-	h_SigmaPhi_mcQmcJ_Phi_mcQ->Write();
-	h_SigmaEnergy_mcQmcJ_Energy_mcQ->Write();
-	h_SigmaTheta_mcQmcJ_Energy_mcQ->Write();
-	h_SigmaPhi_mcQmcJ_Energy_mcQ->Write();
-	h_SigmaTheta_mcJrecJ_Theta_mcJ->Write();
-	h_SigmaPhi_mcJrecJ_Phi_mcJ->Write();
-	h_SigmaEnergy_mcJrecJ_Energy_mcJ->Write();
-	h_SigmaTheta_mcJrecJ_Energy_mcJ->Write();
-	h_SigmaPhi_mcJrecJ_Energy_mcJ->Write();
-	h_SigmaTheta_mcQrecJ_Theta_mcQ->Write();
-	h_SigmaPhi_mcQrecJ_Phi_mcQ->Write();
-	h_SigmaEnergy_mcQrecJ_Energy_mcQ->Write();
-	h_SigmaTheta_mcQrecJ_Energy_mcQ->Write();
-	h_SigmaPhi_mcQrecJ_Energy_mcQ->Write();
+	h_NormalizedResidualTheta_mcQmcJ_ThetaMcJet->Write();
+	h_NormalizedResidualPhi_mcQmcJ_PhiMcJet->Write();
+	h_NormalizedResidualEnergy_mcQmcJ_EnergyMcJet->Write();
+	h_NormalizedResidualTheta_mcQmcJ_EnergyMcJet->Write();
+	h_NormalizedResidualPhi_mcQmcJ_EnergyMcJet->Write();
+	h_NormalizedResidualTheta_mcJrecJ_ThetaRecJet->Write();
+	h_NormalizedResidualPhi_mcJrecJ_PhiRecJet->Write();
+	h_NormalizedResidualEnergy_mcJrecJ_EnergyRecJet->Write();
+	h_NormalizedResidualTheta_mcJrecJ_EnergyRecJet->Write();
+	h_NormalizedResidualPhi_mcJrecJ_EnergyRecJet->Write();
+	h_NormalizedResidualTheta_mcQrecJ_ThetaRecJet->Write();
+	h_NormalizedResidualPhi_mcQrecJ_PhiRecJet->Write();
+	h_NormalizedResidualEnergy_mcQrecJ_EnergyRecJet->Write();
+	h_NormalizedResidualTheta_mcQrecJ_EnergyRecJet->Write();
+	h_NormalizedResidualPhi_mcQrecJ_EnergyRecJet->Write();
 	h_recE_fitE->Write();
 	h_recPhifitPhi_recThetafitTheta->Write();
 	h_recPhifitPhi_recThetafitTheta_lowfit->Write();
 	h_recPhifitPhi_recThetafitTheta_midfit->Write();
 	h_recPhifitPhi_recThetafitTheta_highfit->Write();
+	h_recPhifitPhi_recThetafitTheta_SigmaThetaPhi->Write();
+	h_recPhifitPhi_recThetafitTheta_lowfit_SigmaThetaPhi->Write();
+	h_recPhifitPhi_recThetafitTheta_midfit_SigmaThetaPhi->Write();
+	h_recPhifitPhi_recThetafitTheta_highfit_SigmaThetaPhi->Write();
 	m_pTFile->Close();
 	delete m_pTFile;
 
