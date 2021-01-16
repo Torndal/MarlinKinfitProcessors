@@ -345,6 +345,7 @@ h_NormalizedResidualPhi_mcQrecJ_PhiRecJet(NULL),
 h_NormalizedResidualEnergy_mcQrecJ_EnergyRecJet(NULL),
 h_NormalizedResidualTheta_mcQrecJ_EnergyRecJet(NULL),
 h_NormalizedResidualPhi_mcQrecJ_EnergyRecJet(NULL),
+h_Residual_ThetamcJrecJ_PhimcJrecJ(NULL),
 h_recE_fitE(NULL),
 h_recPhifitPhi_recThetafitTheta(NULL),
 h_recPhifitPhi_recThetafitTheta_lowfit(NULL),
@@ -901,15 +902,19 @@ void ZHllqq5CFit::init()
 	m_pTTree_6->Branch("mcHmumuPt",&m_mcHmumuPt,"mcHmumuPt/F") ;
 	m_pTTree_6->Branch("mcHmumuP",&m_mcHmumuP,"mcHmumuP/F") ;
 	m_pTTree_6->Branch("mcHmumuE",&m_mcHmumuE,"mcHmumuE/F") ;
+	m_pTTree_6->Branch("CosTheta_mcQuark",&m_CosTheta_mcQuark);
 	m_pTTree_6->Branch("Theta_mcQuark",&m_Theta_mcQuark);
 	m_pTTree_6->Branch("Phi_mcQuark",&m_Phi_mcQuark);
 	m_pTTree_6->Branch("Energy_mcQuark",&m_Energy_mcQuark);
+	m_pTTree_6->Branch("CosTheta_mcJet_wInvisibles",&m_CosTheta_mcJet_wInvisibles);
 	m_pTTree_6->Branch("Theta_mcJet_wInvisibles",&m_Theta_mcJet_wInvisibles);
 	m_pTTree_6->Branch("Phi_mcJet_wInvisibles",&m_Phi_mcJet_wInvisibles);
 	m_pTTree_6->Branch("Energy_mcJet_wInvisibles",&m_Energy_mcJet_wInvisibles);
+	m_pTTree_6->Branch("CosTheta_mcJet_woInvisibles",&m_CosTheta_mcJet_woInvisibles);
 	m_pTTree_6->Branch("Theta_mcJet_woInvisibles",&m_Theta_mcJet_woInvisibles);
 	m_pTTree_6->Branch("Phi_mcJet_woInvisibles",&m_Phi_mcJet_woInvisibles);
 	m_pTTree_6->Branch("Energy_mcJet_woInvisibles",&m_Energy_mcJet_woInvisibles);
+	m_pTTree_6->Branch("CosTheta_recoJet",&m_CosTheta_recoJet);
 	m_pTTree_6->Branch("Theta_recoJet",&m_Theta_recoJet);
 	m_pTTree_6->Branch("Phi_recoJet",&m_Phi_recoJet);
 	m_pTTree_6->Branch("Energy_recoJet",&m_Energy_recoJet);
@@ -929,6 +934,7 @@ void ZHllqq5CFit::init()
 	m_pTTree_6->Branch("ResidualEnergy_mcQuark_mcJet",&m_ResidualEnergy_mcQuark_mcJet);
 	m_pTTree_6->Branch("ResidualTheta_mcJet_recoJet",&m_ResidualTheta_mcJet_recoJet);
 	m_pTTree_6->Branch("ResidualPhi_mcJet_recoJet",&m_ResidualPhi_mcJet_recoJet);
+	m_pTTree_6->Branch("ResidualThetamcJetrecoJet_PhimcJetrecoJet",&m_ResidualThetamcJetrecoJet_PhimcJetrecoJet);
 	m_pTTree_6->Branch("ResidualEnergy_mcJet_recoJet",&m_ResidualEnergy_mcJet_recoJet);
 	m_pTTree_6->Branch("ResidualTheta_mcQuark_recoJet",&m_ResidualTheta_mcQuark_recoJet);
 	m_pTTree_6->Branch("ResidualPhi_mcQuark_recoJet",&m_ResidualPhi_mcQuark_recoJet);
@@ -938,12 +944,14 @@ void ZHllqq5CFit::init()
 	m_pTTree_6->Branch("NormalizedResidualEnergy_mcQuark_mcJet",&m_NormalizedResidualEnergy_mcQuark_mcJet);
 	m_pTTree_6->Branch("NormalizedResidualTheta_mcJet_recoJet",&m_NormalizedResidualTheta_mcJet_recoJet);
 	m_pTTree_6->Branch("NormalizedResidualPhi_mcJet_recoJet",&m_NormalizedResidualPhi_mcJet_recoJet);
+	m_pTTree_6->Branch("NormalizedResidualThetaPhi_mcJet_recoJet",&m_NormalizedResidualThetaPhi_mcJet_recoJet);
 	m_pTTree_6->Branch("NormalizedResidualEnergy_mcJet_recoJet",&m_NormalizedResidualEnergy_mcJet_recoJet);
 	m_pTTree_6->Branch("NormalizedResidualTheta_mcQuark_recoJet",&m_NormalizedResidualTheta_mcQuark_recoJet);
 	m_pTTree_6->Branch("NormalizedResidualPhi_mcQuark_recoJet",&m_NormalizedResidualPhi_mcQuark_recoJet);
 	m_pTTree_6->Branch("NormalizedResidualEnergy_mcQuark_recoJet",&m_NormalizedResidualEnergy_mcQuark_recoJet);
 	m_pTTree_6->Branch("JetErrorTheta_ErrorFlow",&m_JetErrorTheta_ErrorFlow);
 	m_pTTree_6->Branch("JetErrorPhi_ErrorFlow",&m_JetErrorPhi_ErrorFlow);
+	m_pTTree_6->Branch("JetErrorThetaPhi_ErrorFlow",&m_JetErrorThetaPhi_ErrorFlow);
 	m_pTTree_6->Branch("JetErrorEnergy_ErrorFlow",&m_JetErrorEnergy_ErrorFlow);
 
 	h_HDecayMode = new TH1I("h_HDecayMode", "Decay mode of Higgs boson", 4, 0, 4);
@@ -1183,6 +1191,8 @@ void ZHllqq5CFit::init()
 	h_NormalizedResidualTheta_mcQrecJ_EnergyRecJet->SetDirectory(m_pTFile);
 	h_NormalizedResidualPhi_mcQrecJ_EnergyRecJet = new TH2F("h_NormalizedResidualPhi_mcQrecJ_EnergyRecJet", "; E_{j}^{REC} [GeV]; (#phi_{j}^{REC} - #phi_{q}^{MC}) / #sigma_{#phi_{j}}", 150, 0.0, 150.0, 200, -10.0, 10.0);
 	h_NormalizedResidualPhi_mcQrecJ_EnergyRecJet->SetDirectory(m_pTFile);
+	h_Residual_ThetamcJrecJ_PhimcJrecJ = new TH2F("h_Residual_ThetamcJrecJ_PhimcJrecJ", "; #theta_{j}^{REC} - #theta_{j}^{MC} [radian]; #phi_{j}^{REC} - #phi_{j}^{MC} [radian]", 200, -0.10, 0.10, 200, -0.10, 0.10);
+	h_Residual_ThetamcJrecJ_PhimcJrecJ->SetDirectory(m_pTFile);
 
 	h_recE_fitE = new TH1F("h_recE_fitE", "; ( E_{j}^{fit} - E_{j}^{rec} ) / E_{j}^{rec}; n_{events}", 400, -1.0, 1.0);
 	h_recE_fitE->SetDirectory(m_pTFile);
@@ -1461,15 +1471,19 @@ void ZHllqq5CFit::Clear()
 	m_SigmaPz2.clear();
 	m_SigmaPzE.clear();
 	m_SigmaE2.clear();
+	m_CosTheta_mcQuark.clear();
 	m_Theta_mcQuark.clear();
 	m_Phi_mcQuark.clear();
 	m_Energy_mcQuark.clear();
+	m_CosTheta_mcJet_wInvisibles.clear();
 	m_Theta_mcJet_wInvisibles.clear();
 	m_Phi_mcJet_wInvisibles.clear();
 	m_Energy_mcJet_wInvisibles.clear();
+	m_CosTheta_mcJet_woInvisibles.clear();
 	m_Theta_mcJet_woInvisibles.clear();
 	m_Phi_mcJet_woInvisibles.clear();
 	m_Energy_mcJet_woInvisibles.clear();
+	m_CosTheta_recoJet.clear();
 	m_Theta_recoJet.clear();
 	m_Phi_recoJet.clear();
 	m_Energy_recoJet.clear();
@@ -1489,6 +1503,7 @@ void ZHllqq5CFit::Clear()
 	m_ResidualEnergy_mcQuark_mcJet.clear();
 	m_ResidualTheta_mcJet_recoJet.clear();
 	m_ResidualPhi_mcJet_recoJet.clear();
+	m_ResidualThetamcJetrecoJet_PhimcJetrecoJet.clear();
 	m_ResidualEnergy_mcJet_recoJet.clear();
 	m_ResidualTheta_mcQuark_recoJet.clear();
 	m_ResidualPhi_mcQuark_recoJet.clear();
@@ -1498,12 +1513,14 @@ void ZHllqq5CFit::Clear()
 	m_NormalizedResidualEnergy_mcQuark_mcJet.clear();
 	m_NormalizedResidualTheta_mcJet_recoJet.clear();
 	m_NormalizedResidualPhi_mcJet_recoJet.clear();
+	m_NormalizedResidualThetaPhi_mcJet_recoJet.clear();
 	m_NormalizedResidualEnergy_mcJet_recoJet.clear();
 	m_NormalizedResidualTheta_mcQuark_recoJet.clear();
 	m_NormalizedResidualPhi_mcQuark_recoJet.clear();
 	m_NormalizedResidualEnergy_mcQuark_recoJet.clear();
 	m_JetErrorEnergy_ErrorFlow.clear();
 	m_JetErrorTheta_ErrorFlow.clear();
+	m_JetErrorThetaPhi_ErrorFlow.clear();
 	m_JetErrorPhi_ErrorFlow.clear();
 }
 
@@ -1576,6 +1593,8 @@ void ZHllqq5CFit::getHmumu4Momentum( EVENT::LCEvent *pLCEvent )
 {
 	LCCollection *MCPCol{};
 	m_nEvt = pLCEvent->getEventNumber();
+	streamlog_out(DEBUG) << "getHmumu4Momentum : processing event " << m_nEvt << std::endl;
+
 	try
 	{
 		MCPCol			= pLCEvent->getCollection( MCPCollection );
@@ -1615,6 +1634,7 @@ void ZHllqq5CFit::getHmumu4Momentum( EVENT::LCEvent *pLCEvent )
 			m_mcHmumuP = std::sqrt( pow( m_mcHmumuPx , 2 ) + pow( m_mcHmumuPy , 2 )  + pow( m_mcHmumuPz , 2 ) );
 			m_mcHmumuE = Muon1->getEnergy() + Muon2->getEnergy() + Higgs->getEnergy();
 		}
+		streamlog_out(DEBUG) << "getHmumu4Momentum : processed event " << m_nEvt << std::endl;
 	}
 	catch(DataNotAvailableException &e)
 	{
@@ -1627,6 +1647,7 @@ void ZHllqq5CFit::getMCISRFSR( EVENT::LCEvent *pLCEvent )
 {
 	LCCollection *MCISRCol{};
 	LCCollection *MCFSRCol{};
+	streamlog_out(DEBUG) << "getMCISRFSR : processing event " << m_nEvt << std::endl;
 	try
 	{
 		MCISRCol		= pLCEvent->getCollection( mcISRcol );
@@ -1673,6 +1694,7 @@ void ZHllqq5CFit::getMCISRFSR( EVENT::LCEvent *pLCEvent )
 		m_FSRPt_total = std::sqrt( pow(m_FSRPx_total , 2 ) + pow( m_FSRPy_total , 2 ) );
 //		m_FSRE_total.push_back( FSRE_total );
 		m_pTTree_5->Fill();
+		streamlog_out(DEBUG) << "getMCISRFSR : processed event " << m_nEvt << std::endl;
 	}
 	catch(DataNotAvailableException &e)
 	{
@@ -1689,7 +1711,7 @@ void ZHllqq5CFit::getJetAngleResolution( EVENT::LCEvent *pLCEvent , int nSLDecay
 	m_nEvt = pLCEvent->getEventNumber();
 	try
 	{
-		RecoJetCol		= pLCEvent->getCollection( jetcollection );
+		RecoJetCol		= pLCEvent->getCollection( errorflowcollection );
 		MCPCol			= pLCEvent->getCollection( MCPCollection );
 		TrueJet_wNuCol		= pLCEvent->getCollection( mcjetcollection_wNu );
 		TrueJet_woNuCol	= pLCEvent->getCollection( mcjetcollection_woNu );
@@ -1777,7 +1799,8 @@ void ZHllqq5CFit::getJetAngleResolution( EVENT::LCEvent *pLCEvent , int nSLDecay
 		float Sigpx2, SigpxSigpy, Sigpy2, SigpxSigpz, SigpySigpz, Sigpz2, Sige2;
 		float Dth_Dpx, Dth_Dpy, Dth_Dpz;
 		float Dphi_Dpx, Dphi_Dpy;
-		float JetEnergyErr, JetThetaErr, JetPhiErr;
+		float JetEnergyErr, JetThetaErr, JetPhiErr, JetSigmaThetaPhi;
+		int signJetResidualPhi, signJetResidualTheta, signJetSigmaThetaPhi;
 		for ( int i_jet = 0 ; i_jet < 2 ; ++i_jet )
 		{
 			TVector3 mcQuarkP( ( mcQuark[ i_jet ] )->getMomentum() );
@@ -1795,21 +1818,25 @@ void ZHllqq5CFit::getJetAngleResolution( EVENT::LCEvent *pLCEvent , int nSLDecay
 
 			float mcQuark_Theta = mcQuarkP.Theta();
 			float mcQuark_Phi = mcQuarkP.Phi();
+			m_CosTheta_mcQuark.push_back( cos( mcQuark_Theta ) );
 			m_Theta_mcQuark.push_back( mcQuark_Theta );
 			m_Phi_mcQuark.push_back( mcQuark_Phi );
 			m_Energy_mcQuark.push_back( ( mcQuark[ i_jet ] )->getEnergy() );
 			float mcJetwNu_Theta = mcJetwNuP.Theta();
 			float mcJetwNu_Phi = mcJetwNuP.Phi();
+			m_CosTheta_mcJet_wInvisibles.push_back( cos( mcJetwNu_Theta ) );
 			m_Theta_mcJet_wInvisibles.push_back( mcJetwNu_Theta );
 			m_Phi_mcJet_wInvisibles.push_back( mcJetwNu_Phi );
 			m_Energy_mcJet_wInvisibles.push_back( ( mcJet_wNu[ i_jet ] )->getEnergy() );
 			float mcJetwoNu_Theta = mcJetwoNuP.Theta();
 			float mcJetwoNu_Phi = mcJetwoNuP.Phi();
+			m_CosTheta_mcJet_woInvisibles.push_back( cos( mcJetwoNu_Theta ) );
 			m_Theta_mcJet_woInvisibles.push_back( mcJetwoNu_Theta );
 			m_Phi_mcJet_woInvisibles.push_back( mcJetwoNu_Phi );
 			m_Energy_mcJet_woInvisibles.push_back( ( mcJet_woNu[ i_jet ] )->getEnergy() );
 			float recoJet_Theta = recoJetP.Theta();
 			float recoJet_Phi = recoJetP.Phi();
+			m_CosTheta_recoJet.push_back( cos( recoJet_Theta ) );
 			m_Theta_recoJet.push_back( recoJet_Theta );
 			m_Phi_recoJet.push_back( recoJet_Phi );
 			m_Energy_recoJet.push_back( ( recoJet[ i_jet ] )->getEnergy() );
@@ -1825,13 +1852,13 @@ void ZHllqq5CFit::getJetAngleResolution( EVENT::LCEvent *pLCEvent , int nSLDecay
 			p =	std::sqrt( px2 + py2 + pz2 );
 			p2 =	std::pow( p , 2 );
 
-			Sigpx2 =		( recoJet[ i_jet ] )->getCovMatrix()[0];
+			Sigpx2 =	( recoJet[ i_jet ] )->getCovMatrix()[0];
 			SigpxSigpy =	( recoJet[ i_jet ] )->getCovMatrix()[1];
-			Sigpy2 =		( recoJet[ i_jet ] )->getCovMatrix()[2];
+			Sigpy2 =	( recoJet[ i_jet ] )->getCovMatrix()[2];
 			SigpxSigpz =	( recoJet[ i_jet ] )->getCovMatrix()[3];
 			SigpySigpz =	( recoJet[ i_jet ] )->getCovMatrix()[4];
-			Sigpz2 =		( recoJet[ i_jet ] )->getCovMatrix()[5];
-			Sige2 =		( recoJet[ i_jet ] )->getCovMatrix()[9];
+			Sigpz2 =	( recoJet[ i_jet ] )->getCovMatrix()[5];
+			Sige2 =	( recoJet[ i_jet ] )->getCovMatrix()[9];
 
 			Dth_Dpx =	px * pz / ( p2 * pt );
 			Dth_Dpy =	py * pz / ( p2 * pt );
@@ -1843,6 +1870,8 @@ void ZHllqq5CFit::getJetAngleResolution( EVENT::LCEvent *pLCEvent , int nSLDecay
 			JetEnergyErr =	sigmaScaleFactor * std::sqrt( Sige2 );
 			JetThetaErr =	m_JetResThetaCoeff * std::sqrt( std::fabs( Sigpx2 * std::pow( Dth_Dpx , 2 ) + Sigpy2 * std::pow( Dth_Dpy , 2 ) + Sigpz2 * std::pow( Dth_Dpz , 2 ) + 2 * ( SigpxSigpy * Dth_Dpx * Dth_Dpy ) + 2 * ( SigpySigpz * Dth_Dpy * Dth_Dpz ) + 2 * ( SigpxSigpz * Dth_Dpx * Dth_Dpz ) ) );
 			JetPhiErr =	m_JetResPhiCoeff * std::sqrt( std::fabs( Sigpx2 * std::pow( Dphi_Dpx , 2 ) + Sigpy2 * std::pow( Dphi_Dpy , 2 ) + 2 * ( SigpxSigpy * Dphi_Dpx * Dphi_Dpy ) ) );
+			JetSigmaThetaPhi =  Dth_Dpx * Dphi_Dpx * Sigpx2 + Dth_Dpy * Dphi_Dpy * Sigpy2 + ( Dth_Dpx * Dphi_Dpy + Dth_Dpy * Dphi_Dpx ) * SigpxSigpy + Dth_Dpz * ( Dphi_Dpx * SigpxSigpz + Dphi_Dpy * SigpySigpz );
+			signJetSigmaThetaPhi =  ( JetSigmaThetaPhi >= 0 ? 1 : -1 );
 
 			m_ResidualTheta_mcQuark_mcJet.push_back( mcJetwNu_Theta - mcQuark_Theta );
 			m_NormalizedResidualTheta_mcQuark_mcJet.push_back( ( mcJetwNu_Theta - mcQuark_Theta) / JetThetaErr );
@@ -1881,6 +1910,10 @@ void ZHllqq5CFit::getJetAngleResolution( EVENT::LCEvent *pLCEvent , int nSLDecay
 			}
 			m_ResidualEnergy_mcJet_recoJet.push_back( ( recoJet[ i_jet ] )->getEnergy() - ( mcJet_woNu[ i_jet ] )->getEnergy() );
 			m_NormalizedResidualEnergy_mcJet_recoJet.push_back( ( ( recoJet[ i_jet ] )->getEnergy() - ( mcJet_woNu[ i_jet ] )->getEnergy() ) / JetEnergyErr );
+			signJetResidualTheta = ( m_ResidualTheta_mcJet_recoJet[ i_jet ] >= 0 ? 1 : -1 );
+			signJetResidualPhi = ( m_ResidualPhi_mcJet_recoJet[ i_jet ] >= 0 ? 1 : -1 );
+			m_ResidualThetamcJetrecoJet_PhimcJetrecoJet.push_back( m_ResidualTheta_mcJet_recoJet[ i_jet ] * m_ResidualPhi_mcJet_recoJet[ i_jet ] );
+			m_NormalizedResidualThetaPhi_mcJet_recoJet.push_back( signJetSigmaThetaPhi * signJetResidualTheta * signJetResidualPhi * std::sqrt( std::abs( m_ResidualTheta_mcJet_recoJet[ i_jet ] ) * std::abs( m_ResidualPhi_mcJet_recoJet[ i_jet ] ) / std::abs( JetSigmaThetaPhi ) ) );
 
 			m_ResidualTheta_mcQuark_recoJet.push_back( recoJet_Theta - mcQuark_Theta );
 			m_NormalizedResidualTheta_mcQuark_recoJet.push_back( ( recoJet_Theta - mcQuark_Theta ) / JetThetaErr );
@@ -1903,6 +1936,7 @@ void ZHllqq5CFit::getJetAngleResolution( EVENT::LCEvent *pLCEvent , int nSLDecay
 			m_JetErrorEnergy_ErrorFlow.push_back( JetEnergyErr );
 			m_JetErrorTheta_ErrorFlow.push_back( JetThetaErr );
 			m_JetErrorPhi_ErrorFlow.push_back( JetPhiErr );
+			m_JetErrorThetaPhi_ErrorFlow.push_back( JetSigmaThetaPhi );
 
 			if ( nSLDecayTotal == 0 )
 			{
@@ -1923,6 +1957,7 @@ void ZHllqq5CFit::getJetAngleResolution( EVENT::LCEvent *pLCEvent , int nSLDecay
 				h_NormalizedResidualEnergy_mcQrecJ_EnergyRecJet->Fill( ( recoJet[ i_jet ] )->getEnergy() , m_ResidualEnergy_mcQuark_recoJet[ i_jet ] / JetEnergyErr );
 				h_NormalizedResidualTheta_mcQrecJ_EnergyRecJet->Fill( ( recoJet[ i_jet ] )->getEnergy() , m_ResidualTheta_mcQuark_recoJet[ i_jet ] / JetThetaErr );
 				h_NormalizedResidualPhi_mcQrecJ_EnergyRecJet->Fill( ( recoJet[ i_jet ] )->getEnergy() , m_ResidualPhi_mcQuark_recoJet[ i_jet ] / JetPhiErr );
+				h_Residual_ThetamcJrecJ_PhimcJrecJ->Fill( m_ResidualTheta_mcJet_recoJet[ i_jet ] , m_ResidualPhi_mcJet_recoJet[ i_jet ] );
 			}
 			ReconstructedParticleVec jetPFOs  = recoJet[ i_jet ]->getParticles();
 			int nPFOs = jetPFOs.size();
@@ -2032,18 +2067,22 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 		if ( m_isDecayedTob == 1 )
 		{
 			m_HDecayMode = 1;
+			streamlog_out(DEBUG) << " Higgs decays to bb /////////////   H -> bb " << std::endl;
 		}
 		if ( m_isDecayedToc == 1 )
 		{
 			m_HDecayMode = 2;
+			streamlog_out(DEBUG) << " Higgs decays to cc /////////////   H -> cc " << std::endl;
 		}
 		if ( m_isDecayedTog == 1 )
 		{
 			m_HDecayMode = 3;
+			streamlog_out(DEBUG) << " Higgs decays to gg /////////////   H -> gg " << std::endl;
 		}
 		if ( m_isDecayedToother == 1 )
 		{
 			m_HDecayMode = 4;
+			streamlog_out(DEBUG) << " Higgs decays to other /////////////   H -> other " << std::endl;
 		}
 		h_HDecayMode->Fill(m_HDecayMode-0.5);
 		m_pTTree->Fill();
@@ -2069,6 +2108,7 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 
 		this->getMCISRFSR( pLCEvent );
 		this->getHmumu4Momentum( pLCEvent );
+		streamlog_out(DEBUG) << "getHmumu4Momentum and getMCISRFSR : processed event " << m_nEvt << std::endl;
 
 		if ( ISR1E_mcp > ISR2E_mcp)
 		{
@@ -3445,7 +3485,7 @@ std::vector<std::vector<float>> ZHllqq5CFit::performFIT(EVENT::LCEvent *pLCEvent
 		if (m_useErrorFlow)
 		{
 			jet[i_jet] = new JetFitObject ( jetvec.e(), jetvec.theta() , jetvec.phi(),
-					JetResE * sigmaScaleFactor , JetResTheta , JetResPhi , jetvec.m() );
+					JetResE , JetResTheta , JetResPhi , jetvec.m() );
 			streamlog_out(DEBUG)  << " start four-vector of jet[" << i_jet << "]: " << *jet[i_jet]  << std::endl ;
 			if ( i_jet == 0 )
 			{
@@ -3473,7 +3513,7 @@ std::vector<std::vector<float>> ZHllqq5CFit::performFIT(EVENT::LCEvent *pLCEvent
 		diJetSystem.push_back(jetvec.e());
 		diJetSystem.push_back(jetvec.theta());
 		diJetSystem.push_back(jetvec.phi());
-		diJetSystem.push_back(JetResE * sigmaScaleFactor);
+		diJetSystem.push_back(JetResE);
 		diJetSystem.push_back(JetResTheta);
 		diJetSystem.push_back(JetResPhi);
 	}
@@ -4165,6 +4205,7 @@ void ZHllqq5CFit::end()
 	h_NormalizedResidualEnergy_mcQrecJ_EnergyRecJet->Write();
 	h_NormalizedResidualTheta_mcQrecJ_EnergyRecJet->Write();
 	h_NormalizedResidualPhi_mcQrecJ_EnergyRecJet->Write();
+	h_Residual_ThetamcJrecJ_PhimcJrecJ->Write();
 	h_recE_fitE->Write();
 	h_recPhifitPhi_recThetafitTheta->Write();
 	h_recPhifitPhi_recThetafitTheta_lowfit->Write();
