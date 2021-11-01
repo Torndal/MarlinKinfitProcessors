@@ -221,6 +221,10 @@ m_FSRPy_total(0.),
 m_FSRPz_total(0.),
 m_FSRPt_total(0.),
 m_FSRE_total(0.),
+m_DeltaP_mcQuark(0.),
+m_P_mcQuark1(0.),
+m_P_mcQuark2(0.),
+m_SeparationAngle_mcQuark(0.),
 m_pTFile(NULL),
 m_pTTree(NULL),
 m_pTTree_0(NULL),
@@ -906,18 +910,35 @@ void ZHllqq5CFit::init()
 	m_pTTree_6->Branch("Theta_mcQuark",&m_Theta_mcQuark);
 	m_pTTree_6->Branch("Phi_mcQuark",&m_Phi_mcQuark);
 	m_pTTree_6->Branch("Energy_mcQuark",&m_Energy_mcQuark);
+	m_pTTree_6->Branch("Px_mcQuark",&m_Px_mcQuark);
+	m_pTTree_6->Branch("Py_mcQuark",&m_Py_mcQuark);
+	m_pTTree_6->Branch("Pz_mcQuark",&m_Pz_mcQuark);
+	m_pTTree_6->Branch("Momentum_mcQuark",&m_Momentum_mcQuark);
+	m_pTTree_6->Branch("DeltaP_mcQuark",&m_DeltaP_mcQuark,"DeltaP_mcQuark/F");
+	m_pTTree_6->Branch("P_mcQuark1",&m_P_mcQuark1,"P_mcQuark1/F");
+	m_pTTree_6->Branch("P_mcQuark2",&m_P_mcQuark2,"P_mcQuark2/F");
+	m_pTTree_6->Branch("SeparationAngle_mcQuark",&m_SeparationAngle_mcQuark,"SeparationAngle_mcQuark/F");
 	m_pTTree_6->Branch("CosTheta_mcJet_wInvisibles",&m_CosTheta_mcJet_wInvisibles);
 	m_pTTree_6->Branch("Theta_mcJet_wInvisibles",&m_Theta_mcJet_wInvisibles);
 	m_pTTree_6->Branch("Phi_mcJet_wInvisibles",&m_Phi_mcJet_wInvisibles);
 	m_pTTree_6->Branch("Energy_mcJet_wInvisibles",&m_Energy_mcJet_wInvisibles);
+	m_pTTree_6->Branch("Px_mcJet_wInvisibles",&m_Px_mcJet_wInvisibles);
+	m_pTTree_6->Branch("Py_mcJet_wInvisibles",&m_Py_mcJet_wInvisibles);
+	m_pTTree_6->Branch("Pz_mcJet_wInvisibles",&m_Pz_mcJet_wInvisibles);
 	m_pTTree_6->Branch("CosTheta_mcJet_woInvisibles",&m_CosTheta_mcJet_woInvisibles);
 	m_pTTree_6->Branch("Theta_mcJet_woInvisibles",&m_Theta_mcJet_woInvisibles);
 	m_pTTree_6->Branch("Phi_mcJet_woInvisibles",&m_Phi_mcJet_woInvisibles);
 	m_pTTree_6->Branch("Energy_mcJet_woInvisibles",&m_Energy_mcJet_woInvisibles);
+	m_pTTree_6->Branch("Px_mcJet_woInvisibles",&m_Px_mcJet_woInvisibles);
+	m_pTTree_6->Branch("Py_mcJet_woInvisibles",&m_Py_mcJet_woInvisibles);
+	m_pTTree_6->Branch("Pz_mcJet_woInvisibles",&m_Pz_mcJet_woInvisibles);
 	m_pTTree_6->Branch("CosTheta_recoJet",&m_CosTheta_recoJet);
 	m_pTTree_6->Branch("Theta_recoJet",&m_Theta_recoJet);
 	m_pTTree_6->Branch("Phi_recoJet",&m_Phi_recoJet);
 	m_pTTree_6->Branch("Energy_recoJet",&m_Energy_recoJet);
+	m_pTTree_6->Branch("Px_recoJet",&m_Px_recoJet);
+	m_pTTree_6->Branch("Py_recoJet",&m_Py_recoJet);
+	m_pTTree_6->Branch("Pz_recoJet",&m_Pz_recoJet);
 	m_pTTree_6->Branch("nPFOs_NeutralHadrons",&m_nPFOs_NeutralHadrons);
 	m_pTTree_6->Branch("nPFOs_Photons",&m_nPFOs_Photons);
 	m_pTTree_6->Branch("nPFOs_ChargedPFOs",&m_nPFOs_ChargedPFOs);
@@ -932,13 +953,22 @@ void ZHllqq5CFit::init()
 	m_pTTree_6->Branch("ResidualTheta_mcQuark_mcJet",&m_ResidualTheta_mcQuark_mcJet);
 	m_pTTree_6->Branch("ResidualPhi_mcQuark_mcJet",&m_ResidualPhi_mcQuark_mcJet);
 	m_pTTree_6->Branch("ResidualEnergy_mcQuark_mcJet",&m_ResidualEnergy_mcQuark_mcJet);
+	m_pTTree_6->Branch("ResidualPx_mcQuark_mcJet",&m_ResidualPx_mcQuark_mcJet);
+	m_pTTree_6->Branch("ResidualPy_mcQuark_mcJet",&m_ResidualPy_mcQuark_mcJet);
+	m_pTTree_6->Branch("ResidualPz_mcQuark_mcJet",&m_ResidualPz_mcQuark_mcJet);
 	m_pTTree_6->Branch("ResidualTheta_mcJet_recoJet",&m_ResidualTheta_mcJet_recoJet);
 	m_pTTree_6->Branch("ResidualPhi_mcJet_recoJet",&m_ResidualPhi_mcJet_recoJet);
-	m_pTTree_6->Branch("ResidualThetamcJetrecoJet_PhimcJetrecoJet",&m_ResidualThetamcJetrecoJet_PhimcJetrecoJet);
 	m_pTTree_6->Branch("ResidualEnergy_mcJet_recoJet",&m_ResidualEnergy_mcJet_recoJet);
+	m_pTTree_6->Branch("ResidualPx_mcJet_recoJet",&m_ResidualPx_mcJet_recoJet);
+	m_pTTree_6->Branch("ResidualPy_mcJet_recoJet",&m_ResidualPy_mcJet_recoJet);
+	m_pTTree_6->Branch("ResidualPz_mcJet_recoJet",&m_ResidualPz_mcJet_recoJet);
+	m_pTTree_6->Branch("ResidualPx_mcQuark_recoJet",&m_ResidualPx_mcQuark_recoJet);
+	m_pTTree_6->Branch("ResidualPy_mcQuark_recoJet",&m_ResidualPy_mcQuark_recoJet);
+	m_pTTree_6->Branch("ResidualPz_mcQuark_recoJet",&m_ResidualPz_mcQuark_recoJet);
 	m_pTTree_6->Branch("ResidualTheta_mcQuark_recoJet",&m_ResidualTheta_mcQuark_recoJet);
 	m_pTTree_6->Branch("ResidualPhi_mcQuark_recoJet",&m_ResidualPhi_mcQuark_recoJet);
 	m_pTTree_6->Branch("ResidualEnergy_mcQuark_recoJet",&m_ResidualEnergy_mcQuark_recoJet);
+	m_pTTree_6->Branch("ResidualThetamcJetrecoJet_PhimcJetrecoJet",&m_ResidualThetamcJetrecoJet_PhimcJetrecoJet);
 	m_pTTree_6->Branch("NormalizedResidualTheta_mcQuark_mcJet",&m_NormalizedResidualTheta_mcQuark_mcJet);
 	m_pTTree_6->Branch("NormalizedResidualPhi_mcQuark_mcJet",&m_NormalizedResidualPhi_mcQuark_mcJet);
 	m_pTTree_6->Branch("NormalizedResidualEnergy_mcQuark_mcJet",&m_NormalizedResidualEnergy_mcQuark_mcJet);
@@ -953,6 +983,16 @@ void ZHllqq5CFit::init()
 	m_pTTree_6->Branch("JetErrorPhi_ErrorFlow",&m_JetErrorPhi_ErrorFlow);
 	m_pTTree_6->Branch("JetErrorThetaPhi_ErrorFlow",&m_JetErrorThetaPhi_ErrorFlow);
 	m_pTTree_6->Branch("JetErrorEnergy_ErrorFlow",&m_JetErrorEnergy_ErrorFlow);
+	m_pTTree_6->Branch("Sigma_Px2",&m_Sigma_Px2);
+	m_pTTree_6->Branch("Sigma_PxPy",&m_Sigma_PxPy);
+	m_pTTree_6->Branch("Sigma_Py2",&m_Sigma_Py2);
+	m_pTTree_6->Branch("Sigma_PxPz",&m_Sigma_PxPz);
+	m_pTTree_6->Branch("Sigma_PyPz",&m_Sigma_PyPz);
+	m_pTTree_6->Branch("Sigma_Pz2",&m_Sigma_Pz2);
+	m_pTTree_6->Branch("Sigma_PxE",&m_Sigma_PxE);
+	m_pTTree_6->Branch("Sigma_PyE",&m_Sigma_PyE);
+	m_pTTree_6->Branch("Sigma_PzE",&m_Sigma_PzE);
+	m_pTTree_6->Branch("Sigma_E2",&m_Sigma_E2);
 
 	h_HDecayMode = new TH1I("h_HDecayMode", "Decay mode of Higgs boson", 4, 0, 4);
 	h_HDecayMode->GetXaxis()->SetBinLabel(1,"H #rightarrow b#bar{b}");
@@ -1212,10 +1252,12 @@ void ZHllqq5CFit::init()
 	h_recPhifitPhi_recThetafitTheta_midfit_SigmaThetaPhi->SetDirectory(m_pTFile);
 	h_recPhifitPhi_recThetafitTheta_highfit_SigmaThetaPhi = new TH2F("h_recPhifitPhi_recThetafitTheta_highfit_SigmaThetaPhi", "0.9 #leq fit probability; ( #phi_{j}^{fit} - #phi_{j}^{rec} ) / #sigma(#phi_{j}^{ErrFl}); (#theta_{j}^{fit} - #theta_{j}^{rec} ) / #sigma(#theta{j}^{ErrFl})", 100, -5.0, 5.0, 100, -5.0, 5.0);
 	h_recPhifitPhi_recThetafitTheta_highfit_SigmaThetaPhi->SetDirectory(m_pTFile);
+	streamlog_out(DEBUG) << "   init finished  " << std::endl;
 }
 
 void ZHllqq5CFit::Clear()
 {
+	streamlog_out(DEBUG) << "   Clear called  " << std::endl;
 	m_nSLDecayBHadron = 0;
 	m_nSLDecayCHadron = 0;
 	m_nSLDecayTotal = 0;
@@ -1461,6 +1503,10 @@ void ZHllqq5CFit::Clear()
 	m_FSRPz_total = 0.;
 	m_FSRPt_total = 0.;
 	m_FSRE_total = 0.;
+	m_DeltaP_mcQuark = 0.;
+	m_P_mcQuark1 = 0.;
+	m_P_mcQuark2 = 0.;
+	m_SeparationAngle_mcQuark = 0.;
 	m_SigmaPx2.clear();
 	m_SigmaPxPy.clear();
 	m_SigmaPxPz.clear();
@@ -1475,18 +1521,31 @@ void ZHllqq5CFit::Clear()
 	m_Theta_mcQuark.clear();
 	m_Phi_mcQuark.clear();
 	m_Energy_mcQuark.clear();
+	m_Px_mcQuark.clear();
+	m_Py_mcQuark.clear();
+	m_Pz_mcQuark.clear();
+	m_Momentum_mcQuark.clear();
 	m_CosTheta_mcJet_wInvisibles.clear();
 	m_Theta_mcJet_wInvisibles.clear();
 	m_Phi_mcJet_wInvisibles.clear();
 	m_Energy_mcJet_wInvisibles.clear();
+	m_Px_mcJet_wInvisibles.clear();
+	m_Py_mcJet_wInvisibles.clear();
+	m_Pz_mcJet_wInvisibles.clear();
 	m_CosTheta_mcJet_woInvisibles.clear();
 	m_Theta_mcJet_woInvisibles.clear();
 	m_Phi_mcJet_woInvisibles.clear();
 	m_Energy_mcJet_woInvisibles.clear();
+	m_Px_mcJet_woInvisibles.clear();
+	m_Py_mcJet_woInvisibles.clear();
+	m_Pz_mcJet_woInvisibles.clear();
 	m_CosTheta_recoJet.clear();
 	m_Theta_recoJet.clear();
 	m_Phi_recoJet.clear();
 	m_Energy_recoJet.clear();
+	m_Px_recoJet.clear();
+	m_Py_recoJet.clear();
+	m_Pz_recoJet.clear();
 	m_nPFOs_NeutralHadrons.clear();
 	m_nPFOs_Photons.clear();
 	m_nPFOs_ChargedPFOs.clear();
@@ -1501,13 +1560,22 @@ void ZHllqq5CFit::Clear()
 	m_ResidualTheta_mcQuark_mcJet.clear();
 	m_ResidualPhi_mcQuark_mcJet.clear();
 	m_ResidualEnergy_mcQuark_mcJet.clear();
+	m_ResidualPx_mcQuark_mcJet.clear();
+	m_ResidualPy_mcQuark_mcJet.clear();
+	m_ResidualPz_mcQuark_mcJet.clear();
 	m_ResidualTheta_mcJet_recoJet.clear();
 	m_ResidualPhi_mcJet_recoJet.clear();
 	m_ResidualThetamcJetrecoJet_PhimcJetrecoJet.clear();
 	m_ResidualEnergy_mcJet_recoJet.clear();
+	m_ResidualPx_mcJet_recoJet.clear();
+	m_ResidualPy_mcJet_recoJet.clear();
+	m_ResidualPz_mcJet_recoJet.clear();
 	m_ResidualTheta_mcQuark_recoJet.clear();
 	m_ResidualPhi_mcQuark_recoJet.clear();
 	m_ResidualEnergy_mcQuark_recoJet.clear();
+	m_ResidualPx_mcQuark_recoJet.clear();
+	m_ResidualPy_mcQuark_recoJet.clear();
+	m_ResidualPz_mcQuark_recoJet.clear();
 	m_NormalizedResidualTheta_mcQuark_mcJet.clear();
 	m_NormalizedResidualPhi_mcQuark_mcJet.clear();
 	m_NormalizedResidualEnergy_mcQuark_mcJet.clear();
@@ -1518,10 +1586,21 @@ void ZHllqq5CFit::Clear()
 	m_NormalizedResidualTheta_mcQuark_recoJet.clear();
 	m_NormalizedResidualPhi_mcQuark_recoJet.clear();
 	m_NormalizedResidualEnergy_mcQuark_recoJet.clear();
-	m_JetErrorEnergy_ErrorFlow.clear();
 	m_JetErrorTheta_ErrorFlow.clear();
 	m_JetErrorThetaPhi_ErrorFlow.clear();
 	m_JetErrorPhi_ErrorFlow.clear();
+	m_JetErrorEnergy_ErrorFlow.clear();
+	m_Sigma_Px2.clear();
+	m_Sigma_PxPy.clear();
+	m_Sigma_Py2.clear();
+	m_Sigma_PxPz.clear();
+	m_Sigma_PyPz.clear();
+	m_Sigma_Pz2.clear();
+	m_Sigma_PxE.clear();
+	m_Sigma_PyE.clear();
+	m_Sigma_PzE.clear();
+	m_Sigma_E2.clear();
+	streamlog_out(DEBUG) << "   Clear finished  " << std::endl;
 }
 
 void ZHllqq5CFit::processRunHeader()
@@ -1654,6 +1733,7 @@ void ZHllqq5CFit::getMCISRFSR( EVENT::LCEvent *pLCEvent )
 		MCFSRCol		= pLCEvent->getCollection( mcFSRcol );
 		int n_mcISR		= MCISRCol->getNumberOfElements();
 		int n_mcFSR		= MCFSRCol->getNumberOfElements();
+		streamlog_out(DEBUG) << "getMCISRFSR : Found " << n_mcISR << " ISR photon(s) and " << n_mcFSR << " FSR photon(s)" << std::endl;
 //		float ISRPx_total,ISRPy_total,ISRPz_total,ISRE_total;
 //		float FSRPx_total,FSRPy_total,FSRPz_total,FSRE_total;
 		for (int i_ISR = 0 ; i_ISR < n_mcISR ; ++i_ISR)
@@ -1672,8 +1752,9 @@ void ZHllqq5CFit::getMCISRFSR( EVENT::LCEvent *pLCEvent )
 //		m_ISRPx_total.push_back( ISRPx_total );
 //		m_ISRPy_total.push_back( ISRPy_total );
 //		m_ISRPz_total.push_back( ISRPz_total );
-		m_ISRPt_total = std::sqrt( pow(m_ISRPx_total , 2 ) + pow( m_ISRPy_total , 2 ) );
+		m_ISRPt_total = ( n_mcISR != 0 ? std::sqrt( pow(m_ISRPx_total , 2 ) + pow( m_ISRPy_total , 2 ) ) : 0 );
 //		m_ISRE_total.push_back( ISRE_total );
+		streamlog_out(DEBUG) << "getMCISRFSR : processed " << n_mcISR << " ISR photon(s) and Filled histograms/RootTree" << std::endl;
 
 		for (int i_FSR = 0 ; i_FSR < n_mcFSR ; ++i_FSR)
 		{
@@ -1691,8 +1772,9 @@ void ZHllqq5CFit::getMCISRFSR( EVENT::LCEvent *pLCEvent )
 //		m_FSRPx_total.push_back( FSRPx_total );
 //		m_FSRPy_total.push_back( FSRPy_total );
 //		m_FSRPz_total.push_back( FSRPz_total );
-		m_FSRPt_total = std::sqrt( pow(m_FSRPx_total , 2 ) + pow( m_FSRPy_total , 2 ) );
+		m_FSRPt_total = ( n_mcFSR != 0 ? std::sqrt( pow(m_FSRPx_total , 2 ) + pow( m_FSRPy_total , 2 ) ) : 0 );
 //		m_FSRE_total.push_back( FSRE_total );
+		streamlog_out(DEBUG) << "getMCISRFSR : processed " << n_mcFSR << " FSR photon(s) and Filled histograms/RootTree" << std::endl;
 		m_pTTree_5->Fill();
 		streamlog_out(DEBUG) << "getMCISRFSR : processed event " << m_nEvt << std::endl;
 	}
@@ -1796,23 +1878,41 @@ void ZHllqq5CFit::getJetAngleResolution( EVENT::LCEvent *pLCEvent , int nSLDecay
 		}
 
 		float px, px2, py, py2, pz, pz2, pt, pt2, p, p2;
-		float Sigpx2, SigpxSigpy, Sigpy2, SigpxSigpz, SigpySigpz, Sigpz2, Sige2;
+		float Sigpx2, SigpxSigpy, Sigpy2, SigpxSigpz, SigpySigpz, Sigpz2, SigpxSige, SigpySige, SigpzSige, Sige2;
 		float Dth_Dpx, Dth_Dpy, Dth_Dpz;
 		float Dphi_Dpx, Dphi_Dpy;
 		float JetEnergyErr, JetThetaErr, JetPhiErr, JetSigmaThetaPhi;
 		int signJetResidualPhi, signJetResidualTheta, signJetSigmaThetaPhi;
+		TVector3 mcQuark1P( ( mcQuark[ 0 ] )->getMomentum() );
+		TVector3 mcQuark2P( ( mcQuark[ 1 ] )->getMomentum() );
+		m_P_mcQuark1 = mcQuark1P.Mag();
+		m_P_mcQuark2 = mcQuark2P.Mag();
+		m_SeparationAngle_mcQuark = acos( mcQuark1P.Dot( mcQuark2P ) / ( mcQuark1P.Mag() * mcQuark2P.Mag() ) );
+		m_DeltaP_mcQuark = ( mcQuark1P - mcQuark2P ).Mag();
 		for ( int i_jet = 0 ; i_jet < 2 ; ++i_jet )
 		{
 			TVector3 mcQuarkP( ( mcQuark[ i_jet ] )->getMomentum() );
+			m_Px_mcQuark.push_back( mcQuarkP[ 0 ] );
+			m_Py_mcQuark.push_back( mcQuarkP[ 1 ] );
+			m_Pz_mcQuark.push_back( mcQuarkP[ 2 ] );
 			TVector3 mcQuarkPt( mcQuarkP[0] , mcQuarkP[1] , 0.0 );
 			mcQuarkP.SetMag(1.0); mcQuarkPt.SetMag(1.0);
 			TVector3 mcJetwNuP( ( mcJet_wNu[ i_jet ] )->getMomentum() );
+			m_Px_mcJet_wInvisibles.push_back( mcJetwNuP[ 0 ] );
+			m_Py_mcJet_wInvisibles.push_back( mcJetwNuP[ 1 ] );
+			m_Pz_mcJet_wInvisibles.push_back( mcJetwNuP[ 2 ] );
 			TVector3 mcJetwNuPt( mcJetwNuP[0] , mcJetwNuP[1] , 0.0 );
 			mcJetwNuP.SetMag(1.0); mcJetwNuPt.SetMag(1.0);
 			TVector3 mcJetwoNuP( ( mcJet_woNu[ i_jet ] )->getMomentum() );
+			m_Px_mcJet_woInvisibles.push_back( mcJetwoNuP[ 0 ] );
+			m_Py_mcJet_woInvisibles.push_back( mcJetwoNuP[ 1 ] );
+			m_Pz_mcJet_woInvisibles.push_back( mcJetwoNuP[ 2 ] );
 			TVector3 mcJetwoNuPt( mcJetwoNuP[0] , mcJetwoNuP[1] , 0.0 );
 			mcJetwoNuP.SetMag(1.0); mcJetwoNuPt.SetMag(1.0);
 			TVector3 recoJetP( ( recoJet[ i_jet ] )->getMomentum() );
+			m_Px_recoJet.push_back( recoJetP[ 0 ] );
+			m_Py_recoJet.push_back( recoJetP[ 1 ] );
+			m_Pz_recoJet.push_back( recoJetP[ 2 ] );
 			TVector3 recoJetPt( recoJetP[0] , recoJetP[1] , 0.0 );
 			recoJetP.SetMag(1.0); recoJetPt.SetMag(1.0);
 
@@ -1822,6 +1922,8 @@ void ZHllqq5CFit::getJetAngleResolution( EVENT::LCEvent *pLCEvent , int nSLDecay
 			m_Theta_mcQuark.push_back( mcQuark_Theta );
 			m_Phi_mcQuark.push_back( mcQuark_Phi );
 			m_Energy_mcQuark.push_back( ( mcQuark[ i_jet ] )->getEnergy() );
+			TVector3 mcQuarkMom( ( mcQuark[ i_jet ] )->getMomentum() );
+			m_Momentum_mcQuark.push_back( mcQuarkMom.Mag() );
 			float mcJetwNu_Theta = mcJetwNuP.Theta();
 			float mcJetwNu_Phi = mcJetwNuP.Phi();
 			m_CosTheta_mcJet_wInvisibles.push_back( cos( mcJetwNu_Theta ) );
@@ -1858,7 +1960,21 @@ void ZHllqq5CFit::getJetAngleResolution( EVENT::LCEvent *pLCEvent , int nSLDecay
 			SigpxSigpz =	( recoJet[ i_jet ] )->getCovMatrix()[3];
 			SigpySigpz =	( recoJet[ i_jet ] )->getCovMatrix()[4];
 			Sigpz2 =	( recoJet[ i_jet ] )->getCovMatrix()[5];
+			SigpxSige =	( recoJet[ i_jet ] )->getCovMatrix()[6];
+			SigpySige =	( recoJet[ i_jet ] )->getCovMatrix()[7];
+			SigpzSige =	( recoJet[ i_jet ] )->getCovMatrix()[8];
 			Sige2 =	( recoJet[ i_jet ] )->getCovMatrix()[9];
+
+			m_Sigma_Px2.push_back( Sigpx2 );
+			m_Sigma_PxPy.push_back( SigpxSigpy );
+			m_Sigma_Py2.push_back( Sigpy2 );
+			m_Sigma_PxPz.push_back( SigpxSigpz );
+			m_Sigma_PyPz.push_back( SigpySigpz );
+			m_Sigma_Pz2.push_back( Sigpz2 );
+			m_Sigma_PxE.push_back( SigpxSige );
+			m_Sigma_PyE.push_back( SigpySige );
+			m_Sigma_PzE.push_back( SigpzSige );
+			m_Sigma_E2.push_back( Sige2 );
 
 			Dth_Dpx =	px * pz / ( p2 * pt );
 			Dth_Dpy =	py * pz / ( p2 * pt );
@@ -1890,6 +2006,9 @@ void ZHllqq5CFit::getJetAngleResolution( EVENT::LCEvent *pLCEvent , int nSLDecay
 				m_NormalizedResidualPhi_mcQuark_mcJet.push_back( -acos( mcQuarkPt.Dot(mcJetwNuPt) ) / JetPhiErr );
 			}
 			m_ResidualEnergy_mcQuark_mcJet.push_back( ( mcJet_wNu[ i_jet ] )->getEnergy() - ( mcQuark[ i_jet ] )->getEnergy() );
+			m_ResidualPx_mcQuark_mcJet.push_back( ( mcJet_wNu[ i_jet ] )->getMomentum()[ 0 ] - ( mcQuark[ i_jet ] )->getMomentum()[ 0 ] );
+			m_ResidualPy_mcQuark_mcJet.push_back( ( mcJet_wNu[ i_jet ] )->getMomentum()[ 1 ] - ( mcQuark[ i_jet ] )->getMomentum()[ 1 ] );
+			m_ResidualPz_mcQuark_mcJet.push_back( ( mcJet_wNu[ i_jet ] )->getMomentum()[ 2 ] - ( mcQuark[ i_jet ] )->getMomentum()[ 2 ] );
 			m_NormalizedResidualEnergy_mcQuark_mcJet.push_back( ( ( mcJet_wNu[ i_jet ] )->getEnergy() - ( mcQuark[ i_jet ] )->getEnergy() ) / JetEnergyErr );
 
 			m_ResidualTheta_mcJet_recoJet.push_back( recoJet_Theta - mcJetwoNu_Theta );
@@ -1909,6 +2028,9 @@ void ZHllqq5CFit::getJetAngleResolution( EVENT::LCEvent *pLCEvent , int nSLDecay
 				m_NormalizedResidualPhi_mcJet_recoJet.push_back( -acos( mcJetwoNuPt.Dot(recoJetPt) ) / JetPhiErr );
 			}
 			m_ResidualEnergy_mcJet_recoJet.push_back( ( recoJet[ i_jet ] )->getEnergy() - ( mcJet_woNu[ i_jet ] )->getEnergy() );
+			m_ResidualPx_mcJet_recoJet.push_back( ( recoJet[ i_jet ] )->getMomentum()[ 0 ] - ( mcJet_woNu[ i_jet ] )->getMomentum()[ 0 ] );
+			m_ResidualPy_mcJet_recoJet.push_back( ( recoJet[ i_jet ] )->getMomentum()[ 1 ] - ( mcJet_woNu[ i_jet ] )->getMomentum()[ 1 ] );
+			m_ResidualPz_mcJet_recoJet.push_back( ( recoJet[ i_jet ] )->getMomentum()[ 2 ] - ( mcJet_woNu[ i_jet ] )->getMomentum()[ 2 ] );
 			m_NormalizedResidualEnergy_mcJet_recoJet.push_back( ( ( recoJet[ i_jet ] )->getEnergy() - ( mcJet_woNu[ i_jet ] )->getEnergy() ) / JetEnergyErr );
 			signJetResidualTheta = ( m_ResidualTheta_mcJet_recoJet[ i_jet ] >= 0 ? 1 : -1 );
 			signJetResidualPhi = ( m_ResidualPhi_mcJet_recoJet[ i_jet ] >= 0 ? 1 : -1 );
@@ -1932,6 +2054,9 @@ void ZHllqq5CFit::getJetAngleResolution( EVENT::LCEvent *pLCEvent , int nSLDecay
 				m_NormalizedResidualPhi_mcQuark_recoJet.push_back( -acos( mcQuarkPt.Dot(recoJetPt) ) / JetPhiErr );
 			}
 			m_ResidualEnergy_mcQuark_recoJet.push_back( ( recoJet[ i_jet ] )->getEnergy() - ( mcQuark[ i_jet ] )->getEnergy() );
+			m_ResidualPx_mcQuark_recoJet.push_back( ( recoJet[ i_jet ] )->getMomentum()[ 0 ] - ( mcQuark[ i_jet ] )->getMomentum()[ 0 ] );
+			m_ResidualPy_mcQuark_recoJet.push_back( ( recoJet[ i_jet ] )->getMomentum()[ 1 ] - ( mcQuark[ i_jet ] )->getMomentum()[ 1 ] );
+			m_ResidualPz_mcQuark_recoJet.push_back( ( recoJet[ i_jet ] )->getMomentum()[ 2 ] - ( mcQuark[ i_jet ] )->getMomentum()[ 2 ] );
 			m_NormalizedResidualEnergy_mcQuark_recoJet.push_back( ( ( recoJet[ i_jet ] )->getEnergy() - ( mcQuark[ i_jet ] )->getEnergy() ) / JetEnergyErr );
 			m_JetErrorEnergy_ErrorFlow.push_back( JetEnergyErr );
 			m_JetErrorTheta_ErrorFlow.push_back( JetThetaErr );
