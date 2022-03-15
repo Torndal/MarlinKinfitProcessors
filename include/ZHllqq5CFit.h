@@ -61,9 +61,10 @@ class ZHllqq5CFit : public Processor , public TrueJet_Parser
 		int		performFIT( 	TLorentzVector jet1FourMomentum , std::vector<float> jet1CovMat , TLorentzVector jet2FourMomentum , std::vector<float> jet2CovMat , pfoVector leptons ,
 						float &fitProbability , float (&fitOutputs)[ 18 ] , std::vector< TLorentzVector > &fittedObjects , float (&pull)[ 12 ] , bool traceEvent );
 //		std::vector<std::vector<float>>	performOldFIT(EVENT::LCEvent *pLCEvent, TLorentzVector Jet0_Nutlv, TLorentzVector Jet1_Nutlv , std::vector<float> nu1CovMat , std::vector<float> nu2CovMat);
-		virtual void	getJetResolutions(	TLorentzVector jetFourMomentum , std::vector<float> jetCovMat , float &sigmaE , float &sigmaTheta , float &sigmaPhi );
+		virtual void	getJetResolutions( TLorentzVector jetFourMomentum , std::vector<float> jetCovMat , double &sigmaE , double &sigmaTheta , double &sigmaPhi );
+		virtual void	getJetResiduals( TVector3 jetTrueMomentum , double jetTrueEnergy , TVector3 jetRecoMomentum , double jetRecoEnergy , double &jetEnergyResidual , double &jetThetaResidual , double &jetPhiResidual );
 		virtual void	getLeptonParameters( ReconstructedParticle* lepton , float (&parameters)[ 3 ] , float (&errors)[ 3 ] );
-		virtual void	getNormalizedResiduals( EVENT::LCEvent *pLCEvent , ReconstructedParticleImpl* outJet1 , ReconstructedParticleImpl* outJet2 );
+		virtual void	getNormalizedResiduals( EVENT::LCEvent *pLCEvent , ReconstructedParticleImpl* recoJet1 , ReconstructedParticleImpl* recoJet2 , double (&normalizedResiduals)[ 6 ] , bool &foundTrueJets , bool includeInvisiblesInTrueJet );
 		virtual void	check( LCEvent * evt );
 		virtual void	end();
 		std::string get_recoMCTruthLink()
@@ -77,6 +78,9 @@ class ZHllqq5CFit : public Processor , public TrueJet_Parser
 		std::string				m_inputJetCollection{};
 		std::string				m_inputSLDVertexCollection{};
 		std::string				m_inputJetSLDLink{};
+		std::string				_MCParticleColllectionName{};
+		std::string				_recoParticleCollectionName{};
+		std::string				_recoMCTruthLink{};
 		std::string				m_outputFitcollection{};
 		std::string				m_outputJetCollection{};
 		std::string				m_outputFile{};
@@ -86,10 +90,10 @@ class ZHllqq5CFit : public Processor , public TrueJet_Parser
 		int					m_fitter{};
 		bool					m_traceall{};
 		int					m_ievttrace{};
+		bool					m_matchTrueJetWithAngle = false;
 
 		int					m_nJets{};
 		int					m_nIsoLeps{};
-		int					m_nCorrectedSLD{};
 		int					m_nRun;
 		int					m_nEvt;
 		int					m_nRunSum;
@@ -101,6 +105,7 @@ class ZHllqq5CFit : public Processor , public TrueJet_Parser
 		float					eB;
 		float					m_ECM{};
 		float					m_isrpzmax{};
+		float					m_SigmaEnergyScaleFactor{};
 		double					b{};
 		double					ISRPzMaxB{};
 		TFile					*m_pTFile{};
@@ -109,6 +114,7 @@ class ZHllqq5CFit : public Processor , public TrueJet_Parser
 		int					m_nSLDecayCHadron{};
 		int					m_nSLDecayTauLepton{};
 		int					m_nSLDecayTotal{};
+		int					m_nCorrectedSLD{};
 		int					m_FitErrorCode_woNu{};
 		float					m_ZMassBeforeFit_woNu{};
 		float					m_HMassBeforeFit_woNu{};
@@ -163,6 +169,16 @@ class ZHllqq5CFit : public Processor , public TrueJet_Parser
 		std::vector<float>			m_normalizedResidualLeptonInvPt{};
 		std::vector<float>			m_normalizedResidualLeptonTheta{};
 		std::vector<float>			m_normalizedResidualLeptonPhi{};
+		std::vector<float>			m_Sigma_Px2{};
+		std::vector<float>			m_Sigma_PxPy{};
+		std::vector<float>			m_Sigma_Py2{};
+		std::vector<float>			m_Sigma_PxPz{};
+		std::vector<float>			m_Sigma_PyPz{};
+		std::vector<float>			m_Sigma_Pz2{};
+		std::vector<float>			m_Sigma_PxE{};
+		std::vector<float>			m_Sigma_PyE{};
+		std::vector<float>			m_Sigma_PzE{};
+		std::vector<float>			m_Sigma_E2{};
 
 		double					ZEnergy{};
 		double					Zmomentum[3]{0.0};

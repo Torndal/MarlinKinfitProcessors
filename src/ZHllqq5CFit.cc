@@ -67,6 +67,27 @@ eB(0.0)
 					std::string("Durham_2JetsKinFit")
 				);
 
+	registerInputCollection( 	LCIO::MCPARTICLE,
+					"MCParticleCollection" ,
+					"Name of the MCParticle collection"  ,
+					_MCParticleColllectionName ,
+					std::string("MCParticlesSkimmed")
+					);
+
+	registerInputCollection( 	LCIO::RECONSTRUCTEDPARTICLE,
+					"RecoParticleCollection" ,
+					"Name of the ReconstructedParticles input collection"  ,
+					_recoParticleCollectionName ,
+					std::string("PandoraPFOs")
+				);
+
+	registerInputCollection( 	LCIO::LCRELATION,
+					"RecoMCTruthLink",
+					"Name of the RecoMCTruthLink input collection"  ,
+					_recoMCTruthLink,
+					std::string("RecoMCTruthLink")
+				);
+
 	registerInputCollection( 	LCIO::RECONSTRUCTEDPARTICLE,
 					"TrueJets" ,
 					"Name of the TrueJetCollection input collection",
@@ -154,6 +175,12 @@ eB(0.0)
 					float(35.f)
 				);
 
+	registerProcessorParameter(	"SigmaEnergyScaleFactor" ,
+					"Factor for scaling up energy error",
+					m_SigmaEnergyScaleFactor,
+					float(1.0f)
+				);
+
 	registerProcessorParameter(	"includeISR",
 					"Include ISR in fit hypothesis; false: without ISR , true: with ISR",
 					m_fitISR,
@@ -182,6 +209,12 @@ eB(0.0)
 					"number of individual event to be traced",
 					m_ievttrace,
 					(int)0
+				);
+
+	registerProcessorParameter(	"matchTrueJetWithAngle" ,
+					"Matching true jet with reco jet: TRUE = jets with closest angle are matched , FALSE = jets containing same leading particle are matched",
+					m_matchTrueJetWithAngle,
+					(bool)false
 				);
 
 }
@@ -223,6 +256,7 @@ void ZHllqq5CFit::init()
 	m_pTTree->Branch("nSLDecayCHadron",&m_nSLDecayCHadron,"nSLDecayCHadron/I") ;
 	m_pTTree->Branch("nSLDecayTauLepton",&m_nSLDecayTauLepton,"nSLDecayTauLepton/I") ;
 	m_pTTree->Branch("nSLDecayTotal",&m_nSLDecayTotal,"nSLDecayTotal/I") ;
+	m_pTTree->Branch("nCorrectedSLD",&m_nCorrectedSLD,"nCorrectedSLD/I") ;
 	m_pTTree->Branch( "FitErrorCode_woNu" , &m_FitErrorCode_woNu , "FitErrorCode_woNu/I" );
 	m_pTTree->Branch( "ZMassBeforeFit_woNu" , &m_ZMassBeforeFit_woNu , "ZMassBeforeFit_woNu/F" );
 	m_pTTree->Branch( "HMassBeforeFit_woNu" , &m_HMassBeforeFit_woNu , "HMassBeforeFit_woNu/F" );
@@ -277,6 +311,16 @@ void ZHllqq5CFit::init()
 	m_pTTree->Branch( "normalizedResidualLeptonInvPt" , &m_normalizedResidualLeptonInvPt );
 	m_pTTree->Branch( "normalizedResidualLeptonTheta" , &m_normalizedResidualLeptonTheta );
 	m_pTTree->Branch( "normalizedResidualLeptonPhi" , &m_normalizedResidualLeptonPhi );
+	m_pTTree->Branch("Sigma_Px2",&m_Sigma_Px2);
+	m_pTTree->Branch("Sigma_PxPy",&m_Sigma_PxPy);
+	m_pTTree->Branch("Sigma_Py2",&m_Sigma_Py2);
+	m_pTTree->Branch("Sigma_PxPz",&m_Sigma_PxPz);
+	m_pTTree->Branch("Sigma_PyPz",&m_Sigma_PyPz);
+	m_pTTree->Branch("Sigma_Pz2",&m_Sigma_Pz2);
+	m_pTTree->Branch("Sigma_PxE",&m_Sigma_PxE);
+	m_pTTree->Branch("Sigma_PyE",&m_Sigma_PyE);
+	m_pTTree->Branch("Sigma_PzE",&m_Sigma_PzE);
+	m_pTTree->Branch("Sigma_E2",&m_Sigma_E2);
 
 	streamlog_out(DEBUG) << "   init finished  " << std::endl;
 
@@ -292,7 +336,8 @@ void ZHllqq5CFit::Clear()
 	m_nSLDecayCHadron = 0;
 	m_nSLDecayTauLepton = 0;
 	m_nSLDecayTotal = 0;
-	m_FitErrorCode_woNu = 0;
+	m_nCorrectedSLD = 0;
+	m_FitErrorCode_woNu = -100;
 	m_ZMassBeforeFit_woNu = 0.0;
 	m_HMassBeforeFit_woNu = 0.0;
 	m_ZMassAfterFit_woNu = 0.0;
@@ -310,7 +355,7 @@ void ZHllqq5CFit::Clear()
 	m_normalizedResidualLeptonInvPt_woNu.clear();
 	m_normalizedResidualLeptonTheta_woNu.clear();
 	m_normalizedResidualLeptonPhi_woNu.clear();
-	m_FitErrorCode_wNu = 0;
+	m_FitErrorCode_wNu = -100;
 	m_ZMassBeforeFit_wNu = 0.0;
 	m_HMassBeforeFit_wNu = 0.0;
 	m_ZMassAfterFit_wNu = 0.0;
@@ -328,7 +373,7 @@ void ZHllqq5CFit::Clear()
 	m_normalizedResidualLeptonInvPt_wNu.clear();
 	m_normalizedResidualLeptonTheta_wNu.clear();
 	m_normalizedResidualLeptonPhi_wNu.clear();
-	m_FitErrorCode = 0;
+	m_FitErrorCode = -100;
 	m_ZMassBeforeFit = 0.0;
 	m_HMassBeforeFit = 0.0;
 	m_ZMassAfterFit = 0.0;
@@ -346,6 +391,16 @@ void ZHllqq5CFit::Clear()
 	m_normalizedResidualLeptonInvPt.clear();
 	m_normalizedResidualLeptonTheta.clear();
 	m_normalizedResidualLeptonPhi.clear();
+	m_Sigma_Px2.clear();
+	m_Sigma_PxPy.clear();
+	m_Sigma_Py2.clear();
+	m_Sigma_PxPz.clear();
+	m_Sigma_PyPz.clear();
+	m_Sigma_Pz2.clear();
+	m_Sigma_PxE.clear();
+	m_Sigma_PyE.clear();
+	m_Sigma_PzE.clear();
+	m_Sigma_E2.clear();
 
 }
 
@@ -388,250 +443,349 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 		streamlog_out(DEBUG8) << "	Number of isolatedLeptons: " << m_nIsoLeps << std::endl ;
 		streamlog_out(DEBUG8) << "	Number of found semi-leptonic decays: " << m_nSLDecayTotal << std::endl ;
 		streamlog_out(DEBUG8) << "	Number of corrected semi-leptonic decays: " << m_nCorrectedSLD << std::endl ;
-		if ( m_nJets != m_nAskedJets || m_nIsoLeps != m_nAskedIsoLeps || m_nCorrectedSLD != m_nSLDecayTotal ) return;
-		bool traceEvent = false;
-		if ( pLCEvent->getEventNumber() == m_ievttrace || m_traceall ) traceEvent = true;
-
-		std::vector< ReconstructedParticle* > Leptons{};
-		for ( int i_lep = 0 ; i_lep < m_nIsoLeps ; ++i_lep )
+		if ( m_nJets == m_nAskedJets && m_nIsoLeps == m_nAskedIsoLeps && m_nCorrectedSLD == m_nSLDecayTotal )
 		{
-			ReconstructedParticle* lepton = dynamic_cast<ReconstructedParticle*>( inputLeptonCollection->getElementAt( i_lep ) );
-			Leptons.push_back( lepton );
-		}
-		ReconstructedParticle* jet1 = dynamic_cast<ReconstructedParticle*>( inputJetCollection->getElementAt( 0 ) );
-		TLorentzVector jet1tlv( jet1->getMomentum() , jet1->getEnergy() );
-		std::vector< float > jet1initialCovMat( 10 , 0.0 );
-		for ( int i_Element = 0 ; i_Element < 10 ; ++i_Element )
-		{
-			jet1initialCovMat[ i_Element ] = jet1->getCovMatrix()[ i_Element ];
-		}
-		ReconstructedParticle* jet2 = dynamic_cast<ReconstructedParticle*>( inputJetCollection->getElementAt( 1 ) );
-		TLorentzVector jet2tlv( jet2->getMomentum() , jet2->getEnergy() );
-		std::vector< float > jet2initialCovMat( 10 , 0.0 );
-		for ( int i_Element = 0 ; i_Element < 10 ; ++i_Element )
-		{
-			jet2initialCovMat[ i_Element ] = jet2->getCovMatrix()[ i_Element ];
-		}
+			bool traceEvent = false;
+			if ( pLCEvent->getEventNumber() == m_ievttrace || m_traceall ) traceEvent = true;
 
-		float fitProbability = 0.0;
-		float fitProbabilityBestFit_wNu = 0.0;
-		float fitProbability_woNu = 0.0;
-		int fitErrorCode = 0;
-		float fitOutputs_temp[ 18 ]{ 0.0 };
-		std::vector< TLorentzVector > fittedObjects_temp{};
-		float pull_temp[ 12 ]{ 0.0 };
-		float fitOutputs_woNu[ 18 ]{ 0.0 };
-		std::vector< TLorentzVector > fittedObjects_woNu{};
-		float pull_woNu[ 12 ]{ 0.0 };
-		float fitOutputs_wNu[ 18 ]{ 0.0 };
-		std::vector< TLorentzVector > fittedObjects_wNu{};
-		float pull_wNu[ 12 ]{ 0.0 };
-		float fitOutputs[ 18 ]{ 0.0 };
-		std::vector< TLorentzVector > fittedObjects{};
-		float pull[ 12 ]{ 0.0 };
-
-		TLorentzVector Nu1tlv( 0.0 , 0.0 , 0.0 , 0.0 );
-		TLorentzVector Nu2tlv( 0.0 , 0.0 , 0.0 , 0.0 );
-		std::vector< float > nu1CovMat( 10 , 0.0 );
-		std::vector< float > nu2CovMat( 10 , 0.0 );
-
-		m_FitErrorCode_woNu = performFIT( jet1tlv , jet1initialCovMat , jet2tlv , jet2initialCovMat , Leptons , fitProbability_woNu , fitOutputs_temp , fittedObjects_temp , pull_temp , traceEvent );
-		if ( m_FitErrorCode_woNu == 0 )
-		{
-			for ( unsigned int i = 0 ; i < sizeof( fitOutputs_woNu ) / sizeof( fitOutputs_woNu[ 0 ] ) ; ++i ) fitOutputs_woNu[ i ] = fitOutputs_temp[ i ];
-			for ( unsigned int i = 0 ; i < sizeof( pull_woNu ) / sizeof( pull_woNu[ 0 ] ) ; ++i ) pull_woNu[ i ] = pull_temp[ i ];
-			for ( unsigned int i = 0 ; i < fittedObjects_woNu.size()  ; ++i ) fittedObjects_woNu.push_back( fittedObjects_temp[ i ] );
-			m_ZMassBeforeFit_woNu = fitOutputs_woNu[ 2 ];
-			m_HMassBeforeFit_woNu = fitOutputs_woNu[ 3 ];
-			m_ZMassAfterFit_woNu = fitOutputs_woNu[ 4 ];
-			m_HMassAfterFit_woNu = fitOutputs_woNu[ 5 ];
-			m_FitProbability_woNu = fitProbability_woNu;
-		}
-
-		LCRelationNavigator JetSLDNav( pLCEvent->getCollection( m_inputJetSLDLink ) );
-
-		TLorentzVector jet1FourMomentum( 0.0 , 0.0 , 0.0 , 0.0 );
-		std::vector< float > jet1CovMat( 10 , 0.0 );
-		pfoVector jet1ZeroNeutrinos;
-		getSLDsInJet( JetSLDNav , jet1 , jet1ZeroNeutrinos );
-		std::vector< int > jet1nSLDSolutions{};
-		int njet1SLDSolutions = 1;
-		streamlog_out(DEBUG6) << "	Number of semi-leptonic decays in jet1: " << jet1ZeroNeutrinos.size() << std::endl ;
-		for ( unsigned int i_sld = 0 ; i_sld < jet1ZeroNeutrinos.size() ; ++i_sld )
-		{
-			int nNeutrinos = jet1ZeroNeutrinos[ i_sld ]->getParticles().size() + 1;
-			streamlog_out(DEBUG6) << "	Number of Neutrinos for semi-leptonic decay[ " << i_sld << " ] in jet1: " << nNeutrinos << std::endl ;
-			jet1nSLDSolutions.push_back( nNeutrinos );
-			njet1SLDSolutions *= nNeutrinos;
-		}
-
-		TLorentzVector jet2FourMomentum( 0.0 , 0.0 , 0.0 , 0.0 );
-		std::vector< float > jet2CovMat( 10 , 0.0 );
-		pfoVector jet2ZeroNeutrinos;
-		getSLDsInJet( JetSLDNav , jet2 , jet2ZeroNeutrinos );
-		std::vector< int > jet2nSLDSolutions{};
-		int njet2SLDSolutions = 1;
-		streamlog_out(DEBUG6) << "	Number of semi-leptonic decays in jet2: " << jet2ZeroNeutrinos.size() << std::endl ;
-		for ( unsigned int i_sld = 0 ; i_sld < jet2ZeroNeutrinos.size() ; ++i_sld )
-		{
-			int nNeutrinos = jet2ZeroNeutrinos[ i_sld ]->getParticles().size() + 1;
-			streamlog_out(DEBUG6) << "	Number of Neutrinos for semi-leptonic decay[ " << i_sld << " ] in jet2: " << nNeutrinos << std::endl ;
-			jet2nSLDSolutions.push_back( nNeutrinos );
-			njet2SLDSolutions *= nNeutrinos;
-		}
-
-		std::vector<int> jet1SLDCombination( jet1ZeroNeutrinos.size() , 0 );
-		std::vector<int> jet2SLDCombination( jet2ZeroNeutrinos.size() , 0 );
-		std::vector<int> jet1FinalNuSolutions( jet1ZeroNeutrinos.size() , 0 );
-		std::vector<int> jet2FinalNuSolutions( jet2ZeroNeutrinos.size() , 0 );
-		for ( int i_jet1 = 0 ; i_jet1 < njet1SLDSolutions ; ++i_jet1 )
-		{
-			streamlog_out(DEBUG6) << "" << std::endl ;
-			jet1FourMomentum = jet1tlv;
-			for ( int i_Element = 0 ; i_Element < 10 ; ++i_Element ) jet1CovMat[ i_Element ] = jet1initialCovMat[ i_Element ];
-			getSLDCombination( jet1nSLDSolutions , i_jet1 , jet1SLDCombination );
-			streamlog_out(DEBUG6) << "	Preparing Jet1 for kinematic fit with " << jet1ZeroNeutrinos.size() << " semi-leptonic decays:" << std::endl ;
-			TLorentzVector Nu1FourMomentum( 0.0 , 0.0 , 0.0 , 0.0 );
-			std::vector< float > Nu1CovMat( 10 , 0.0 );
-			for ( unsigned int i_sld1 = 0 ; i_sld1 < jet1ZeroNeutrinos.size() ; ++i_sld1 )
+			std::vector< ReconstructedParticle* > Leptons{};
+			for ( int i_lep = 0 ; i_lep < m_nIsoLeps ; ++i_lep )
 			{
-				streamlog_out(DEBUG6) << "		Adding solution [" << jet1SLDCombination[ i_sld1 ] << "] From semi-leptonic decay[ " << i_sld1 << " ] to Jet1" << std::endl ;
-				ReconstructedParticle* Neutrino1 = NULL;
-				if ( jet1SLDCombination[ i_sld1 ] == 0 )
-				{
-					Neutrino1 = jet1ZeroNeutrinos[ i_sld1 ];
-				}
-				else
-				{
-					Neutrino1 = jet1ZeroNeutrinos[ i_sld1 ]->getParticles()[ jet1SLDCombination[ i_sld1 ] - 1 ];
-				}
-				streamlog_out(DEBUG1) << *Neutrino1 << std::endl;
-				Nu1FourMomentum += TLorentzVector( Neutrino1->getMomentum() , Neutrino1->getEnergy() );
-				for ( int i_Element = 0 ; i_Element < 10 ; ++i_Element ) Nu1CovMat[ i_Element ] += Neutrino1->getCovMatrix()[ i_Element ];
+				ReconstructedParticle* lepton = dynamic_cast<ReconstructedParticle*>( inputLeptonCollection->getElementAt( i_lep ) );
+				Leptons.push_back( lepton );
 			}
-			jet1FourMomentum += Nu1FourMomentum;
-			for ( int i_Element = 0 ; i_Element < 10 ; ++i_Element ) jet1CovMat[ i_Element ] += Nu1CovMat[ i_Element ];
-			for ( int i_jet2 = 0 ; i_jet2 < njet2SLDSolutions ; ++i_jet2 )
-	 		{
-				jet2FourMomentum = jet2tlv;
-				for ( int i_Element = 0 ; i_Element < 10 ; ++i_Element ) jet2CovMat[ i_Element ] = jet2initialCovMat[ i_Element ];
-	 			getSLDCombination( jet2nSLDSolutions , i_jet2 , jet2SLDCombination );
-				streamlog_out(DEBUG6) << "	Preparing Jet2 for kinematic fit with " << jet2ZeroNeutrinos.size() << " semi-leptonic decays:" << std::endl ;
-				TLorentzVector Nu2FourMomentum( 0.0 , 0.0 , 0.0 , 0.0 );
-				std::vector< float > Nu2CovMat( 10 , 0.0 );
-				for ( unsigned int i_sld2 = 0 ; i_sld2 < jet2ZeroNeutrinos.size() ; ++i_sld2 )
+			ReconstructedParticle* jet1 = dynamic_cast<ReconstructedParticle*>( inputJetCollection->getElementAt( 0 ) );
+			TLorentzVector jet1tlv( jet1->getMomentum() , jet1->getEnergy() );
+			std::vector< float > jet1initialCovMat( 10 , 0.0 );
+			for ( int i_Element = 0 ; i_Element < 10 ; ++i_Element )
+			{
+				jet1initialCovMat[ i_Element ] = jet1->getCovMatrix()[ i_Element ];
+			}
+			m_Sigma_Px2.push_back( jet1initialCovMat[ 0 ] );
+			m_Sigma_PxPy.push_back( jet1initialCovMat[ 1 ] );
+			m_Sigma_Py2.push_back( jet1initialCovMat[ 2 ] );
+			m_Sigma_PxPz.push_back( jet1initialCovMat[ 3 ] );
+			m_Sigma_PyPz.push_back( jet1initialCovMat[ 4 ] );
+			m_Sigma_Pz2.push_back( jet1initialCovMat[ 5 ] );
+			m_Sigma_PxE.push_back( jet1initialCovMat[ 6 ] );
+			m_Sigma_PyE.push_back( jet1initialCovMat[ 7 ] );
+			m_Sigma_PzE.push_back( jet1initialCovMat[ 8 ] );
+			m_Sigma_E2.push_back( jet1initialCovMat[ 9 ] );
+			ReconstructedParticle* jet2 = dynamic_cast<ReconstructedParticle*>( inputJetCollection->getElementAt( 1 ) );
+			TLorentzVector jet2tlv( jet2->getMomentum() , jet2->getEnergy() );
+			std::vector< float > jet2initialCovMat( 10 , 0.0 );
+			for ( int i_Element = 0 ; i_Element < 10 ; ++i_Element )
+			{
+				jet2initialCovMat[ i_Element ] = jet2->getCovMatrix()[ i_Element ];
+			}
+			m_Sigma_Px2.push_back( jet2initialCovMat[ 0 ] );
+			m_Sigma_PxPy.push_back( jet2initialCovMat[ 1 ] );
+			m_Sigma_Py2.push_back( jet2initialCovMat[ 2 ] );
+			m_Sigma_PxPz.push_back( jet2initialCovMat[ 3 ] );
+			m_Sigma_PyPz.push_back( jet2initialCovMat[ 4 ] );
+			m_Sigma_Pz2.push_back( jet2initialCovMat[ 5 ] );
+			m_Sigma_PxE.push_back( jet2initialCovMat[ 6 ] );
+			m_Sigma_PyE.push_back( jet2initialCovMat[ 7 ] );
+			m_Sigma_PzE.push_back( jet2initialCovMat[ 8 ] );
+			m_Sigma_E2.push_back( jet2initialCovMat[ 9 ] );
+
+			float fitProbability = 0.0;
+			float fitProbabilityBestFit_wNu = 0.0;
+			float fitProbability_woNu = 0.0;
+			int fitErrorCode = 0;
+			float fitOutputs_temp[ 18 ]{ 0.0 };
+			std::vector< TLorentzVector > fittedObjects_temp{};
+			float pull_temp[ 12 ]{ 0.0 };
+			float fitOutputs_woNu[ 18 ]{ 0.0 };
+			std::vector< TLorentzVector > fittedObjects_woNu{};
+			float pull_woNu[ 12 ]{ 0.0 };
+			float fitOutputs_wNu[ 18 ]{ 0.0 };
+			std::vector< TLorentzVector > fittedObjects_wNu{};
+			float pull_wNu[ 12 ]{ 0.0 };
+			float fitOutputs[ 18 ]{ 0.0 };
+			std::vector< TLorentzVector > fittedObjects{};
+			float pull[ 12 ]{ 0.0 };
+			double jetNormalizedResiduals[ 6 ]{ 0.0 };
+
+			TLorentzVector Nu1tlv( 0.0 , 0.0 , 0.0 , 0.0 );
+			TLorentzVector Nu2tlv( 0.0 , 0.0 , 0.0 , 0.0 );
+			std::vector< float > nu1CovMat( 10 , 0.0 );
+			std::vector< float > nu2CovMat( 10 , 0.0 );
+
+			m_FitErrorCode_woNu = performFIT( jet1tlv , jet1initialCovMat , jet2tlv , jet2initialCovMat , Leptons , fitProbability_woNu , fitOutputs_temp , fittedObjects_temp , pull_temp , traceEvent );
+			if ( m_FitErrorCode_woNu == 0 )
+			{
+				for ( unsigned int i = 0 ; i < sizeof( fitOutputs_woNu ) / sizeof( fitOutputs_woNu[ 0 ] ) ; ++i ) fitOutputs_woNu[ i ] = fitOutputs_temp[ i ];
+				for ( unsigned int i = 0 ; i < sizeof( pull_woNu ) / sizeof( pull_woNu[ 0 ] ) ; ++i ) pull_woNu[ i ] = pull_temp[ i ];
+				for ( unsigned int i = 0 ; i < fittedObjects_woNu.size()  ; ++i ) fittedObjects_woNu.push_back( fittedObjects_temp[ i ] );
+				m_ZMassBeforeFit_woNu = fitOutputs_woNu[ 2 ];
+				m_HMassBeforeFit_woNu = fitOutputs_woNu[ 3 ];
+				m_ZMassAfterFit_woNu = fitOutputs_woNu[ 4 ];
+				m_HMassAfterFit_woNu = fitOutputs_woNu[ 5 ];
+				m_FitProbability_woNu = fitProbability_woNu;
+			}
+
+			LCRelationNavigator JetSLDNav( pLCEvent->getCollection( m_inputJetSLDLink ) );
+
+			TLorentzVector jet1FourMomentum( 0.0 , 0.0 , 0.0 , 0.0 );
+			std::vector< float > jet1CovMat( 10 , 0.0 );
+			pfoVector jet1ZeroNeutrinos;
+			getSLDsInJet( JetSLDNav , jet1 , jet1ZeroNeutrinos );
+			std::vector< int > jet1nSLDSolutions{};
+			int njet1SLDSolutions = 1;
+			streamlog_out(DEBUG6) << "	Number of semi-leptonic decays in jet1: " << jet1ZeroNeutrinos.size() << std::endl ;
+			for ( unsigned int i_sld = 0 ; i_sld < jet1ZeroNeutrinos.size() ; ++i_sld )
+			{
+				int nNeutrinos = jet1ZeroNeutrinos[ i_sld ]->getParticles().size() + 1;
+				streamlog_out(DEBUG6) << "	Number of Neutrinos for semi-leptonic decay[ " << i_sld << " ] in jet1: " << nNeutrinos << std::endl ;
+				jet1nSLDSolutions.push_back( nNeutrinos );
+				njet1SLDSolutions *= nNeutrinos;
+			}
+
+			TLorentzVector jet2FourMomentum( 0.0 , 0.0 , 0.0 , 0.0 );
+			std::vector< float > jet2CovMat( 10 , 0.0 );
+			pfoVector jet2ZeroNeutrinos;
+			getSLDsInJet( JetSLDNav , jet2 , jet2ZeroNeutrinos );
+			std::vector< int > jet2nSLDSolutions{};
+			int njet2SLDSolutions = 1;
+			streamlog_out(DEBUG6) << "	Number of semi-leptonic decays in jet2: " << jet2ZeroNeutrinos.size() << std::endl ;
+			for ( unsigned int i_sld = 0 ; i_sld < jet2ZeroNeutrinos.size() ; ++i_sld )
+			{
+				int nNeutrinos = jet2ZeroNeutrinos[ i_sld ]->getParticles().size() + 1;
+				streamlog_out(DEBUG6) << "	Number of Neutrinos for semi-leptonic decay[ " << i_sld << " ] in jet2: " << nNeutrinos << std::endl ;
+				jet2nSLDSolutions.push_back( nNeutrinos );
+				njet2SLDSolutions *= nNeutrinos;
+			}
+
+			std::vector<int> jet1SLDCombination( jet1ZeroNeutrinos.size() , 0 );
+			std::vector<int> jet2SLDCombination( jet2ZeroNeutrinos.size() , 0 );
+			std::vector<int> jet1FinalNuSolutions( jet1ZeroNeutrinos.size() , 0 );
+			std::vector<int> jet2FinalNuSolutions( jet2ZeroNeutrinos.size() , 0 );
+			for ( int i_jet1 = 0 ; i_jet1 < njet1SLDSolutions ; ++i_jet1 )
+			{
+				streamlog_out(DEBUG6) << "" << std::endl ;
+				jet1FourMomentum = jet1tlv;
+				for ( int i_Element = 0 ; i_Element < 10 ; ++i_Element ) jet1CovMat[ i_Element ] = jet1initialCovMat[ i_Element ];
+				getSLDCombination( jet1nSLDSolutions , i_jet1 , jet1SLDCombination );
+				streamlog_out(DEBUG6) << "	Preparing Jet1 for kinematic fit with " << jet1ZeroNeutrinos.size() << " semi-leptonic decays:" << std::endl ;
+				TLorentzVector Nu1FourMomentum( 0.0 , 0.0 , 0.0 , 0.0 );
+				std::vector< float > Nu1CovMat( 10 , 0.0 );
+				for ( unsigned int i_sld1 = 0 ; i_sld1 < jet1ZeroNeutrinos.size() ; ++i_sld1 )
 				{
-					streamlog_out(DEBUG6) << "		Adding solution [" << jet2SLDCombination[ i_sld2 ] << "] From semi-leptonic decay[ " << i_sld2 << " ] to Jet1" << std::endl ;
-					ReconstructedParticle* Neutrino2 = NULL;
-					if ( jet2SLDCombination[ i_sld2 ] == 0 )
+					streamlog_out(DEBUG6) << "		Adding solution [" << jet1SLDCombination[ i_sld1 ] << "] From semi-leptonic decay[ " << i_sld1 << " ] to Jet1" << std::endl ;
+					ReconstructedParticle* Neutrino1 = NULL;
+					if ( jet1SLDCombination[ i_sld1 ] == 0 )
 					{
-						Neutrino2 = jet2ZeroNeutrinos[ i_sld2 ];
+						Neutrino1 = jet1ZeroNeutrinos[ i_sld1 ];
 					}
 					else
 					{
-						Neutrino2 = jet2ZeroNeutrinos[ i_sld2 ]->getParticles()[ jet2SLDCombination[ i_sld2 ] - 1 ];
+						Neutrino1 = jet1ZeroNeutrinos[ i_sld1 ]->getParticles()[ jet1SLDCombination[ i_sld1 ] - 1 ];
 					}
-					streamlog_out(DEBUG1) << *Neutrino2 << std::endl;
-					Nu2FourMomentum += TLorentzVector( Neutrino2->getMomentum() , Neutrino2->getEnergy() );
-					for ( int i_Element = 0 ; i_Element < 10 ; ++i_Element ) Nu2CovMat[ i_Element ] += Neutrino2->getCovMatrix()[ i_Element ];
+					streamlog_out(DEBUG1) << *Neutrino1 << std::endl;
+					Nu1FourMomentum += TLorentzVector( Neutrino1->getMomentum() , Neutrino1->getEnergy() );
+					for ( int i_Element = 0 ; i_Element < 10 ; ++i_Element ) Nu1CovMat[ i_Element ] += Neutrino1->getCovMatrix()[ i_Element ];
 				}
-				jet2FourMomentum += Nu2FourMomentum;
-				for ( int i_Element = 0 ; i_Element < 10 ; ++i_Element ) jet2CovMat[ i_Element ] += Nu2CovMat[ i_Element ];
-				fitErrorCode = performFIT( jet1FourMomentum , jet1CovMat , jet2FourMomentum , jet2CovMat , Leptons , fitProbability , fitOutputs_temp , fittedObjects_temp , pull_temp , traceEvent );
-				if ( fitProbability >= fitProbabilityBestFit_wNu ) m_FitErrorCode_wNu = fitErrorCode;
-				if ( fitErrorCode == 0 )
-				{
-					if ( fitProbability >= fitProbabilityBestFit_wNu )
+				jet1FourMomentum += Nu1FourMomentum;
+				for ( int i_Element = 0 ; i_Element < 10 ; ++i_Element ) jet1CovMat[ i_Element ] += Nu1CovMat[ i_Element ];
+				for ( int i_jet2 = 0 ; i_jet2 < njet2SLDSolutions ; ++i_jet2 )
+		 		{
+					jet2FourMomentum = jet2tlv;
+					for ( int i_Element = 0 ; i_Element < 10 ; ++i_Element ) jet2CovMat[ i_Element ] = jet2initialCovMat[ i_Element ];
+		 			getSLDCombination( jet2nSLDSolutions , i_jet2 , jet2SLDCombination );
+					streamlog_out(DEBUG6) << "	Preparing Jet2 for kinematic fit with " << jet2ZeroNeutrinos.size() << " semi-leptonic decays:" << std::endl ;
+					TLorentzVector Nu2FourMomentum( 0.0 , 0.0 , 0.0 , 0.0 );
+					std::vector< float > Nu2CovMat( 10 , 0.0 );
+					for ( unsigned int i_sld2 = 0 ; i_sld2 < jet2ZeroNeutrinos.size() ; ++i_sld2 )
 					{
-						for ( unsigned int i = 0 ; i < sizeof( fitOutputs_wNu ) / sizeof( fitOutputs_wNu[ 0 ] ) ; ++i ) fitOutputs_woNu[ i ] = fitOutputs_temp[ i ];
-						for ( unsigned int i = 0 ; i < sizeof( pull_wNu ) / sizeof( pull_wNu[ 0 ] ) ; ++i ) pull_woNu[ i ] = pull_temp[ i ];
-						for ( unsigned int i = 0 ; i < fittedObjects_wNu.size()  ; ++i ) fittedObjects_wNu.push_back( fittedObjects_temp[ i ] );
-						for ( unsigned int i_sld1 = 0 ; i_sld1 < jet1SLDCombination.size() ; ++i_sld1 ) jet1FinalNuSolutions[ i_sld1 ] = jet1SLDCombination[ i_sld1 ];
-						for ( unsigned int i_sld2 = 0 ; i_sld2 < jet2SLDCombination.size() ; ++i_sld2 ) jet2FinalNuSolutions[ i_sld2 ] = jet2SLDCombination[ i_sld2 ];
-						fitProbabilityBestFit_wNu = fitProbability;
-						m_ZMassBeforeFit_wNu = fitOutputs_wNu[ 2 ];
-						m_HMassBeforeFit_wNu = fitOutputs_wNu[ 3 ];
-						m_ZMassAfterFit_wNu = fitOutputs_wNu[ 4 ];
-						m_HMassAfterFit_wNu = fitOutputs_wNu[ 5 ];
-						m_FitProbability_wNu = fitProbabilityBestFit_wNu;
+						streamlog_out(DEBUG6) << "		Adding solution [" << jet2SLDCombination[ i_sld2 ] << "] From semi-leptonic decay[ " << i_sld2 << " ] to Jet1" << std::endl ;
+						ReconstructedParticle* Neutrino2 = NULL;
+						if ( jet2SLDCombination[ i_sld2 ] == 0 )
+						{
+							Neutrino2 = jet2ZeroNeutrinos[ i_sld2 ];
+						}
+						else
+						{
+							Neutrino2 = jet2ZeroNeutrinos[ i_sld2 ]->getParticles()[ jet2SLDCombination[ i_sld2 ] - 1 ];
+						}
+						streamlog_out(DEBUG1) << *Neutrino2 << std::endl;
+						Nu2FourMomentum += TLorentzVector( Neutrino2->getMomentum() , Neutrino2->getEnergy() );
+						for ( int i_Element = 0 ; i_Element < 10 ; ++i_Element ) Nu2CovMat[ i_Element ] += Neutrino2->getCovMatrix()[ i_Element ];
+					}
+					jet2FourMomentum += Nu2FourMomentum;
+					for ( int i_Element = 0 ; i_Element < 10 ; ++i_Element ) jet2CovMat[ i_Element ] += Nu2CovMat[ i_Element ];
+					fitErrorCode = performFIT( jet1FourMomentum , jet1CovMat , jet2FourMomentum , jet2CovMat , Leptons , fitProbability , fitOutputs_temp , fittedObjects_temp , pull_temp , traceEvent );
+					if ( fitProbability >= fitProbabilityBestFit_wNu ) m_FitErrorCode_wNu = fitErrorCode;
+					if ( fitErrorCode == 0 )
+					{
+						if ( fitProbability >= fitProbabilityBestFit_wNu )
+						{
+							for ( unsigned int i = 0 ; i < sizeof( fitOutputs_wNu ) / sizeof( fitOutputs_wNu[ 0 ] ) ; ++i ) fitOutputs_wNu[ i ] = fitOutputs_temp[ i ];
+							for ( unsigned int i = 0 ; i < sizeof( pull_wNu ) / sizeof( pull_wNu[ 0 ] ) ; ++i ) pull_wNu[ i ] = pull_temp[ i ];
+							for ( unsigned int i = 0 ; i < fittedObjects_wNu.size()  ; ++i ) fittedObjects_wNu.push_back( fittedObjects_temp[ i ] );
+							for ( unsigned int i_sld1 = 0 ; i_sld1 < jet1SLDCombination.size() ; ++i_sld1 ) jet1FinalNuSolutions[ i_sld1 ] = jet1SLDCombination[ i_sld1 ];
+							for ( unsigned int i_sld2 = 0 ; i_sld2 < jet2SLDCombination.size() ; ++i_sld2 ) jet2FinalNuSolutions[ i_sld2 ] = jet2SLDCombination[ i_sld2 ];
+							fitProbabilityBestFit_wNu = fitProbability;
+							m_ZMassBeforeFit_wNu = fitOutputs_wNu[ 2 ];
+							m_HMassBeforeFit_wNu = fitOutputs_wNu[ 3 ];
+							m_ZMassAfterFit_wNu = fitOutputs_wNu[ 4 ];
+							m_HMassAfterFit_wNu = fitOutputs_wNu[ 5 ];
+							m_FitProbability_wNu = fitProbabilityBestFit_wNu;
+						}
+					}
+		 		}
+			}
+			std::vector<EVENT::ReconstructedParticle*> jet1Neutrinos{};
+			std::vector<EVENT::ReconstructedParticle*> jet2Neutrinos{};
+			streamlog_out(DEBUG0) << " Checking Fit Probability of KinFit with and without Neutrino Correction " << std::endl;
+			if ( m_FitProbability_wNu > m_FitProbability_woNu )
+			{
+				m_FitErrorCode = m_FitErrorCode_wNu;
+				m_ZMassBeforeFit = m_ZMassBeforeFit_wNu;
+				m_HMassBeforeFit = m_HMassBeforeFit_wNu;
+				m_ZMassAfterFit = m_ZMassAfterFit_wNu;
+				m_HMassAfterFit = m_HMassAfterFit_wNu;
+				m_FitProbability = m_FitProbability_wNu;
+				for ( unsigned int i = 0 ; i < sizeof( fitOutputs ) / sizeof( fitOutputs[ 0 ] ) ; ++i ) fitOutputs[ i ] = fitOutputs_wNu[ i ];
+				for ( unsigned int i = 0 ; i < sizeof( pull ) / sizeof( pull[ 0 ] ) ; ++i ) pull[ i ] = pull_wNu[ i ];
+				for ( unsigned int i = 0 ; i < fittedObjects_wNu.size()  ; ++i ) fittedObjects.push_back( fittedObjects_wNu[ i ] );
+				for ( unsigned int i = 0 ; i < jet1FinalNuSolutions.size() ; ++i )
+				{
+					if ( jet1FinalNuSolutions[ i ] == 0 )
+					{
+						jet1Neutrinos.push_back( ( EVENT::ReconstructedParticle* )jet1ZeroNeutrinos[ i ] );
+					}
+					else
+					{
+						jet1Neutrinos.push_back( ( EVENT::ReconstructedParticle* )jet1ZeroNeutrinos[ i ]->getParticles()[ jet1FinalNuSolutions[ i ] - 1 ] );
 					}
 				}
-	 		}
-		}
-		std::vector<EVENT::ReconstructedParticle*> jet1Neutrinos{};
-		std::vector<EVENT::ReconstructedParticle*> jet2Neutrinos{};
-		if ( m_FitProbability_wNu > m_FitProbability_woNu )
-		{
-			m_FitErrorCode = m_FitErrorCode_wNu;
-			m_ZMassBeforeFit = m_ZMassBeforeFit_wNu;
-			m_HMassBeforeFit = m_HMassBeforeFit_wNu;
-			m_ZMassAfterFit = m_ZMassAfterFit_wNu;
-			m_HMassAfterFit = m_HMassAfterFit_wNu;
-			m_FitProbability = m_FitProbability_wNu;
-			for ( unsigned int i = 0 ; i < sizeof( fitOutputs ) / sizeof( fitOutputs[ 0 ] ) ; ++i ) fitOutputs[ i ] = fitOutputs_wNu[ i ];
-			for ( unsigned int i = 0 ; i < sizeof( pull ) / sizeof( pull[ 0 ] ) ; ++i ) pull[ i ] = pull_wNu[ i ];
-			for ( unsigned int i = 0 ; i < fittedObjects_wNu.size()  ; ++i ) fittedObjects.push_back( fittedObjects_wNu[ i ] );
-			for ( unsigned int i = 0 ; i < jet1FinalNuSolutions.size() ; ++i )
-			{
-				if ( jet1FinalNuSolutions[ i ] == 0 )
+				for ( unsigned int i = 0 ; i < jet2FinalNuSolutions.size() ; ++i )
 				{
-					jet1Neutrinos.push_back( ( EVENT::ReconstructedParticle* )jet1ZeroNeutrinos[ i ] );
-				}
-				else
-				{
-					jet1Neutrinos.push_back( ( EVENT::ReconstructedParticle* )jet1ZeroNeutrinos[ i ]->getParticles()[ jet1FinalNuSolutions[ i ] - 1 ] );
+					if ( jet2FinalNuSolutions[ i ] == 0 )
+					{
+						jet2Neutrinos.push_back( ( EVENT::ReconstructedParticle* )jet2ZeroNeutrinos[ i ] );
+					}
+					else
+					{
+						jet2Neutrinos.push_back( ( EVENT::ReconstructedParticle* )jet2ZeroNeutrinos[ i ]->getParticles()[ jet2FinalNuSolutions[ i ] - 1 ] );
+					}
 				}
 			}
-			for ( unsigned int i = 0 ; i < jet2FinalNuSolutions.size() ; ++i )
+			else
 			{
-				if ( jet2FinalNuSolutions[ i ] == 0 )
+				m_FitErrorCode = m_FitErrorCode_woNu;
+				m_ZMassBeforeFit = m_ZMassBeforeFit_woNu;
+				m_HMassBeforeFit = m_HMassBeforeFit_woNu;
+				m_ZMassAfterFit = m_ZMassAfterFit_woNu;
+				m_HMassAfterFit = m_HMassAfterFit_woNu;
+				m_FitProbability = m_FitProbability_woNu;
+				for ( unsigned int i = 0 ; i < sizeof( fitOutputs ) / sizeof( fitOutputs[ 0 ] ) ; ++i ) fitOutputs[ i ] = fitOutputs_woNu[ i ];
+				for ( unsigned int i = 0 ; i < sizeof( pull ) / sizeof( pull[ 0 ] ) ; ++i ) pull[ i ] = pull_woNu[ i ];
+				for ( unsigned int i = 0 ; i < fittedObjects_woNu.size()  ; ++i ) fittedObjects.push_back( fittedObjects_woNu[ i ] );
+			}
+			streamlog_out(DEBUG0) << " Fit Probability of KinFit with and without Neutrino Correction was checked " << std::endl;
+			m_pullJetEnergy_woNu.push_back( pull_woNu[ 0 ] );	m_pullJetEnergy_woNu.push_back( pull_woNu[ 1 ] );
+			m_pullJetTheta_woNu.push_back( pull_woNu[ 2 ] ); 	m_pullJetTheta_woNu.push_back( pull_woNu[ 3 ] );
+			m_pullJetPhi_woNu.push_back( pull_woNu[ 4 ] );		m_pullJetPhi_woNu.push_back( pull_woNu[ 5 ] );
+			m_pullLeptonInvPt_woNu.push_back( pull_woNu[ 6 ] );	m_pullLeptonInvPt_woNu.push_back( pull_woNu[ 7 ] );
+			m_pullLeptonTheta_woNu.push_back( pull_woNu[ 8 ] );	m_pullLeptonTheta_woNu.push_back( pull_woNu[ 9 ] );
+			m_pullLeptonPhi_woNu.push_back( pull_woNu[ 10 ] );	m_pullLeptonPhi_woNu.push_back( pull_woNu[ 11 ] );
+			m_pullJetEnergy_wNu.push_back( pull_wNu[ 0 ] );		m_pullJetEnergy_wNu.push_back( pull_wNu[ 1 ] );
+			m_pullJetTheta_wNu.push_back( pull_wNu[ 2 ] ); 		m_pullJetTheta_wNu.push_back( pull_wNu[ 3 ] );
+			m_pullJetPhi_wNu.push_back( pull_wNu[ 4 ] );		m_pullJetPhi_wNu.push_back( pull_wNu[ 5 ] );
+			m_pullLeptonInvPt_wNu.push_back( pull_wNu[ 6 ] );	m_pullLeptonInvPt_wNu.push_back( pull_wNu[ 7 ] );
+			m_pullLeptonTheta_wNu.push_back( pull_wNu[ 8 ] );	m_pullLeptonTheta_wNu.push_back( pull_wNu[ 9 ] );
+			m_pullLeptonPhi_wNu.push_back( pull_wNu[ 10 ] );	m_pullLeptonPhi_wNu.push_back( pull_wNu[ 11 ] );
+			m_pullJetEnergy.push_back( pull[ 0 ] );			m_pullJetEnergy.push_back( pull[ 1 ] );
+			m_pullJetTheta.push_back( pull[ 2 ] ); 			m_pullJetTheta.push_back( pull[ 3 ] );
+			m_pullJetPhi.push_back( pull[ 4 ] );			m_pullJetPhi.push_back( pull[ 5 ] );
+			m_pullLeptonInvPt.push_back( pull[ 6 ] );		m_pullLeptonInvPt.push_back( pull[ 7 ] );
+			m_pullLeptonTheta.push_back( pull[ 8 ] );		m_pullLeptonTheta.push_back( pull[ 9 ] );
+			m_pullLeptonPhi.push_back( pull[ 10 ] );		m_pullLeptonPhi.push_back( pull[ 11 ] );
+			streamlog_out(DEBUG0) << " Pulls of KinFit was filled " << std::endl;
+
+			bool foundTrueJet_woNu = true;
+			bool foundTrueJet_wNu = true;
+			ReconstructedParticleImpl* outJet1 = dynamic_cast<ReconstructedParticleImpl*>( inputJetCollection->getElementAt( 0 ) );
+			ReconstructedParticleImpl* outJet2 = dynamic_cast<ReconstructedParticleImpl*>( inputJetCollection->getElementAt( 1 ) );
+			std::vector< float > outJet1CovMat( 10 , 0.0 ); for ( int i_Element = 0 ; i_Element < 10 ; ++i_Element ) outJet1CovMat[ i_Element ] = outJet1->getCovMatrix()[ i_Element ];
+			std::vector< float > outJet2CovMat( 10 , 0.0 ); for ( int i_Element = 0 ; i_Element < 10 ; ++i_Element ) outJet2CovMat[ i_Element ] = outJet2->getCovMatrix()[ i_Element ];
+			streamlog_out(DEBUG0) << " Output jets are obtained from input jet collection " << std::endl;
+			getNormalizedResiduals( pLCEvent , outJet1 , outJet2 , jetNormalizedResiduals , foundTrueJet_woNu , false );
+			streamlog_out(DEBUG0) << " Normalized Residuals of Jets without Neutrino Correction calculated " << std::endl;
+			if ( foundTrueJet_woNu )
+			{
+				m_normalizedResidualJetEnergy_woNu.push_back( jetNormalizedResiduals[ 0 ] );	m_normalizedResidualJetEnergy_woNu.push_back( jetNormalizedResiduals[ 1 ] );
+				m_normalizedResidualJetTheta_woNu.push_back( jetNormalizedResiduals[ 2 ] );	m_normalizedResidualJetTheta_woNu.push_back( jetNormalizedResiduals[ 3 ] );
+				m_normalizedResidualJetPhi_woNu.push_back( jetNormalizedResiduals[ 4 ] );	m_normalizedResidualJetPhi_woNu.push_back( jetNormalizedResiduals[ 5 ] );
+				streamlog_out(DEBUG0) << " Normalized Residuals of Jets without Neutrino Correction was filled " << std::endl;
+				if ( m_FitProbability_wNu > m_FitProbability_woNu )
 				{
-					jet2Neutrinos.push_back( ( EVENT::ReconstructedParticle* )jet2ZeroNeutrinos[ i ] );
-				}
-				else
-				{
-					jet2Neutrinos.push_back( ( EVENT::ReconstructedParticle* )jet2ZeroNeutrinos[ i ]->getParticles()[ jet2FinalNuSolutions[ i ] - 1 ] );
+					streamlog_out(DEBUG0) << " Normalized Residuals of Jets without Neutrino Correction are BEST " << std::endl;
+					m_normalizedResidualJetEnergy.push_back( jetNormalizedResiduals[ 0 ] );	m_normalizedResidualJetEnergy.push_back( jetNormalizedResiduals[ 1 ] );
+					m_normalizedResidualJetTheta.push_back( jetNormalizedResiduals[ 2 ] );	m_normalizedResidualJetTheta.push_back( jetNormalizedResiduals[ 3 ] );
+					m_normalizedResidualJetPhi.push_back( jetNormalizedResiduals[ 4 ] );	m_normalizedResidualJetPhi.push_back( jetNormalizedResiduals[ 5 ] );
 				}
 			}
-		}
-		else
-		{
-			m_FitErrorCode = m_FitErrorCode_woNu;
-			m_ZMassBeforeFit = m_ZMassBeforeFit_woNu;
-			m_HMassBeforeFit = m_HMassBeforeFit_woNu;
-			m_ZMassAfterFit = m_ZMassAfterFit_woNu;
-			m_HMassAfterFit = m_HMassAfterFit_woNu;
-			m_FitProbability = m_FitProbability_woNu;
-			for ( unsigned int i = 0 ; i < sizeof( fitOutputs ) / sizeof( fitOutputs[ 0 ] ) ; ++i ) fitOutputs[ i ] = fitOutputs_woNu[ i ];
-			for ( unsigned int i = 0 ; i < sizeof( pull ) / sizeof( pull[ 0 ] ) ; ++i ) pull[ i ] = pull_woNu[ i ];
-			for ( unsigned int i = 0 ; i < fittedObjects_woNu.size()  ; ++i ) fittedObjects.push_back( fittedObjects_woNu[ i ] );
-		}
-		m_pullJetEnergy_woNu.push_back( pull_woNu[ 0 ] );	m_pullJetEnergy_woNu.push_back( pull_woNu[ 1 ] );
-		m_pullJetTheta_woNu.push_back( pull_woNu[ 2 ] ); 	m_pullJetTheta_woNu.push_back( pull_woNu[ 3 ] );
-		m_pullJetPhi_woNu.push_back( pull_woNu[ 4 ] );		m_pullJetPhi_woNu.push_back( pull_woNu[ 5 ] );
-		m_pullLeptonInvPt_woNu.push_back( pull_woNu[ 6 ] );	m_pullLeptonInvPt_woNu.push_back( pull_woNu[ 7 ] );
-		m_pullLeptonTheta_woNu.push_back( pull_woNu[ 8 ] );	m_pullLeptonTheta_woNu.push_back( pull_woNu[ 9 ] );
-		m_pullLeptonPhi_woNu.push_back( pull_woNu[ 10 ] );	m_pullLeptonPhi_woNu.push_back( pull_woNu[ 11 ] );
-		m_pullJetEnergy_wNu.push_back( pull_wNu[ 0 ] );		m_pullJetEnergy_wNu.push_back( pull_wNu[ 1 ] );
-		m_pullJetTheta_wNu.push_back( pull_wNu[ 2 ] ); 		m_pullJetTheta_wNu.push_back( pull_wNu[ 3 ] );
-		m_pullJetPhi_wNu.push_back( pull_wNu[ 4 ] );		m_pullJetPhi_wNu.push_back( pull_wNu[ 5 ] );
-		m_pullLeptonInvPt_wNu.push_back( pull_wNu[ 6 ] );	m_pullLeptonInvPt_wNu.push_back( pull_wNu[ 7 ] );
-		m_pullLeptonTheta_wNu.push_back( pull_wNu[ 8 ] );	m_pullLeptonTheta_wNu.push_back( pull_wNu[ 9 ] );
-		m_pullLeptonPhi_wNu.push_back( pull_wNu[ 10 ] );	m_pullLeptonPhi_wNu.push_back( pull_wNu[ 11 ] );
-		m_pullJetEnergy.push_back( pull[ 0 ] );			m_pullJetEnergy.push_back( pull[ 1 ] );
-		m_pullJetTheta.push_back( pull[ 2 ] ); 			m_pullJetTheta.push_back( pull[ 3 ] );
-		m_pullJetPhi.push_back( pull[ 4 ] );			m_pullJetPhi.push_back( pull[ 5 ] );
-		m_pullLeptonInvPt.push_back( pull[ 6 ] );		m_pullLeptonInvPt.push_back( pull[ 7 ] );
-		m_pullLeptonTheta.push_back( pull[ 8 ] );		m_pullLeptonTheta.push_back( pull[ 9 ] );
-		m_pullLeptonPhi.push_back( pull[ 10 ] );		m_pullLeptonPhi.push_back( pull[ 11 ] );
 
-		ReconstructedParticleImpl* outJet1 = dynamic_cast<ReconstructedParticleImpl*>( inputJetCollection->getElementAt( 0 ) );
-		ReconstructedParticleImpl* outJet2 = dynamic_cast<ReconstructedParticleImpl*>( inputJetCollection->getElementAt( 1 ) );
+			streamlog_out(DEBUG0) << " Adding Neutrino Solutions to Jets " << std::endl;
+			double jet1Momentum[ 3 ]{ outJet1->getMomentum()[ 0 ] , outJet1->getMomentum()[ 1 ] , outJet1->getMomentum()[ 2 ] };
+			double jet1Energy = outJet1->getEnergy();
+			for ( unsigned int i_nu1 = 0 ; i_nu1 < jet1Neutrinos.size() ; ++i_nu1 )
+			{
+				streamlog_out(DEBUG0) << " Adding Neutrino Solution " << i_nu1 << " to Jet1 " << std::endl;
+				outJet1->addParticle( jet1Neutrinos[ i_nu1 ] );
+				jet1Momentum[ 0 ] += jet1Neutrinos[ i_nu1 ]->getMomentum()[ 0 ];
+				jet1Momentum[ 1 ] += jet1Neutrinos[ i_nu1 ]->getMomentum()[ 1 ];
+				jet1Momentum[ 2 ] += jet1Neutrinos[ i_nu1 ]->getMomentum()[ 2 ];
+				jet1Energy += jet1Neutrinos[ i_nu1 ]->getEnergy();
+				for ( int i_Element = 0 ; i_Element < 10 ; ++i_Element ) outJet1CovMat[ i_Element ] += jet1Neutrinos[ i_nu1 ]->getCovMatrix()[ i_Element ];
+			}
+			outJet1->setMomentum( jet1Momentum );
+			outJet1->setEnergy( jet1Energy );
+			outJet1->setCovMatrix( outJet1CovMat );
+			streamlog_out(DEBUG0) << " FourMomentum of Jet1 updated" << std::endl;
 
-		outputJetCollection->addElement( outJet1 );
-		outputJetCollection->addElement( outJet2 );
-		pLCEvent->addCollection( outputJetCollection , m_outputJetCollection.c_str() );
-		getNormalizedResiduals( pLCEvent , outJet1 , outJet2 );
+			double jet2Momentum[ 3 ]{ outJet2->getMomentum()[ 0 ] , outJet2->getMomentum()[ 1 ] , outJet2->getMomentum()[ 2 ] };
+			double jet2Energy = outJet2->getEnergy();
+			for ( unsigned int i_nu2 = 0 ; i_nu2 < jet2Neutrinos.size() ; ++i_nu2 )
+			{
+				streamlog_out(DEBUG0) << " Adding Neutrino Solution " << i_nu2 << " to Jet2 " << std::endl;
+				outJet2->addParticle( jet2Neutrinos[ i_nu2 ] );
+				jet2Momentum[ 0 ] += jet2Neutrinos[ i_nu2 ]->getMomentum()[ 0 ];
+				jet2Momentum[ 1 ] += jet2Neutrinos[ i_nu2 ]->getMomentum()[ 1 ];
+				jet2Momentum[ 2 ] += jet2Neutrinos[ i_nu2 ]->getMomentum()[ 2 ];
+				jet2Energy += jet2Neutrinos[ i_nu2 ]->getEnergy();
+				for ( int i_Element = 0 ; i_Element < 10 ; ++i_Element ) outJet2CovMat[ i_Element ] += jet2Neutrinos[ i_nu2 ]->getCovMatrix()[ i_Element ];
+			}
+			outJet2->setMomentum( jet2Momentum );
+			outJet2->setEnergy( jet2Energy );
+			outJet2->setCovMatrix( outJet2CovMat );
+			streamlog_out(DEBUG0) << " FourMomentum of Jet2 updated" << std::endl;
+			getNormalizedResiduals( pLCEvent , outJet1 , outJet2 , jetNormalizedResiduals , foundTrueJet_wNu , true );
+			if ( foundTrueJet_wNu )
+			{
+				m_normalizedResidualJetEnergy_wNu.push_back( jetNormalizedResiduals[ 0 ] );	m_normalizedResidualJetEnergy_wNu.push_back( jetNormalizedResiduals[ 1 ] );
+				m_normalizedResidualJetTheta_wNu.push_back( jetNormalizedResiduals[ 2 ] );	m_normalizedResidualJetTheta_wNu.push_back( jetNormalizedResiduals[ 3 ] );
+				m_normalizedResidualJetPhi_wNu.push_back( jetNormalizedResiduals[ 4 ] );	m_normalizedResidualJetPhi_wNu.push_back( jetNormalizedResiduals[ 5 ] );
+				streamlog_out(DEBUG0) << " Normalized Residuals of Jets with Neutrino Correction was filled " << std::endl;
+				if ( m_FitProbability_wNu <= m_FitProbability_woNu )
+				{
+					streamlog_out(DEBUG0) << " Normalized Residuals of Jets with Neutrino Correction are BEST " << std::endl;
+					m_normalizedResidualJetEnergy.push_back( jetNormalizedResiduals[ 0 ] );	m_normalizedResidualJetEnergy.push_back( jetNormalizedResiduals[ 1 ] );
+					m_normalizedResidualJetTheta.push_back( jetNormalizedResiduals[ 2 ] );	m_normalizedResidualJetTheta.push_back( jetNormalizedResiduals[ 3 ] );
+					m_normalizedResidualJetPhi.push_back( jetNormalizedResiduals[ 4 ] );	m_normalizedResidualJetPhi.push_back( jetNormalizedResiduals[ 5 ] );
+				}
+			}
+
+			outputJetCollection->addElement( outJet1 );
+			streamlog_out(DEBUG0) << " Jet1 Added to Output Jet collection" << std::endl;
+			outputJetCollection->addElement( outJet2 );
+			streamlog_out(DEBUG0) << " Jet2 Added to Output Jet collection" << std::endl;
+			pLCEvent->addCollection( outputJetCollection , m_outputJetCollection.c_str() );
+			streamlog_out(DEBUG0) << " Output Jet collection added to event" << std::endl;
+		}
 	}
 	catch(DataNotAvailableException &e)
 	{
@@ -641,10 +795,146 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 
 }
 
-void ZHllqq5CFit::getNormalizedResiduals( EVENT::LCEvent *pLCEvent , ReconstructedParticleImpl* outJet1 , ReconstructedParticleImpl* outJet2 )
+void ZHllqq5CFit::getNormalizedResiduals( EVENT::LCEvent *pLCEvent , ReconstructedParticleImpl* recoJet1 , ReconstructedParticleImpl* recoJet2 , double (&jetNormalizedResiduals)[ 6 ] , bool &foundTrueJets , bool includeInvisiblesInTrueJet )
 {
 	TrueJet_Parser* trueJet	= this;
 	trueJet->getall( pLCEvent );
+
+	ReconstructedParticle* leadingParticleJet1 = NULL;
+	ReconstructedParticle* leadingParticleJet2 = NULL;
+	float leadingEnergyJet1 = 0.0;
+	float leadingEnergyJet2 = 0.0;
+	streamlog_out(DEBUG0) << " looking for leading particle in jet 1 with " << ( recoJet1->getParticles() ).size() << " particles" << std::endl;
+	for ( unsigned int i_par = 0 ; i_par < ( recoJet1->getParticles() ).size() ; ++i_par )
+	{
+		ReconstructedParticle* pfo = ( ReconstructedParticle* )recoJet1->getParticles()[ i_par ];
+		streamlog_out(DEBUG0) << " checking particle " << i_par << " with Energy = " << pfo->getEnergy() << std::endl;
+		streamlog_out(DEBUG3) << *pfo << std::endl;
+		if ( abs( pfo->getType() ) == 12 || abs( pfo->getType() ) == 14 || abs( pfo->getType() ) == 16 ) continue;
+		if ( pfo->getEnergy() > leadingEnergyJet1 )
+		{
+			leadingParticleJet1 = pfo;
+			leadingEnergyJet1 = pfo->getEnergy();
+		}
+	}
+	streamlog_out(DEBUG0) << " looking for leading particle in jet 2 with " << ( recoJet2->getParticles() ).size() << " particles" << std::endl;
+	for ( unsigned int i_par = 0 ; i_par < ( recoJet2->getParticles() ).size() ; ++i_par )
+	{
+		ReconstructedParticle* pfo = ( ReconstructedParticle* )recoJet2->getParticles()[ i_par ];
+		streamlog_out(DEBUG0) << " checking particle " << i_par << " with Energy = " << pfo->getEnergy() << std::endl;
+		streamlog_out(DEBUG3) << *pfo << std::endl;
+		if ( abs( pfo->getType() ) == 12 || abs( pfo->getType() ) == 14 || abs( pfo->getType() ) == 16 ) continue;
+		if ( pfo->getEnergy() > leadingEnergyJet2 )
+		{
+			leadingParticleJet2 = pfo;
+			leadingEnergyJet2 = pfo->getEnergy();
+			streamlog_out(DEBUG0) << " So far, the energy of leading particle is: " << leadingEnergyJet2 << " GeV" << std::endl;
+		}
+	}
+	if ( leadingParticleJet1 == NULL || leadingParticleJet2 == NULL )
+	{
+		foundTrueJets = false;
+		return;
+	}
+	streamlog_out(DEBUG0) << "**************************** Leading particle of jet1 ****************************" << std::endl;
+	streamlog_out(DEBUG0) << *leadingParticleJet1 << std::endl;
+	streamlog_out(DEBUG0) << "**************************** Leading particle of jet2 ****************************" << std::endl;
+	streamlog_out(DEBUG0) << *leadingParticleJet2 << std::endl;
+	LCObjectVec jet1vec = reltjreco->getRelatedFromObjects( leadingParticleJet1 );
+	streamlog_out(DEBUG0) << jet1vec.size() << " true Jet found for leading particle of jet1" << std::endl;
+	LCObjectVec jet2vec = reltjreco->getRelatedFromObjects( leadingParticleJet2 );
+	streamlog_out(DEBUG0) << jet2vec.size() << " true Jet found for leading particle of jet2" << std::endl;
+	if ( jet1vec.size() == 0 || jet2vec.size() == 0 )
+	{
+		foundTrueJets = false;
+		return;
+	}
+
+	int trueJet1_index;
+	int trueJet2_index;
+/*
+	int nTrueHadronicJets = 0;
+	std::vector<int> trueHadronicJetIndices; trueHadronicJetIndices.clear();
+	for (int i_jet = 0 ; i_jet < trueJet->njets() ; i_jet++ )
+	{
+		if ( type_jet( i_jet ) == 1 )
+		{
+			++nTrueHadronicJets;
+			trueHadronicJetIndices.push_back( i_jet );
+		}
+	}
+	if ( m_matchTrueJetWithAngle && nTrueHadronicJets != 2 )
+	{
+		foundTrueJets = false;
+		return;
+	}
+	TVector3 jet1SeenMomentum( pseen( trueHadronicJetIndices[ 0 ] )[ 0 ] , pseen( trueHadronicJetIndices[ 0 ] )[ 1 ] , pseen( trueHadronicJetIndices[ 0 ] )[ 2 ] ); jet1SeenMomentum.SetMag( 1.0 );
+	TVector3 jet2SeenMomentum( pseen( trueHadronicJetIndices[ 1 ] )[ 0 ] , pseen( trueHadronicJetIndices[ 1 ] )[ 1 ] , pseen( trueHadronicJetIndices[ 1 ] )[ 2 ] ); jet2SeenMomentum.SetMag( 1.0 );
+	TVector3 jet1RecMomentum( recoJet1->getMomentum() ); jet1RecMomentum.SetMag( 1.0 );
+	TVector3 jet2RecMomentum( recoJet2->getMomentum() ); jet2RecMomentum.SetMag( 1.0 );
+	if ( m_matchTrueJetWithAngle )
+	{
+		if ( jet1RecMomentum.Dot( jet1SeenMomentum ) + jet2RecMomentum.Dot( jet2SeenMomentum ) > jet1RecMomentum.Dot( jet2SeenMomentum ) + jet2RecMomentum.Dot( jet1SeenMomentum ) )
+		{
+			trueJet1_index = trueHadronicJetIndices[ 0 ];
+			trueJet2_index = trueHadronicJetIndices[ 1 ];
+		}
+		else
+		{
+			trueJet1_index = trueHadronicJetIndices[ 1 ];
+			trueJet2_index = trueHadronicJetIndices[ 0 ];
+		}
+	}
+	else
+	{
+	}
+*/
+	trueJet1_index = jetindex( dynamic_cast<ReconstructedParticle*>( jet1vec[ 0 ] ) );
+	trueJet2_index = jetindex( dynamic_cast<ReconstructedParticle*>( jet2vec[ 0 ] ) );
+
+	streamlog_out(DEBUG0) << " true Jet[ " << trueJet1_index << " ] has the leading particle of jet1" << std::endl;
+	streamlog_out(DEBUG0) << " true Jet[ " << trueJet2_index << " ] has the leading particle of jet2" << std::endl;
+	streamlog_out(DEBUG4) << "----------------------------------------------------------------------" << std::endl;
+	streamlog_out(DEBUG4) << "	trueJet1 TYPE:	" << type_jet( trueJet1_index ) << std::endl;
+	streamlog_out(DEBUG4) << "	trueJet1 (Px,Py,Pz,E):	" << ptrue( trueJet1_index )[ 0 ] << " , " << ptrue( trueJet1_index )[ 1 ] << " , " << ptrue( trueJet1_index )[ 2 ] << " , " << Etrue( trueJet1_index ) << std::endl;
+	streamlog_out(DEBUG4) << "recoJet1:" << std::endl;
+	streamlog_out(DEBUG4) << *recoJet1 << std::endl;
+	streamlog_out(DEBUG4) << "leadingParticleJet1:" << std::endl;
+	streamlog_out(DEBUG4) << *leadingParticleJet1 << std::endl;
+	streamlog_out(DEBUG4) << "----------------------------------------------------------------------" << std::endl;
+	streamlog_out(DEBUG4) << "	trueJet2 TYPE:	" << type_jet( trueJet2_index ) << std::endl;
+	streamlog_out(DEBUG4) << "	trueJet2 (Px,Py,Pz,E):	" << ptrue( trueJet2_index )[ 0 ] << " , " << ptrue( trueJet2_index )[ 1 ] << " , " << ptrue( trueJet2_index )[ 2 ] << " , " << Etrue( trueJet2_index ) << std::endl;
+	streamlog_out(DEBUG4) << "recoJet2:" << std::endl;
+	streamlog_out(DEBUG4) << *recoJet2 << std::endl;
+	streamlog_out(DEBUG4) << "leadingParticleJet2:" << std::endl;
+	streamlog_out(DEBUG4) << *leadingParticleJet2 << std::endl;
+
+	TVector3 jet1TrueMomentum( ptrue( trueJet1_index )[ 0 ] , ptrue( trueJet1_index )[ 1 ] , ptrue( trueJet1_index )[ 2 ] );
+	double jet1TrueEnergy = Etrue( trueJet1_index );
+	TVector3 jet1RecoMomentum( recoJet1->getMomentum() );
+	double jet1RecoEnergy = recoJet1->getEnergy();
+
+	double jet1EnergyResidual , jet1ThetaResidual , jet1PhiResidual;
+	getJetResiduals( jet1TrueMomentum , jet1TrueEnergy , jet1RecoMomentum , jet1RecoEnergy , jet1EnergyResidual , jet1ThetaResidual , jet1PhiResidual );
+	double jet1SigmaE , jet1SigmaTheta , jet1SigmaPhi;
+	getJetResolutions( TLorentzVector( jet1RecoMomentum , jet1RecoEnergy ) , recoJet1->getCovMatrix() , jet1SigmaE , jet1SigmaTheta , jet1SigmaPhi );
+
+	TVector3 jet2TrueMomentum( ptrue( trueJet2_index )[ 0 ] , ptrue( trueJet2_index )[ 1 ] , ptrue( trueJet2_index )[ 2 ] );
+	double jet2TrueEnergy = Etrue( trueJet2_index );
+	TVector3 jet2RecoMomentum( recoJet2->getMomentum() );
+	double jet2RecoEnergy = recoJet2->getEnergy();
+
+	double jet2EnergyResidual , jet2ThetaResidual , jet2PhiResidual;
+	getJetResiduals( jet2TrueMomentum , jet2TrueEnergy , jet2RecoMomentum , jet2RecoEnergy , jet2EnergyResidual , jet2ThetaResidual , jet2PhiResidual );
+	double jet2SigmaE , jet2SigmaTheta , jet2SigmaPhi;
+	getJetResolutions( TLorentzVector( jet2RecoMomentum , jet2RecoEnergy ) , recoJet2->getCovMatrix() , jet2SigmaE , jet2SigmaTheta , jet2SigmaPhi );
+
+	jetNormalizedResiduals[ 0 ] = jet1EnergyResidual / jet1SigmaE;
+	jetNormalizedResiduals[ 1 ] = jet2EnergyResidual / jet2SigmaE;
+	jetNormalizedResiduals[ 2 ] = jet1ThetaResidual / jet1SigmaTheta;
+	jetNormalizedResiduals[ 3 ] = jet2ThetaResidual / jet2SigmaTheta;
+	jetNormalizedResiduals[ 4 ] = jet1PhiResidual / jet1SigmaPhi;
+	jetNormalizedResiduals[ 5 ] = jet2PhiResidual / jet2SigmaPhi;
 
 }
 
@@ -677,7 +967,7 @@ int ZHllqq5CFit::performFIT( 	TLorentzVector jet1FourMomentum , std::vector<floa
 				float &fitProbability , float (&fitOutputs)[ 18 ] , std::vector< TLorentzVector > &fittedObjects , float (&pull)[ 12 ] , bool traceEvent )
 {
 	JetFitObject *jet[ 2 ];
-	float sigmaE , sigmaTheta , sigmaPhi;
+	double sigmaE , sigmaTheta , sigmaPhi;
 	LeptonFitObject *lepton[ 2 ];
 	int ErrorCode;
 	fittedObjects.clear();
@@ -691,12 +981,12 @@ int ZHllqq5CFit::performFIT( 	TLorentzVector jet1FourMomentum , std::vector<floa
 	float jet2FittedEnergy(0.0),jet2FittedTheta(0.0),jet2FittedPhi(0.0);
 	streamlog_out(DEBUG6) << "		get jet1 resolutions"  << std::endl ;
 	getJetResolutions( jet1FourMomentum , jet1CovMat , sigmaE , sigmaTheta , sigmaPhi );
-	jet[ 0 ] = new JetFitObject( jet1FourMomentum.E() , jet1FourMomentum.Theta() , jet1FourMomentum.Phi() , sigmaE , sigmaTheta , sigmaPhi , jet1FourMomentum.M() );
+	jet[ 0 ] = new JetFitObject( jet1FourMomentum.E() , jet1FourMomentum.Theta() , jet1FourMomentum.Phi() , m_SigmaEnergyScaleFactor * sigmaE , sigmaTheta , sigmaPhi , jet1FourMomentum.M() );
 	jet[ 0 ]->setName( "jet1" );
 	streamlog_out(DEBUG8)  << " start four-vector of jet1: " << *jet[ 0 ]  << std::endl ;
 	streamlog_out(DEBUG6) << "		get jet2 resolutions"  << std::endl ;
 	getJetResolutions( jet2FourMomentum , jet2CovMat , sigmaE , sigmaTheta , sigmaPhi );
-	jet[ 1 ] = new JetFitObject( jet2FourMomentum.E() , jet2FourMomentum.Theta() , jet2FourMomentum.Phi() , sigmaE , sigmaTheta , sigmaPhi , jet2FourMomentum.M() );
+	jet[ 1 ] = new JetFitObject( jet2FourMomentum.E() , jet2FourMomentum.Theta() , jet2FourMomentum.Phi() , m_SigmaEnergyScaleFactor * sigmaE , sigmaTheta , sigmaPhi , jet2FourMomentum.M() );
 	jet[ 1 ]->setName( "jet2" );
 	streamlog_out(DEBUG8)  << " start four-vector of jet2: " << *jet[ 1 ]  << std::endl ;
 
@@ -946,8 +1236,8 @@ int ZHllqq5CFit::performFIT( 	TLorentzVector jet1FourMomentum , std::vector<floa
 					start = startjets[ifo].getParam(ipar);
 					errfit = JETs[ifo]->getError(ipar);
 					errmea = startjets[ifo].getError(ipar);
-					sigma = sqrt(fabs(errmea*errmea-errfit*errfit));
-//					sigma = errmea*errmea-errfit*errfit;
+//					sigma = sqrt(fabs(errmea*errmea-errfit*errfit));
+					sigma = errmea*errmea-errfit*errfit;
 					if (sigma > 0)
 					{
 						sigma = sqrt(sigma);
@@ -969,8 +1259,8 @@ int ZHllqq5CFit::performFIT( 	TLorentzVector jet1FourMomentum , std::vector<floa
 					start = startleptons[ifo].getParam(ipar);
 					errfit = LEPTONs[ifo]->getError(ipar);
 					errmea = startleptons[ifo].getError(ipar);
-					sigma = sqrt(fabs(errmea*errmea-errfit*errfit));
-//					sigma = errmea*errmea-errfit*errfit;
+//					sigma = sqrt(fabs(errmea*errmea-errfit*errfit));
+					sigma = errmea*errmea-errfit*errfit;
 					if (sigma > 0)
 					{
 						sigma = sqrt(sigma);
@@ -1074,7 +1364,7 @@ int ZHllqq5CFit::performFIT( 	TLorentzVector jet1FourMomentum , std::vector<floa
 }
 
 
-void ZHllqq5CFit::getJetResolutions(	TLorentzVector jetFourMomentum , std::vector<float> jetCovMat , float &sigmaE , float &sigmaTheta , float &sigmaPhi )
+void ZHllqq5CFit::getJetResolutions(	TLorentzVector jetFourMomentum , std::vector<float> jetCovMat , double &sigmaE , double &sigmaTheta , double &sigmaPhi )
 {
 	float Px , Py , Pz , P2 , Pt , Pt2;
 	float dTheta_dPx , dTheta_dPy , dTheta_dPz , dPhi_dPx , dPhi_dPy;
@@ -1099,7 +1389,7 @@ void ZHllqq5CFit::getJetResolutions(	TLorentzVector jetFourMomentum , std::vecto
 	dPhi_dPx	= -Py / Pt2;
 	dPhi_dPy	= Px / Pt2;
 
-	sigmaE		= sqrt( jetCovMat[ 9 ] );
+	sigmaE		= std::sqrt( jetCovMat[ 9 ] );
 	sigmaTheta	= std::sqrt( std::fabs( std::pow( dTheta_dPx , 2 ) * sigmaPx2 + std::pow( dTheta_dPy , 2 ) * sigmaPy2 + std::pow( dTheta_dPz , 2 ) * sigmaPz2 +
 	 					2.0 * dTheta_dPx * dTheta_dPy * sigmaPxPy + 2.0 * dTheta_dPx * dTheta_dPz * sigmaPxPz + 2.0 * dTheta_dPy * dTheta_dPz * sigmaPyPz ) );
 	sigmaPhi	= std::sqrt( std::fabs( std::pow( dPhi_dPx , 2 ) * sigmaPx2 + std::pow( dPhi_dPy , 2 ) * sigmaPy2 + 2.0 * dPhi_dPx * dPhi_dPy * sigmaPxPy ) );
@@ -1181,767 +1471,17 @@ void ZHllqq5CFit::getLeptonParameters( ReconstructedParticle* lepton , float (&p
 	streamlog_out(DEBUG6) << "			SigmaPhi	= " << errors[ 2 ] << std::endl ;
 }
 
-/*
-std::vector<std::vector<float>> ZHllqq5CFit::performOldFIT(EVENT::LCEvent *pLCEvent, TLorentzVector Jet0_Nutlv, TLorentzVector Jet1_Nutlv , std::vector<float> nu1CovMat , std::vector<float> nu2CovMat)
+void ZHllqq5CFit::getJetResiduals( TVector3 jetTrueMomentum , double jetTrueEnergy , TVector3 jetRecoMomentum , double jetRecoEnergy , double &jetEnergyResidual , double &jetThetaResidual , double &jetPhiResidual )
 {
-//	Setvalues();
-	std::vector<std::vector<float>> FitResult{};
-	std::vector<float> fitStartValues;
-	std::vector<float> fitOutputs;
-	std::vector<float> fittedParticles;
-	std::vector<float> pulls;
-	std::vector<float> constraints;
-	std::vector<float> uncertainties;
-	std::vector<float> diJetSystem;
-	LCCollection *inputErrorFlowCollection = pLCEvent->getCollection( m_inputJetCollection );
-	LCCollection *inputLeptonCollection = pLCEvent->getCollection( m_inputIsolatedlaptonCollection );
-
-	const int nJets = 2;
-	const int nLeptons = 2;
-	double Omega = 0.;
-	double Omega_uncert = 0.;
-	double TanLambda = 0.;
-	double TanLambda_err = 0.;
-	double theta = 0.;
-	double theta_err = 0.;
-	double phi = 0.;
-	double phi_err = 0.;
-	double invers_pT = 0.;
-	double invers_pT_err = 0.;
-
-	float pxc_before_ISR = 0.;
-	float pyc_before_ISR = 0.;
-	float pzc_before_ISR = 0.;
-	float ec_before_ISR = 0.;
-	float zc_before_ISR = 0.;
-
-	float pxc_before_fit = 0.;
-	float pyc_before_fit = 0.;
-	float pzc_before_fit = 0.;
-	float ec_before_fit = 0.;
-	float zc_before_fit = 0.;
-
-	float pxc_after_fit = 0.;
-	float pyc_after_fit = 0.;
-	float pzc_after_fit = 0.;
-	float ec_after_fit = 0.;
-	float zc_after_fit = 0.;
-
-	float Px,Py,Pz,Px2,Py2,Pz2,Pt,Pt2,P,P2;
-	float SigPx2,SigPxSigPy,SigPy2,SigPxSigPz,SigPySigPz,SigPz2,SigE2;
-	float dth_dpx,dth_dpy,dth_dpz,dphi_dpx,dphi_dpy;
-
-
-	float jet0_Px,jet0_Py,jet0_Pz,jet0_E,jet0_Theta,jet0_Phi;
-	float jet1_Px,jet1_Py,jet1_Pz,jet1_E,jet1_Theta,jet1_Phi;
-	float fittedjet0_E,fittedjet0_Theta,fittedjet0_Phi;
-	float fittedjet1_E,fittedjet1_Theta,fittedjet1_Phi;
-	float lepton0_Px,lepton0_Py,lepton0_Pz,lepton0_E;
-	float lepton1_Px,lepton1_Py,lepton1_Pz,lepton1_E;
-	float jet0_SigmaTheta,jet0_SigmaPhi,jet0_SigmaE;
-	float jet1_SigmaTheta,jet1_SigmaPhi,jet1_SigmaE;
-	float lepton0_SigmaTheta,lepton0_SigmaPhi,lepton0_SigmaInvpT;
-	float lepton1_SigmaTheta,lepton1_SigmaPhi,lepton1_SigmaInvpT;
-
-	float JetResE,JetResTheta,JetResPhi;
-	float sigmaScaleFactor = 1.0;
-	float m_JetResThetaCoeff = 1.0;
-	float m_JetResPhiCoeff = 1.0;
-
-
-	JetFitObject *jet[nJets];
-	LeptonFitObject *lepton[nLeptons];
-	int nSingularCovMatrix = 0;
-	HepLorentzVector jetvec;
-	HepLorentzVector Nuvec;
-	HepLorentzVector leptonvec;
-	Hep3Vector jet0_unit;
-	Hep3Vector jet1_unit;
-
-	float bestzvalue = 10000.;
-	int besterr = 999;
-	float bestprob = 0.;
-	int bestnit = 0;
-	float beststartmassZ = 0., beststartmassH = 0.;
-	float startmassZ = 0., startmassH = 0.;
-	float bestphotonenergy = 0.;
-	float chi2startmassZ = 0.;
-	float chi2startmassH = 0.;
-	memset(Zmomentum, 0, sizeof(Zmomentum));
-	memset(Hmomentum, 0, sizeof(Hmomentum));
-	memset(ISRmomentum, 0, sizeof(ISRmomentum));
-	float bestmassZ = 0.0, bestmassH = 0.0;
-	float Z_Energy=0.;
-	float H_Energy=0.;
-	float chi2best=0.;
-
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////
-////					Set JetFitObjects
-////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	for (int i_jet = 0; i_jet < nJets; i_jet++)
-	{
-		ReconstructedParticle *j;
-		j = dynamic_cast<ReconstructedParticle*>( inputErrorFlowCollection->getElementAt( i_jet ) );
-
-		if ( i_jet == 0 ) Nuvec = HepLorentzVector( Jet0_Nutlv.Px() , Jet0_Nutlv.Py() , Jet0_Nutlv.Pz() , Jet0_Nutlv.E() );
-		if ( i_jet == 1 ) Nuvec = HepLorentzVector( Jet1_Nutlv.Px() , Jet1_Nutlv.Py() , Jet1_Nutlv.Pz() , Jet1_Nutlv.E() );
-
-		Px =	j->getMomentum()[0] + Nuvec.px();
-		Px2 =	std::pow( Px , 2 );
-		Py =	j->getMomentum()[1] + Nuvec.py();
-		Py2 =	std::pow( Py , 2 );
-		Pz =	j->getMomentum()[2] + Nuvec.pz();
-		Pz2 =	std::pow( Pz , 2 );
-		Pt2 =	Px2 + Py2;
-		Pt =	std::sqrt( Pt2 );
-		P =	std::sqrt( Px2 + Py2 + Pz2 );
-		P2 =	std::pow( P , 2 );
-
-		TVector3 startJetMomentum( Px , Py , Pz );
-		if ( i_jet == 0 )
-		{
-			jet0_Px = Px;
-			jet0_Py = Py;
-			jet0_Pz = Pz;
-			jet0_E = j->getEnergy() + Nuvec.e();
-			jet0_Theta = startJetMomentum.Theta();
-			jet0_Phi = startJetMomentum.Phi();
-			SigPx2 =	j->getCovMatrix()[0] + nu1CovMat[ 0 ];
-			SigPxSigPy =	j->getCovMatrix()[1] + nu1CovMat[ 1 ];
-			SigPy2 =	j->getCovMatrix()[2] + nu1CovMat[ 2 ];
-			SigPxSigPz =	j->getCovMatrix()[3] + nu1CovMat[ 3 ];
-			SigPySigPz =	j->getCovMatrix()[4] + nu1CovMat[ 4 ];
-			SigPz2 =	j->getCovMatrix()[5] + nu1CovMat[ 5 ];
-			SigE2 =		j->getCovMatrix()[9] + nu1CovMat[ 9 ];
-		}
-		else if ( i_jet == 1 )
-		{
-			jet1_Px = Px;
-			jet1_Py = Py;
-			jet1_Pz = Pz;
-			jet1_E = j->getEnergy();
-			jet1_Theta = startJetMomentum.Theta();
-			jet1_Phi = startJetMomentum.Phi();
-			SigPx2 =	j->getCovMatrix()[0] + nu2CovMat[ 0 ];
-			SigPxSigPy =	j->getCovMatrix()[1] + nu2CovMat[ 1 ];
-			SigPy2 =	j->getCovMatrix()[2] + nu2CovMat[ 2 ];
-			SigPxSigPz =	j->getCovMatrix()[3] + nu2CovMat[ 3 ];
-			SigPySigPz =	j->getCovMatrix()[4] + nu2CovMat[ 4 ];
-			SigPz2 =	j->getCovMatrix()[5] + nu2CovMat[ 5 ];
-			SigE2 =		j->getCovMatrix()[9] + nu2CovMat[ 9 ];
-		}
-
-
-		dth_dpx =	Px * Pz / ( P2 * Pt );
-		dth_dpy =	Py * Pz / ( P2 * Pt );
-		dth_dpz =	-Pt / P2;
-
-		dphi_dpx =	-Py / Pt2;
-		dphi_dpy =	Px / Pt2;
-
-		JetResE =	std::sqrt( SigE2 ) * sigmaScaleFactor;
-		JetResTheta =	m_JetResThetaCoeff * std::sqrt( std::fabs( SigPx2 * std::pow( dth_dpx , 2 ) + SigPy2 * std::pow( dth_dpy , 2 ) + SigPz2 * std::pow( dth_dpz , 2 ) + 2 * ( SigPxSigPy * dth_dpx * dth_dpy ) + 2 * ( SigPySigPz * dth_dpy * dth_dpz ) + 2 * ( SigPxSigPz * dth_dpx * dth_dpz ) ) );
-		JetResPhi =	m_JetResPhiCoeff * std::sqrt( std::fabs( SigPx2 * std::pow( dphi_dpx , 2 ) + SigPy2 * std::pow( dphi_dpy , 2 ) + 2 * ( SigPxSigPy * dphi_dpx * dphi_dpy ) ) );
-		streamlog_out(MESSAGE) << "JET[" << i_jet << "]: JetResEnergy = " << JetResE << " , JetResTheta = " << JetResTheta << " , JetResPhi = " << JetResPhi << std::endl;
-
-		if ( SigPx2 == 0. || SigPxSigPy == 0. || SigPxSigPz == 0. || SigPy2 == 0. || SigPySigPz == 0. || SigPz2 == 0. || SigE2 == 0. ) // Check CovMatrix singularity
-		{
-			streamlog_out(WARNING) << "Covariance Matrix is singular"<<std::endl;
-			streamlog_out(WARNING) << "Setting theta and phi Resolution back to default values "<<std::endl;
-			JetResTheta = 0.1;//m_jetThetaError;
-			JetResPhi = 0.1;//m_jetPhiError;
-			nSingularCovMatrix++;
-		}
-		jetvec = HepLorentzVector ( ( j->getMomentum() )[0] , ( j->getMomentum() )[1] , ( j->getMomentum() )[2] , j->getEnergy() );
-		jetvec += Nuvec;
-		if ( i_jet == 0 )
-		{
-			jet0_SigmaTheta = JetResTheta;
-			jet0_SigmaPhi = JetResPhi;
-			jet0_SigmaE = JetResE;
-			jet0_unit = (Hep3Vector(jetvec)).unit();
-		}
-		else if ( i_jet == 1 )
-		{
-			jet1_SigmaTheta = JetResTheta;
-			jet1_SigmaPhi = JetResPhi;
-			jet1_SigmaE = JetResE;
-			jet1_unit = (Hep3Vector(jetvec)).unit();
-		}
-
-		jet[i_jet] = new JetFitObject ( jetvec.e(), jetvec.theta() , jetvec.phi() , JetResE , JetResTheta , JetResPhi , jetvec.m() );
-		streamlog_out(DEBUG)  << " start four-vector of jet[" << i_jet << "]: " << *jet[i_jet]  << std::endl ;
-		if ( i_jet == 0 )
-		{
-			jet[i_jet]->setName("Jet0");
-		}
-		else if (i_jet == 1)
-		{
-			jet[i_jet]->setName("Jet1");
-		}
-		diJetSystem.push_back(jetvec.e());
-		diJetSystem.push_back(jetvec.theta());
-		diJetSystem.push_back(jetvec.phi());
-		diJetSystem.push_back(JetResE);
-		diJetSystem.push_back(JetResTheta);
-		diJetSystem.push_back(JetResPhi);
-	}
-	diJetSystem.push_back( acos( jet0_unit.dot(jet1_unit) ) * 45 / atan(1) );
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////
-////					Set LeptonFitObjects
-////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	for(int i_lep = 0; i_lep < nLeptons ; i_lep++)
-	{
-		ReconstructedParticle* l = dynamic_cast<ReconstructedParticle*>( inputLeptonCollection->getElementAt( i_lep ) ) ;
-		leptonvec = HepLorentzVector ((l->getMomentum())[0],(l->getMomentum())[1],(l->getMomentum())[2],l->getEnergy());
-		TrackVec tckvec = l->getTracks();
-		if ( tckvec.size() != 1 )
-		{
-			streamlog_out(DEBUG)  << "Number of tracks for lepton[" << i_lep <<"] is not exactly ONE!!! (nTracks = " << tckvec.size() << " ) " << std::endl ;
-			invers_pT = 1/(std::sqrt(pow(leptonvec.px(),2)+pow(leptonvec.py(),2)));
-			invers_pT_err = 2*std::sqrt(pow(leptonvec.px(),2)+pow(leptonvec.py(),2))*0.00001;
-			theta = leptonvec.theta();
-			theta_err = 0.1;//m_jetThetaError;
-			phi = leptonvec.phi();
-			phi_err = 0.1;//m_jetPhiError;
-		}
-		else
-		{
-			streamlog_out(DEBUG)  << "Number of tracks for lepton[" << i_lep <<"] is exactly ONE!!!" << std::endl;
-			Omega = tckvec[0]->getOmega();
-			Omega_uncert = std::sqrt( std::abs(tckvec[0]->getCovMatrix()[5]) );
-			streamlog_out(DEBUG)  << "Omega_uncert = " << Omega_uncert << std::endl;
-			TanLambda = tckvec[0]->getTanLambda();
-			TanLambda_err = std::sqrt( std::abs(tckvec[0]->getCovMatrix()[14]) );
-			streamlog_out(DEBUG)  << "TanLambda_err = " << TanLambda_err << std::endl;
-			theta = 2 * atan( 1. ) - atan( TanLambda );
-			theta_err = TanLambda_err / ( 1 + pow( TanLambda , 2 ) );
-			streamlog_out(DEBUG)  << "theta_err = " << theta_err << std::endl;
-			phi = tckvec[0]->getPhi();
-			phi_err = std::sqrt( std::abs(tckvec[0]->getCovMatrix()[2]) );
-			streamlog_out(DEBUG)  << "phi_err = " << phi_err << std::endl;
-			invers_pT = Omega / eB;
-			invers_pT_err = std::fabs( 1. / eB ) * Omega_uncert;
-			streamlog_out(DEBUG)  << "invers_pT_err = " << invers_pT_err << std::endl;
-			if ( i_lep == 0 )
-			{
-				lepton0_Px = cos( phi ) / invers_pT;
-				lepton0_Py = sin( phi ) / invers_pT;
-				lepton0_Pz = TanLambda / invers_pT;
-				lepton0_E = l->getEnergy();
-			}
-			else if ( i_lep == 1 )
-			{
-				lepton1_Px = cos( phi ) / invers_pT;
-				lepton1_Py = sin( phi ) / invers_pT;
-				lepton1_Pz = TanLambda / invers_pT;
-				lepton1_E = l->getEnergy();
-			}
-
-		}
-		if ( i_lep == 0 )
-		{
-			lepton0_SigmaTheta = theta_err;
-			lepton0_SigmaPhi = phi_err;
-			lepton0_SigmaInvpT = invers_pT_err;
-		}
-		else if ( i_lep == 1 )
-		{
-			lepton1_SigmaTheta = theta_err;
-			lepton1_SigmaPhi = phi_err;
-			lepton1_SigmaInvpT = invers_pT_err;
-		}
-		streamlog_out(DEBUG)  << "Lepton fit object from leptonvec: "
-			<< 1/(std::sqrt(pow(leptonvec.px(),2)+pow(leptonvec.py(),2))) <<" +- " << 2*std::sqrt(pow(leptonvec.px(),2)+pow(leptonvec.py(),2))*0.00001 << " , "
-			<< leptonvec.theta() <<" +- " << 0.1 m_jetThetaError << " , "
-			<< leptonvec.phi() <<" +- " << 0.1 m_jetPhiError << std::endl ;
-
-		streamlog_out(DEBUG)  << "Lepton fit object from track:     "
-			<< std::fabs( tckvec[0]->getOmega() / eB ) <<" +- " << std::fabs( 1. / eB ) * std::sqrt( tckvec[0]->getCovMatrix()[5] ) << " , "
-			<< 2 * atan( 1. ) - atan( tckvec[0]->getTanLambda() ) <<" +- " << std::abs( std::sqrt( tckvec[0]->getCovMatrix()[14]) ) / ( 1 + pow( tckvec[0]->getTanLambda() , 2 ) ) << " , "
-			<< tckvec[0]->getPhi() <<" +- " << std::abs( std::sqrt( tckvec[0]->getCovMatrix()[2] ) ) << std::endl ;
-
-		lepton[i_lep] = new LeptonFitObject (invers_pT , theta , phi , invers_pT_err , theta_err , phi_err, leptonvec.m());
-		if (i_lep == 0 )
-		{
-			lepton[i_lep]->setName("Lepton0");
-		}
-		else if (i_lep == 1)
-		{
-			lepton[i_lep]->setName("Lepton1");
-		}
-		streamlog_out(DEBUG)  << " start four-vector of lepton[" << i_lep <<"]: " << *lepton[i_lep]  << std::endl ;
-	}
-
-	const int NJETS = 2;
-	streamlog_out(DEBUG) << "*jet[0]: " << *jet[0] << std::endl ;
-	streamlog_out(DEBUG) << "*jet[1]: " << *jet[1] << std::endl ;
-
-	const int NLEPTONS = 2;
-	streamlog_out(MESSAGE) << "*lepton[0]: " << *lepton[0] << std::endl ;
-	streamlog_out(MESSAGE) << "*lepton[1]: " << *lepton[1] << std::endl ;
-
-////	these don't get changed by the fit -> to obtain start values later!
-	JetFitObject startjets[NJETS] = {*jet[0], *jet[1]};
-	for (int i = 0; i < NJETS; ++i)	streamlog_out(DEBUG)  << "startjets[" << i << "]: " << startjets[i]  << std::endl;
-
-	LeptonFitObject startleptons[NLEPTONS] = {*lepton[0], *lepton[1]};
-	for (int i = 0; i < NLEPTONS; ++i) streamlog_out(DEBUG)  << "startleptons[" << i << "]: " << startleptons[i]  << std::endl;
-
-	JetFitObject fitjets[NJETS] = {*jet[0], *jet[1]};
-	for (int i = 0; i < NJETS; ++i)
-		streamlog_out(DEBUG)  << "fitjets[" << i << "]: " << fitjets[i]  << std::endl ;
-
-	LeptonFitObject fitleptons[NLEPTONS] = {*lepton[0], *lepton[1]};
-	for (int i = 0; i < NLEPTONS; ++i)
-		streamlog_out(DEBUG)  << "fitleptons[" << i << "]: " << fitleptons[i]  << std::endl ;
-
-////	these get changed by the fit
-	JetFitObject *JETs[NJETS];
-	for (int i = 0; i < NJETS; ++i)
-	{
-		JETs[i] = &fitjets[i];
-		streamlog_out(MESSAGE)  << "start four-vector of jet " << i << ": " << *(JETs[i])  << std::endl ;
-	}
-
-	LeptonFitObject *leptons[NLEPTONS];
-	for (int i = 0; i < NLEPTONS; ++i)
-	{
-		leptons[i] = &fitleptons[i];
-		streamlog_out(MESSAGE)  << "start four-vector of leptons " << i << ": " << *(leptons[i])  << std::endl ;
-	}
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////
-////				set constraints befor fit
-////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	float target_p_due_crossing_angle = m_ECM * 0.007; // crossing angle = 14 mrad
-	MomentumConstraint pxc ( 0 , 1 , 0 , 0 , target_p_due_crossing_angle );//Factor for: (energy sum, px sum, py sum,pz sum,target value of sum)
-
-	pxc.setName("sum(p_x)");
-	for (int i = 0; i < NJETS; ++i) pxc.addToFOList(*(JETs[i]));
-	for (int i = 0; i < NLEPTONS; ++i) pxc.addToFOList(*(leptons[i]));
-
-	MomentumConstraint pyc (0, 0, 1, 0, 0);
-	pyc.setName("sum(p_y)");
-	for (int i = 0; i < NJETS; ++i) pyc.addToFOList(*(JETs[i]));
-	for (int i = 0; i < NLEPTONS; ++i) pyc.addToFOList(*(leptons[i]));
-
-	MomentumConstraint pzc (0, 0, 0, 1, 0);
-	pzc.setName("sum(p_z)");
-	for (int i = 0; i < NJETS; ++i) pzc.addToFOList(*(JETs[i]));
-	for (int i = 0; i < NLEPTONS; ++i) pzc.addToFOList(*(leptons[i]));
-
-	float E_lab= 2 * sqrt( std::pow( 0.548579909e-3 , 2 ) + std::pow( m_ECM / 2 , 2 ) + std::pow( target_p_due_crossing_angle , 2 ) + 0. + 0.);
-	MomentumConstraint ec(1, 0, 0, 0, E_lab);
-	ec.setName("sum(E)");
-	for (int i = 0; i < NJETS; ++i) ec.addToFOList(*(JETs[i]));
-	for (int i = 0; i < NLEPTONS; ++i) ec.addToFOList(*(leptons[i]));
-
-	streamlog_out(DEBUG)  << "Value of E_lab before adding ISR: " << E_lab << std::endl ;
-	streamlog_out(DEBUG)  << "Value of target_p_due_crossing_angle before adding ISR: " << target_p_due_crossing_angle << std::endl ;
-	streamlog_out(DEBUG)  << "Value of pxc before adding ISR: " << pxc.getValue() << std::endl ;
-	streamlog_out(DEBUG)  << "Value of pyc before adding ISR: " << pyc.getValue() << std::endl ;
-	streamlog_out(DEBUG)  << "Value of pzc before adding ISR: " << pzc.getValue() << std::endl ;
-	streamlog_out(DEBUG)  << "Value of ec before adding ISR: " << ec.getValue() << std::endl ;
-	pxc_before_ISR = pxc.getValue();
-	pyc_before_ISR = pyc.getValue();
-	pzc_before_ISR = pzc.getValue();
-	ec_before_ISR = ec.getValue();
-
-////	ISR Photon initialized with missing p_z
-	ISRPhotonFitObject *photon = new ISRPhotonFitObject (0., 0., -pzc.getValue(), b, ISRPzMaxB);
-	float ISRstartPx = photon->getPx();
-	float ISRstartPy = photon->getPy();
-	float ISRstartPz = photon->getPz();
-////	ISRPhotonFitObject(double px, double py, double pz,
-////	double b_, double PzMaxB_, double PzMinB_ = 0.);
-	if(m_fitISR)
-	{
-		streamlog_out(MESSAGE)  << "start four-vector of ISR photon: " << *(photon) << std::endl ;
-
-		pxc.addToFOList(*(photon));
-		pyc.addToFOList(*(photon));
-		pzc.addToFOList(*(photon));
-		ec.addToFOList(*(photon));
-	}
-
-	streamlog_out(DEBUG)  << "Value of E_lab before fit: " << E_lab << std::endl ;
-	streamlog_out(DEBUG)  << "Value of target_p_due_crossing_angle before fit: " << target_p_due_crossing_angle << std::endl ;
-	streamlog_out(DEBUG)  << "Value of pxc after adding ISR before fit: " << pxc.getValue() << std::endl ;
-	streamlog_out(DEBUG)  << "Value of pyc after adding ISR before fit: " << pyc.getValue() << std::endl ;
-	streamlog_out(DEBUG)  << "Value of pzc after adding ISR before fit: " << pzc.getValue() << std::endl ;
-	streamlog_out(DEBUG)  << "Value of ec after adding ISR before fit: " << ec.getValue() << std::endl ;
-	pxc_before_fit = pxc.getValue();
-	pyc_before_fit = pyc.getValue();
-	pzc_before_fit = pzc.getValue();
-	ec_before_fit = ec.getValue();
-
-	SoftGaussMassConstraint z(91.2,2.4952/2);
-	z.addToFOList(*(leptons[0]), 1);
-	z.addToFOList(*(leptons[1]), 1);
-	zc_before_ISR = z.getValue();
-	zc_before_fit = z.getValue();
-
-	MassConstraint h(125.);
-	h.addToFOList(*(JETs[0]), 1);
-	h.addToFOList(*(JETs[1]), 1);
-
-	startmassZ = z.getMass(1);
-	startmassH = h.getMass(1);
-
-	streamlog_out(MESSAGE) << "start mass of Z: " << startmassZ << std::endl ;
-	streamlog_out(MESSAGE) << "start mass of H: " << startmassH << std::endl ;
-
-	Hmass_NoFit = startmassH;
-
-	BaseFitter *pfitter;
-
-	int debug = 0;
-	if ( pLCEvent->getEventNumber() == m_ievttrace || m_traceall) debug = 10;
-
-	if (m_fitter == 1)
-	{
-		pfitter = new NewFitterGSL();
-		if (pLCEvent->getEventNumber()== m_ievttrace || m_traceall) (dynamic_cast<NewFitterGSL*>(pfitter))->setDebug(debug);
-
-		streamlog_out(DEBUG) << "ifitter is 1"  << std::endl ;
-	}
-	else if (m_fitter == 2)
-	{
-		pfitter = new NewtonFitterGSL();
-		if (pLCEvent->getEventNumber()== m_ievttrace || m_traceall) (dynamic_cast<NewtonFitterGSL*>(pfitter))->setDebug(debug);
-
-		streamlog_out(DEBUG) << "ifitter is 2"  << std::endl ;
-	}
-	else
-	{
-////		OPALFitter has no method setDebug !
-		pfitter = new OPALFitterGSL();
-
-		streamlog_out(DEBUG) << "ifitter is not 1 or 2"  << std::endl ;
-		if (pLCEvent->getEventNumber()== m_ievttrace || m_traceall) (dynamic_cast<OPALFitterGSL*>(pfitter))->setDebug(debug);
-	}
-	BaseFitter &fitter = *pfitter;
-
-	TextTracer tracer (std::cout);
-	if (pLCEvent->getEventNumber() == m_ievttrace || m_traceall) fitter.setTracer(tracer);
-	for (int i = 0; i < NJETS; ++i) fitter.addFitObject(*(JETs[i]));
-	for (int i = 0; i < NLEPTONS; ++i) fitter.addFitObject(*(leptons[i]));
-
-	if(m_fitISR)
-	{
-		fitter.addFitObject (*(photon));
-		streamlog_out(DEBUG) << "ISR added to fit"  << std::endl ;
-	}
-
-	fitter.addConstraint(pxc);
-	fitter.addConstraint(pyc);
-	fitter.addConstraint(pzc);
-	fitter.addConstraint(ec);
-	fitter.addConstraint(z);
-
-	streamlog_out(DEBUG) << "constraints added"  << std::endl ;
-
-	if (fabs(startmassZ-91.2) + fabs(startmassH-125.) < bestzvalue)
-	{
-		chi2startmassZ = startmassZ;
-		chi2startmassH = startmassH;
-		bestzvalue = fabs(startmassZ-91.2) + fabs(startmassH-125.);
-
-		streamlog_out(DEBUG) << "best z value is this..." <<  bestzvalue << std::endl ;
-	}
-
-	float prob = fitter.fit();
-	double chi2 = fitter.getChi2();
-	int nit = fitter.getIterations();
-
-	streamlog_out(DEBUG) << "fit probability = " << prob << std::endl ;
-	streamlog_out(DEBUG) << "fit chi2 = " << chi2  << std::endl ;
-	streamlog_out(DEBUG) << "error code: " << fitter.getError() << std::endl ;
-
-	for (int i = 0; i < NJETS; ++i)
-	{
-		streamlog_out(MESSAGE)  << "final four-vector of jet " << i << ": " << *(JETs[i]) << std::endl ;
-		streamlog_out(DEBUG)  << "final px of jet " << i << ": " << (JETs[i]) << std::endl ;
-	}
-	for (int i = 0; i < NLEPTONS; ++i)
-	{
-		streamlog_out(MESSAGE)  << "final four-vector of lepton " << i << ": " << *(leptons[i]) << std::endl ;
-		streamlog_out(DEBUG)  << "final px of lepton " << i << ": " << (leptons[i]) << std::endl ;
-	}
-	if(m_fitISR) streamlog_out(MESSAGE)  << "final four-vector of ISR photon: " << *(photon) << std::endl;
-	int ierr = fitter.getError();
-	streamlog_out(MESSAGE)  << "fitter error: " << ierr << std::endl;
-	if ((besterr > 0 && ierr < besterr) || ( besterr < 0 && ierr == 0)) besterr = ierr;
-
-	streamlog_out(DEBUG)  << "Value of pxc after fit: " << pxc.getValue() << std::endl ;
-	streamlog_out(DEBUG)  << "Value of pyc after fit: " << pyc.getValue() << std::endl ;
-	streamlog_out(DEBUG)  << "Value of pzc after fit: " << pzc.getValue() << std::endl ;
-	streamlog_out(DEBUG)  << "Value of ec after fit: " << ec.getValue() << std::endl ;
-	pxc_after_fit = pxc.getValue();
-	pyc_after_fit = pyc.getValue();
-	pzc_after_fit = pzc.getValue();
-	ec_after_fit = ec.getValue();
-	zc_after_fit = z.getValue();
-
-
-	if (ierr <= 0)
-	{
-		double pullJet[3][2];
-		double pullLepton[3][2];
-////		require successfull error calculation for pulls!
-		if (ierr == 0)
-		{
-			for (int ifo = 0; ifo < 2; ifo++)
-			{
-				double start, fitted;
-				double errfit, errmea, sigma;
-				for (int ipar = 0; ipar < 3; ipar++)
-				{
-					fitted = JETs[ifo]->getParam(ipar);
-					start = startjets[ifo].getParam(ipar);
-					errfit = JETs[ifo]->getError(ipar);
-					errmea = startjets[ifo].getError(ipar);
-					sigma = errmea*errmea-errfit*errfit;
-					if (sigma > 0)
-					{
-						sigma = sqrt(sigma);
-						pullJet[ipar][ifo] = (fitted - start)/sigma;
-					}
-					else
-					{
-						pullJet[ipar][ifo] = -4.5;
-					}
-				}
-				if ( ifo == 0 )
-				{
-					fittedjet0_E = JETs[ifo]->getParam(0);
-					fittedjet0_Theta = JETs[ifo]->getParam(1);
-					fittedjet0_Phi = JETs[ifo]->getParam(2);
-				}
-				else
-				{
-					fittedjet1_E = JETs[ifo]->getParam(0);
-					fittedjet1_Theta = JETs[ifo]->getParam(1);
-					fittedjet1_Phi = JETs[ifo]->getParam(2);
-				}
-
-			}
-			for (int ifo = 0; ifo < 2; ifo++)
-			{
-				double start, fitted;
-				double errfit, errmea, sigma;
-				for (int ipar = 0; ipar < 3; ipar++)
-				{
-					fitted = leptons[ifo]->getParam(ipar);
-					start = startleptons[ifo].getParam(ipar);
-					errfit = leptons[ifo]->getError(ipar);
-					errmea = startleptons[ifo].getError(ipar);
-					sigma = errmea*errmea-errfit*errfit;
-					if (sigma > 0)
-					{
-						sigma = sqrt(sigma);
-						pullLepton[ipar][ifo] = (fitted - start)/sigma;
-					}
-					else
-					{
-						pullLepton[ipar][ifo] = -4.5;
-					}
-				}
-			}
-		}
-		if (prob >= bestprob)
-		{
-			bestprob = prob;
-			streamlog_out(DEBUG)  << "BESTPROB: " << bestprob << std::endl ;
-			bestnit  = nit;
-			bestmassZ = z.getMass(1);
-			bestmassH = h.getMass(1);
-			beststartmassZ = startmassZ;
-			beststartmassH = startmassH;
-			bestphotonenergy = photon->getE();
-			ISRmomentum[0] = photon->getPx();
-			ISRmomentum[1] = photon->getPy();
-			ISRmomentum[2] = photon->getPz();
-			Zmomentum[0] = leptons[0]->getPx() + leptons[1]->getPx();
-			Zmomentum[1] = leptons[0]->getPy() + leptons[1]->getPy();
-			Zmomentum[2] = leptons[0]->getPz() + leptons[1]->getPz();
-			Hmomentum[0] = JETs[0]->getPx() + JETs[1]->getPx();
-			Hmomentum[1] = JETs[0]->getPy() + JETs[1]->getPy();
-			Hmomentum[2] = JETs[0]->getPz() + JETs[1]->getPz();
-			Z_Energy = leptons[0]->getE() + leptons[1]->getE();
-			H_Energy = JETs[0]->getE() + JETs[1]->getE();
-			chi2best = fitter.getChi2();
-			errorcode = fitter.getError();
-			if (ierr == 0) //if  fitter.getError() is = 0
-			{
-				hpull_jet_E=pullJet[0][0];
-				hpull_jet2_E=pullJet[0][1];
-				hpull_jet_th=pullJet[1][0];
-				hpull_jet2_th=pullJet[1][1];
-				hpull_jet_phi=pullJet[2][0];
-				hpull_jet2_phi=pullJet[2][1];
-				hpull_lepton_InvpT=pullLepton[0][0];
-				hpull_lepton2_InvpT=pullLepton[0][1];
-				hpull_lepton_th=pullLepton[1][0];
-				hpull_lepton2_th=pullLepton[1][1];
-				hpull_lepton_phi=pullLepton[2][0];
-				hpull_lepton2_phi=pullLepton[2][1];
-			}//end if  fitter.getError() is = 0
-			else //if  fitter.getError() is not = 0
-			{
-				streamlog_out(DEBUG) << " ERROR CALCULATION FAILED for best permutation in event " << pLCEvent->getEventNumber() << std::endl ;
-			}
-		}
-	}//end-if fitter.getError() <=0
-	else
-	{
-		streamlog_out(DEBUG) << "FIT ERROR = " << fitter.getError()
-					<< " in event " << pLCEvent->getEventNumber()
-					<< ", not filling histograms!"  << std::endl ;
-		streamlog_out(DEBUG)  << "start mass of Z: " << startmassZ << std::endl ;
-		streamlog_out(DEBUG)  << "start mass of H: " << startmassH << std::endl ;
-		streamlog_out(DEBUG)  << "final mass of Z: " << z.getMass(1) << std::endl ;
-		streamlog_out(DEBUG)  << "final mass of H: " << h.getMass(1) << std::endl ;
-	}
-
-	float Zmass_before_fit=beststartmassZ;
-	float Zmass_after_fit=bestmassZ;
-	float Hmass_before_fit=beststartmassH;
-	float Hmass_after_fit=bestmassH;
-	Error_code=errorcode;
-
-	streamlog_out(DEBUG)  << "min chi2 start mass of Z: " << chi2startmassZ << std::endl ;
-	streamlog_out(DEBUG)  << "min chi2 start mass of H: " << chi2startmassH << std::endl ;
-	streamlog_out(DEBUG)  << "best start mass of Z: " << beststartmassZ << std::endl ;
-	streamlog_out(DEBUG)  << "best start mass of H: " << beststartmassH << std::endl ;
-	streamlog_out(DEBUG)  << "best mass of Z: " << bestmassZ << std::endl ;
-	streamlog_out(DEBUG)  << "best mass of H: " << bestmassH << std::endl ;
-	streamlog_out(DEBUG)  << "Error Code: " << errorcode << std::endl ;
-
-	fitStartValues.push_back(jet0_Px);
-	fitStartValues.push_back(jet1_Px);
-	fitStartValues.push_back(jet0_Py);
-	fitStartValues.push_back(jet1_Py);
-	fitStartValues.push_back(jet0_Pz);
-	fitStartValues.push_back(jet1_Pz);
-	fitStartValues.push_back(jet0_E);
-	fitStartValues.push_back(jet1_E);
-	fitStartValues.push_back(lepton0_Px);
-	fitStartValues.push_back(lepton1_Px);
-	fitStartValues.push_back(lepton0_Py);
-	fitStartValues.push_back(lepton1_Py);
-	fitStartValues.push_back(lepton0_Pz);
-	fitStartValues.push_back(lepton1_Pz);
-	fitStartValues.push_back(lepton0_E);
-	fitStartValues.push_back(lepton1_E);
-	fitStartValues.push_back(ISRstartPx);
-	fitStartValues.push_back(ISRstartPy);
-	fitStartValues.push_back(ISRstartPz);
-	fitStartValues.push_back(jet0_Theta);
-	fitStartValues.push_back(jet1_Theta);
-	fitStartValues.push_back(jet0_Phi);
-	fitStartValues.push_back(jet1_Phi);
-
-	fitOutputs.push_back(ierr);
-	fitOutputs.push_back(prob);
-	fitOutputs.push_back(nit);
-	fitOutputs.push_back(startmassZ);
-	fitOutputs.push_back(startmassH);
-	fitOutputs.push_back(beststartmassZ);
-	fitOutputs.push_back(beststartmassH);
-	fitOutputs.push_back(Zmass_after_fit);
-	fitOutputs.push_back(Hmass_after_fit);
-	fitOutputs.push_back(chi2startmassZ);
-	fitOutputs.push_back(chi2startmassH);
-	fitOutputs.push_back(chi2best);
-	fitOutputs.push_back(bestphotonenergy);
-	fitOutputs.push_back(fittedjet0_E);
-	fitOutputs.push_back(fittedjet1_E);
-	fitOutputs.push_back(fittedjet0_Theta);
-	fitOutputs.push_back(fittedjet1_Theta);
-	fitOutputs.push_back(fittedjet0_Phi);
-	fitOutputs.push_back(fittedjet1_Phi);
-
-	fittedParticles.push_back(ISRmomentum[0]);
-	fittedParticles.push_back(ISRmomentum[1]);
-	fittedParticles.push_back(ISRmomentum[2]);
-	fittedParticles.push_back(Zmomentum[0]);
-	fittedParticles.push_back(Zmomentum[1]);
-	fittedParticles.push_back(Zmomentum[2]);
-	fittedParticles.push_back(Z_Energy);
-	fittedParticles.push_back(Hmomentum[0]);
-	fittedParticles.push_back(Hmomentum[1]);
-	fittedParticles.push_back(Hmomentum[2]);
-	fittedParticles.push_back(H_Energy);
-
-	pulls.push_back(hpull_jet_E);
-	pulls.push_back(hpull_jet2_E);
-	pulls.push_back(hpull_jet_th);
-	pulls.push_back(hpull_jet2_th);
-	pulls.push_back(hpull_jet_phi);
-	pulls.push_back(hpull_jet2_phi);
-	pulls.push_back(hpull_lepton_InvpT);
-	pulls.push_back(hpull_lepton2_InvpT);
-	pulls.push_back(hpull_lepton_th);
-	pulls.push_back(hpull_lepton2_th);
-	pulls.push_back(hpull_lepton_phi);
-	pulls.push_back(hpull_lepton2_phi);
-
-	constraints.push_back(pxc_before_ISR);
-	constraints.push_back(pyc_before_ISR);
-	constraints.push_back(pzc_before_ISR);
-	constraints.push_back(ec_before_ISR);
-	constraints.push_back(pxc_before_fit);
-	constraints.push_back(pyc_before_fit);
-	constraints.push_back(pzc_before_fit);
-	constraints.push_back(ec_before_fit);
-	constraints.push_back(pxc_after_fit);
-	constraints.push_back(pyc_after_fit);
-	constraints.push_back(pzc_after_fit);
-	constraints.push_back(ec_after_fit);
-	constraints.push_back(zc_before_ISR);
-	constraints.push_back(zc_before_fit);
-	constraints.push_back(zc_after_fit);
-
-	uncertainties.push_back(jet0_SigmaTheta);
-	uncertainties.push_back(jet1_SigmaTheta);
-	uncertainties.push_back(jet0_SigmaPhi);
-	uncertainties.push_back(jet1_SigmaPhi);
-	uncertainties.push_back(jet0_SigmaE);
-	uncertainties.push_back(jet1_SigmaE);
-	uncertainties.push_back(lepton0_SigmaTheta);
-	uncertainties.push_back(lepton1_SigmaTheta);
-	uncertainties.push_back(lepton0_SigmaPhi);
-	uncertainties.push_back(lepton1_SigmaPhi);
-	uncertainties.push_back(lepton0_SigmaInvpT);
-	uncertainties.push_back(lepton1_SigmaInvpT);
-
-	FitResult.push_back(fitStartValues);
-	FitResult.push_back(fitOutputs);
-	FitResult.push_back(fittedParticles);
-	FitResult.push_back(pulls);
-	FitResult.push_back(constraints);
-	FitResult.push_back(uncertainties);
-	FitResult.push_back(diJetSystem);
-	streamlog_out(DEBUG)  << "FitResult returned to event processor successfully: " << std::endl ;
-
-
-	delete photon;
-	return FitResult;
+	jetEnergyResidual = jetRecoEnergy - jetTrueEnergy;
+	TVector3 jetTrueMomentumUnit = jetTrueMomentum; jetTrueMomentumUnit.SetMag( 1.0 );
+	TVector3 jetTruePtUnit( jetTrueMomentum.Px() , jetTrueMomentum.Py() , 0.0 ); jetTruePtUnit.SetMag( 1.0 );
+	TVector3 jetRecoMomentumUnitRotated = jetRecoMomentum; jetRecoMomentumUnitRotated.SetPhi( jetTrueMomentum.Phi() ); jetRecoMomentumUnitRotated.SetMag( 1.0 );
+	TVector3 jetRecoPtUnit( jetRecoMomentum.Px() , jetRecoMomentum.Py() , 0.0 ); jetRecoPtUnit.SetMag( 1.0 );
+	jetThetaResidual = ( jetRecoMomentum.Theta() >= jetTrueMomentum.Theta() ? acos( jetTrueMomentumUnit.Dot( jetRecoMomentumUnitRotated ) ) : -1.0 * acos( jetTrueMomentumUnit.Dot( jetRecoMomentumUnitRotated ) ) );
+	jetPhiResidual = ( jetRecoMomentum.Phi() >= jetTrueMomentum.Phi() ? acos( jetTruePtUnit.Dot( jetRecoPtUnit ) ) : -1.0 * acos( jetTruePtUnit.Dot( jetRecoPtUnit ) ) );
 }
-*/
+
 void ZHllqq5CFit::check( LCEvent* )
 {
 //	nothing to check here - could be used to fill checkplots in reconstruction processor
