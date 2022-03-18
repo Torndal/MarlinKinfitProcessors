@@ -12,7 +12,7 @@
 #include <EVENT/ReconstructedParticle.h>
 //#include "DDMarlinCED.h"
 
-//#include <GeometryUtil.h>
+#include <marlinutil/GeometryUtil.h>
 #include "IMPL/ReconstructedParticleImpl.h"
 
 using namespace lcio ;

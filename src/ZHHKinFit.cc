@@ -137,8 +137,8 @@ void ZHHKinFit::init() {
 
   //DDMarlinCED::init(this);
 
-  //m_Bfield = MarlinUtil::getBzAtOrigin();
-  m_Bfield = 3.5 ;
+  m_Bfield = MarlinUtil::getBzAtOrigin();
+  //m_Bfield = 3.5 ;
   streamlog_out(DEBUG0) << " BField =  "<< m_Bfield << " Tesla" << std::endl ;
   c = 2.99792458e8;
   mm2m = 1e-3;
