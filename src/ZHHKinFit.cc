@@ -88,6 +88,16 @@ ZHHKinFit::ZHHKinFit() : Processor("ZHHKinFit") {
                               _isrpzmax,
                               (float)125.6);
 
+  registerProcessorParameter( "SigmaEnergyScaleFactor" ,
+			      "Factor for scaling up energy error",
+			      m_SigmaEnergyScaleFactor,
+			      float(1.0f));
+
+  registerProcessorParameter( "SigmaAnglesScaleFactor" ,
+                              "Factor for scaling up angular errors",
+                              m_SigmaAnglesScaleFactor,
+                              float(1.0f));
+
   registerProcessorParameter( "fitter" ,
                               "0 = OPALFitter, 1 = NewFitter, 2 = NewtonFitter",
                               _ifitter,
@@ -106,14 +116,14 @@ ZHHKinFit::ZHHKinFit() : Processor("ZHHKinFit") {
   registerOutputCollection( LCIO::RECONSTRUCTEDPARTICLE,
 			    "FitOutputCollection",
 			    "Output Fit Collection" ,
-			    _OutFitCol,
+			    _OutCol,
 			    std::string("FitReco")) ;
 
-  registerOutputCollection( LCIO::RECONSTRUCTEDPARTICLE,
-			    "PairedOutputCollection",
-			    "Output Paired Reco Collection" ,
-			    _OutPairedCol,
-			    std::string("PairedReco")) ;
+  //registerOutputCollection( LCIO::RECONSTRUCTEDPARTICLE,
+  //			    "PairedOutputCollection",
+  //			    "Output Paired Reco Collection" ,
+  //			    _OutPairedCol,
+  //			    std::string("PairedReco")) ;
 }
 
 
@@ -124,6 +134,16 @@ void ZHHKinFit::init() {
 
   _nRun = 0 ;
   _nEvt = 0 ;
+
+  //DDMarlinCED::init(this);
+
+  //m_Bfield = MarlinUtil::getBzAtOrigin();
+  m_Bfield = 3.5 ;
+  streamlog_out(DEBUG0) << " BField =  "<< m_Bfield << " Tesla" << std::endl ;
+  c = 2.99792458e8;
+  mm2m = 1e-3;
+  eV2GeV = 1e-9;
+  eB = m_Bfield * c * mm2m * eV2GeV;
 
   b = (double) 0.00464564*( std::log(_ecm*_ecm*3814714.)-1. );
   //= 2*alpha/pi*( ln(s/m_e^2)-1 )
@@ -260,27 +280,34 @@ void ZHHKinFit::processEvent( LCEvent * evt ) {
     LeptonFitObject* l2 = 0;
         
     // angular resolutions - optimised for best convergence of 5C fit on e+e- -> udsc
-    double errtheta = 0.1;   //   100mrad
-    double errphi = 0.1;     //   100mrad
+    //double errtheta = 0.1;   //   100mrad
+    //double errphi = 0.1;     //   100mrad
        
     for(int i=0; i< nLEPS ; i++){
-
+      float parameters[ 3 ]{ 0.0 } , errors[ 3 ]{ 0.0 };
       ReconstructedParticle* l = dynamic_cast<ReconstructedParticle*>( lepcol->getElementAt( i ) ) ;
       if (l) {
 	streamlog_out(DEBUG)
           << " found lepton in event " << evt->getEventNumber()
           << "  in run "          << evt->getRunNumber()
           << std::endl ;
-	lvec = HepLorentzVector ((l->getMomentum())[0],(l->getMomentum())[1],(l->getMomentum())[2],l->getEnergy());
+	//lvec = HepLorentzVector ((l->getMomentum())[0],(l->getMomentum())[1],(l->getMomentum())[2],l->getEnergy());
+	//double invPt = 1./sqrt(lvec.px()*lvec.px()+lvec.py()*lvec.py());
+
+	getLeptonParameters( l , parameters , errors );
         if (i == 0) {
-          l1 = new LeptonFitObject (lvec.e(), lvec.theta(), lvec.phi(),
-                                 JetEnergyResolution(lvec.e()), errtheta, errphi, lvec.m());
+          //l1 = new LeptonFitObject (invPt, lvec.theta(), lvec.phi(),
+          //                       JetEnergyResolution(lvec.e()), errtheta, errphi, lvec.m());
+	  l1 = new LeptonFitObject (parameters[ 0 ] , parameters[ 1 ] , parameters[ 2 ],
+				    errors[ 0 ] , errors[ 1 ] , errors[ 2 ] , l->getMass() );
           l1->setName("Lepton1");
           streamlog_out(DEBUG)  << " start four-vector of first  lepton: " << *l1  << std::endl ;
         }
         else if (i == 1) {
-          l2 = new LeptonFitObject (lvec.e(), lvec.theta(), lvec.phi(),
-                                 JetEnergyResolution(lvec.e()), errtheta, errphi, lvec.m());
+	  //l2 = new LeptonFitObject (invPt, lvec.theta(), lvec.phi(),
+          //                       JetEnergyResolution(lvec.e()), errtheta, errphi, lvec.m());
+          l2 = new LeptonFitObject (parameters[ 0 ] , parameters[ 1 ] , parameters[ 2 ],
+				    errors[ 0 ] , errors[ 1 ] , errors[ 2 ] , l->getMass() );
           l2->setName("Lepton2");
           streamlog_out(DEBUG) << " start four-vector of second  lepton: " << *l2  << std::endl ;
         }
@@ -290,40 +317,44 @@ void ZHHKinFit::processEvent( LCEvent * evt ) {
     ReconstructedParticle* jrps[4];
 
     for(int i=0; i< nJETS ; i++){
-         
-      ReconstructedParticle* j = dynamic_cast<ReconstructedParticle*>( jetcol->getElementAt( i ) ) ;
-          
-               
+      ReconstructedParticle* j = dynamic_cast<ReconstructedParticle*>( jetcol->getElementAt( i ) ) ;      
       if (j) {
 	jrps[i] = j;
 	streamlog_out(DEBUG) 
 	  << " found jet in event " << evt->getEventNumber() 
 	  << "  in run "          << evt->getRunNumber() 
 	  << std::endl ;
-	lvec = HepLorentzVector ((j->getMomentum())[0],(j->getMomentum())[1],(j->getMomentum())[2],j->getEnergy()); 
+	//lvec = HepLorentzVector ((j->getMomentum())[0],(j->getMomentum())[1],(j->getMomentum())[2],j->getEnergy()); 
+	double sigmaE , sigmaTheta , sigmaPhi;
+	TLorentzVector jetFourMomentum( j->getMomentum(), j->getEnergy() );
+	std::vector< float > jetCovMat( 10 , 0.0 );
+	for ( int i_Element = 0 ; i_Element < 10 ; ++i_Element ) {
+	  jetCovMat[ i_Element ] = j->getCovMatrix()[ i_Element ];
+	}
+	getJetResolutions( jetFourMomentum , jetCovMat , sigmaE , sigmaTheta , sigmaPhi );
 	if (i == 0) { 
-	  j1 = new JetFitObject (lvec.e(), lvec.theta(), lvec.phi(),
-				 JetEnergyResolution(lvec.e()), errtheta, errphi, lvec.m());
+	  j1 = new JetFitObject( jetFourMomentum.E() , jetFourMomentum.Theta() , jetFourMomentum.Phi(),
+				 m_SigmaEnergyScaleFactor * sigmaE , m_SigmaAnglesScaleFactor * sigmaTheta , m_SigmaAnglesScaleFactor * sigmaPhi , jetFourMomentum.M() );
 	  j1->setName("Jet1");
 	  streamlog_out(DEBUG)  << " start four-vector of first  jet: " << *j1  << std::endl ;
 	}
 	else if (i == 1) { 
-	  j2 = new JetFitObject (lvec.e(), lvec.theta(), lvec.phi(),
-				 JetEnergyResolution(lvec.e()), errtheta, errphi, lvec.m());
+	  j2 = new JetFitObject( jetFourMomentum.E() , jetFourMomentum.Theta() , jetFourMomentum.Phi(),
+                                 m_SigmaEnergyScaleFactor * sigmaE , m_SigmaAnglesScaleFactor * sigmaTheta , m_SigmaAnglesScaleFactor * sigmaPhi , jetFourMomentum.M() );
 	  j2->setName("Jet2");
 	  streamlog_out(DEBUG) << " start four-vector of second  jet: " << *j2  << std::endl ;
 	}
 	else if (i == 2) {
-	  j3 = new JetFitObject (lvec.e(), lvec.theta(), lvec.phi(),
-				 JetEnergyResolution(lvec.e()), errtheta, errphi, lvec.m());
+	  j3 = new JetFitObject( jetFourMomentum.E() , jetFourMomentum.Theta() , jetFourMomentum.Phi(),
+                                 m_SigmaEnergyScaleFactor * sigmaE , m_SigmaAnglesScaleFactor * sigmaTheta , m_SigmaAnglesScaleFactor * sigmaPhi , jetFourMomentum.M() );
 	  j3->setName("Jet3");
 	  streamlog_out(DEBUG) << " start four-vector of third  jet: " << *j3  << std::endl ;
 	}
 	else if (i == 3) { 
-	  j4 = new JetFitObject (lvec.e(), lvec.theta(), lvec.phi(),
-				 JetEnergyResolution(lvec.e()), errtheta, errphi, lvec.m());
+	  j4 = new JetFitObject( jetFourMomentum.E() , jetFourMomentum.Theta() , jetFourMomentum.Phi(),
+                                 m_SigmaEnergyScaleFactor * sigmaE , m_SigmaAnglesScaleFactor * sigmaTheta , m_SigmaAnglesScaleFactor * sigmaPhi , jetFourMomentum.M() );
 	  j4->setName("Jet4");
-	  streamlog_out(DEBUG) << " start four-vector of forth  jet: " << *j4  << std::endl ;
+	  streamlog_out(DEBUG) << " start four-vector of fourth  jet: " << *j4  << std::endl ;
 	}
 #ifdef MARLIN_USE_AIDA
 	hJetMass->fill(j->getMass());
@@ -579,20 +610,20 @@ void ZHHKinFit::processEvent( LCEvent * evt ) {
 
        //4-momentum of KinFit objects after fit for best combination found in the fit
        LCCollectionVec *OutputCol = new LCCollectionVec(LCIO::RECONSTRUCTEDPARTICLE);
-       ReconstructedParticleImpl* FitLep1 = new ReconstructedParticleImpl;
+       /*ReconstructedParticleImpl* FitLep1 = new ReconstructedParticleImpl;
        ReconstructedParticleImpl* FitLep2 = new ReconstructedParticleImpl;
        ReconstructedParticleImpl* FitJet1 = new ReconstructedParticleImpl;
        ReconstructedParticleImpl* FitJet2 = new ReconstructedParticleImpl;
        ReconstructedParticleImpl* FitJet3 = new ReconstructedParticleImpl;
-       ReconstructedParticleImpl* FitJet4 = new ReconstructedParticleImpl;
+       ReconstructedParticleImpl* FitJet4 = new ReconstructedParticleImpl;*/
        //4-momentum of KinFit objects before fit for best combination found in the fit
-       LCCollectionVec *OutputCol = new LCCollectionVec(LCIO::RECONSTRUCTEDPARTICLE);
-       ReconstructedParticleImpl* RecoLep1 = new ReconstructedParticleImpl;
+       //LCCollectionVec *OutputCol = new LCCollectionVec(LCIO::RECONSTRUCTEDPARTICLE);
+       /*ReconstructedParticleImpl* RecoLep1 = new ReconstructedParticleImpl;
        ReconstructedParticleImpl* RecoLep2 = new ReconstructedParticleImpl;
        ReconstructedParticleImpl* RecoJet1 = new ReconstructedParticleImpl;
        ReconstructedParticleImpl* RecoJet2 = new ReconstructedParticleImpl;
        ReconstructedParticleImpl* RecoJet3 = new ReconstructedParticleImpl;
-       ReconstructedParticleImpl* RecoJet4 = new ReconstructedParticleImpl;
+       ReconstructedParticleImpl* RecoJet4 = new ReconstructedParticleImpl;*/
 
 
        OutputCol->parameters().setValue("bestchisq", (float)bestchi2);
@@ -632,6 +663,113 @@ void ZHHKinFit::processEvent( LCEvent * evt ) {
 
 
   _nEvt ++ ;
+}
+
+void ZHHKinFit::getJetResolutions(TLorentzVector jetFourMomentum , std::vector<float> jetCovMat , double &sigmaE , double &sigmaTheta , double &sigmaPhi )
+{
+  float Px , Py , Pz , P2 , Pt , Pt2;
+  float dTheta_dPx , dTheta_dPy , dTheta_dPz , dPhi_dPx , dPhi_dPy;
+  float sigmaPx2 , sigmaPy2 , sigmaPz2 , sigmaPxPy , sigmaPxPz , sigmaPyPz;
+
+  Px= jetFourMomentum.Px();
+  Py= jetFourMomentum.Py();
+  Pz= jetFourMomentum.Pz();
+  P2= ( jetFourMomentum.Vect() ).Mag2();
+  Pt2= pow( Px , 2 ) + pow( Py , 2 );
+  Pt= sqrt( Pt2 );
+  sigmaPx2= jetCovMat[ 0 ];
+  sigmaPxPy= jetCovMat[ 1 ];
+  sigmaPy2= jetCovMat[ 2 ];
+  sigmaPxPz= jetCovMat[ 3 ];
+  sigmaPyPz= jetCovMat[ 4 ];
+  sigmaPz2= jetCovMat[ 5 ];
+
+  dTheta_dPx= Px * Pz / ( P2 * Pt );
+  dTheta_dPy= Py * Pz / ( P2 * Pt );
+  dTheta_dPz= -Pt / P2;
+  dPhi_dPx= -Py / Pt2;
+  dPhi_dPy= Px / Pt2;
+
+  sigmaE= std::sqrt( jetCovMat[ 9 ] );
+  sigmaTheta= std::sqrt( std::fabs( std::pow( dTheta_dPx , 2 ) * sigmaPx2 + std::pow( dTheta_dPy , 2 ) * sigmaPy2 + std::pow( dTheta_dPz , 2 ) * sigmaPz2 +
+				    2.0 * dTheta_dPx * dTheta_dPy * sigmaPxPy + 2.0 * dTheta_dPx * dTheta_dPz * sigmaPxPz + 2.0 * dTheta_dPy * dTheta_dPz * sigmaPyPz ) );
+  sigmaPhi= std::sqrt( std::fabs( std::pow( dPhi_dPx , 2 ) * sigmaPx2 + std::pow( dPhi_dPy , 2 ) * sigmaPy2 + 2.0 * dPhi_dPx * dPhi_dPy * sigmaPxPy ) );
+  streamlog_out(DEBUG6) << "E= " << jetFourMomentum.E() << std::endl ;
+  streamlog_out(DEBUG6) << "Theta= " << jetFourMomentum.Theta() << std::endl ;
+  streamlog_out(DEBUG6) << "Phi= " << jetFourMomentum.Phi() << std::endl ;
+  streamlog_out(DEBUG6) << "sigmaE= " << sigmaE << std::endl ;
+  streamlog_out(DEBUG6) << "sigmaTheta= " << sigmaTheta << std::endl ;
+  streamlog_out(DEBUG6) << "sigmaPhi= " << sigmaPhi << std::endl ;
+
+}
+
+void ZHHKinFit::getLeptonParameters( ReconstructedParticle* lepton , float (&parameters)[ 3 ] , float (&errors)[ 3 ] )
+{
+  TrackVec trackVec = lepton->getTracks();
+  if ( trackVec.size() != 1 )
+    {
+      streamlog_out(DEBUG4)  << "Number of tracks for lepton is not exactly ONE!!! (nTracks = " << trackVec.size() << " ) " << std::endl ;
+      //streamlog_out(DEBUG4) << "Input lepton" << *(lepton) << std::endl;
+      TLorentzVector leptonFourMomentum( lepton->getMomentum() , lepton->getEnergy() );
+      float Px= leptonFourMomentum.Px();
+      float Py= leptonFourMomentum.Py();
+      float Pz= leptonFourMomentum.Pz();
+      float P2= ( leptonFourMomentum.Vect() ).Mag2();
+      float Pt2= std::pow( Px , 2 ) + std::pow( Py , 2 );
+      float Pt= std::sqrt( Pt2 );
+
+      float sigmaPx2= lepton->getCovMatrix()[ 0 ];
+      float sigmaPxPy= lepton->getCovMatrix()[ 1 ];
+      float sigmaPy2= lepton->getCovMatrix()[ 2 ];
+      float sigmaPxPz= lepton->getCovMatrix()[ 3 ];
+      float sigmaPyPz= lepton->getCovMatrix()[ 4 ];
+      float sigmaPz2= lepton->getCovMatrix()[ 5 ];
+
+      float dInvPt_dPx= - Px / ( Pt * Pt2 );
+      float dInvPt_dPy= - Py / ( Pt * Pt2 );
+      float dTheta_dPx= Px * Pz / ( P2 * Pt );
+      float dTheta_dPy= Py * Pz / ( P2 * Pt );
+      float dTheta_dPz= -Pt / P2;
+      float dPhi_dPx= -Py / Pt2;
+      float dPhi_dPy= Px / Pt2;
+
+      parameters[ 0 ] = 1.0 / std::sqrt( std::pow( leptonFourMomentum.Px() , 2 ) + std::pow( leptonFourMomentum.Py() , 2 ) );
+      parameters[ 1 ] = leptonFourMomentum.Theta();
+      parameters[ 2 ] = leptonFourMomentum.Phi();
+      errors[ 0 ]= std::sqrt( std::pow( dInvPt_dPx , 2 ) * sigmaPx2 + std::pow( dInvPt_dPy , 2 ) * sigmaPy2 + 2.0 * dInvPt_dPx * dInvPt_dPy * sigmaPxPy );
+      errors[ 1 ]= std::sqrt( std::fabs( std::pow( dTheta_dPx , 2 ) * sigmaPx2 + std::pow( dTheta_dPy , 2 ) * sigmaPy2 + std::pow( dTheta_dPz , 2 ) * sigmaPz2 +
+					 2.0 * dTheta_dPx * dTheta_dPy * sigmaPxPy + 2.0 * dTheta_dPx * dTheta_dPz * sigmaPxPz + 2.0 * dTheta_dPy * dTheta_dPz * sigmaPyPz ) );
+      errors[ 2 ]= std::sqrt( std::fabs( std::pow( dPhi_dPx , 2 ) * sigmaPx2 + std::pow( dPhi_dPy , 2 ) * sigmaPy2 + 2.0 * dPhi_dPx * dPhi_dPy * sigmaPxPy ) );
+    }
+  else
+    {
+      streamlog_out(DEBUG4)  << "Lepton has exactly ONE track:" << std::endl ;
+      //streamlog_out(DEBUG4) << *lepton << std::endl;
+      //streamlog_out(DEBUG4) << *trackVec[ 0 ] << std::endl;
+      float Omega= trackVec[ 0 ]->getOmega();
+      float tanLambda= trackVec[ 0 ]->getTanLambda();
+      float Theta= 2.0 * atan( 1.0 ) - atan( tanLambda );//atan( 1.0 / tanLambda );
+      float Phi= trackVec[ 0 ]->getPhi();
+
+      float sigmaOmega= std::sqrt( trackVec[ 0 ]->getCovMatrix()[ 5 ] );
+      float sigmaTanLambda= std::sqrt( trackVec[ 0 ]->getCovMatrix()[ 14 ] );
+      float sigmaPhi= std::sqrt( trackVec[ 0 ]->getCovMatrix()[ 2 ] );
+
+      float dTheta_dTanLambda= -1.0 / ( 1.0 + std::pow( tanLambda , 2 ) );
+
+      parameters[ 0 ]= Omega / eB;
+      parameters[ 1 ]= Theta;
+      parameters[ 2 ]= Phi;
+      errors[ 0 ]= sigmaOmega / eB;
+      errors[ 1 ]= std::fabs( dTheta_dTanLambda ) * sigmaTanLambda;
+      errors[ 2 ]= sigmaPhi;
+    }
+  streamlog_out(DEBUG6) << "Inverse pT= " << parameters[ 0 ] << std::endl ;
+  streamlog_out(DEBUG6) << "Theta= " << parameters[ 1 ] << std::endl ;
+  streamlog_out(DEBUG6) << "Phi= " << parameters[ 2 ] << std::endl ;
+  streamlog_out(DEBUG6) << "SigmaInverse pT= " << errors[ 0 ] << std::endl ;
+  streamlog_out(DEBUG6) << "SigmaTheta= " << errors[ 1 ] << std::endl ;
+  streamlog_out(DEBUG6) << "SigmaPhi= " << errors[ 2 ] << std::endl ;
 }
 
 
