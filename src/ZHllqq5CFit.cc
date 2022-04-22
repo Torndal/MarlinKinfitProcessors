@@ -443,7 +443,7 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 		streamlog_out(DEBUG8) << "	Number of isolatedLeptons: " << m_nIsoLeps << std::endl ;
 		streamlog_out(DEBUG8) << "	Number of found semi-leptonic decays: " << m_nSLDecayTotal << std::endl ;
 		streamlog_out(DEBUG8) << "	Number of corrected semi-leptonic decays: " << m_nCorrectedSLD << std::endl ;
-		if ( m_nJets == m_nAskedJets && m_nIsoLeps == m_nAskedIsoLeps && m_nCorrectedSLD == m_nSLDecayTotal )
+		if ( m_nJets == m_nAskedJets && m_nIsoLeps == m_nAskedIsoLeps )//&& m_nCorrectedSLD == m_nSLDecayTotal )
 		{
 			bool traceEvent = false;
 			if ( pLCEvent->getEventNumber() == m_ievttrace || m_traceall ) traceEvent = true;
@@ -511,6 +511,9 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 			TLorentzVector Nu2tlv( 0.0 , 0.0 , 0.0 , 0.0 );
 			std::vector< float > nu1CovMat( 10 , 0.0 );
 			std::vector< float > nu2CovMat( 10 , 0.0 );
+			streamlog_out(MESSAGE) << "	||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||" << std::endl ;
+			streamlog_out(MESSAGE) << "	||||||||||||||||||||||||||||  KINFIT WITHOUT NEUTRINO COORECTION  ||||||||||||||||||||||||||||" << std::endl ;
+			streamlog_out(MESSAGE) << "	||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||" << std::endl ;
 
 			m_FitErrorCode_woNu = performFIT( jet1tlv , jet1initialCovMat , jet2tlv , jet2initialCovMat , Leptons , fitProbability_woNu , fitOutputs_temp , fittedObjects_temp , pull_temp , traceEvent );
 			if ( m_FitErrorCode_woNu == 0 )
@@ -525,6 +528,9 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 				m_FitProbability_woNu = fitProbability_woNu;
 			}
 
+			streamlog_out(MESSAGE) << "	||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||" << std::endl ;
+			streamlog_out(MESSAGE) << "	||||||||||||||||||||||||||||  FEED NEUTRINO COORECTION TO KINFIT  ||||||||||||||||||||||||||||" << std::endl ;
+			streamlog_out(MESSAGE) << "	||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||" << std::endl ;
 			LCRelationNavigator JetSLDNav( pLCEvent->getCollection( m_inputJetSLDLink ) );
 
 			TLorentzVector jet1FourMomentum( 0.0 , 0.0 , 0.0 , 0.0 );
@@ -983,12 +989,12 @@ int ZHllqq5CFit::performFIT( 	TLorentzVector jet1FourMomentum , std::vector<floa
 	getJetResolutions( jet1FourMomentum , jet1CovMat , sigmaE , sigmaTheta , sigmaPhi );
 	jet[ 0 ] = new JetFitObject( jet1FourMomentum.E() , jet1FourMomentum.Theta() , jet1FourMomentum.Phi() , m_SigmaEnergyScaleFactor * sigmaE , sigmaTheta , sigmaPhi , jet1FourMomentum.M() );
 	jet[ 0 ]->setName( "jet1" );
-	streamlog_out(DEBUG8)  << " start four-vector of jet1: " << *jet[ 0 ]  << std::endl ;
+	streamlog_out(MESSAGE)  << " start four-vector of jet1: " << *jet[ 0 ]  << std::endl ;
 	streamlog_out(DEBUG6) << "		get jet2 resolutions"  << std::endl ;
 	getJetResolutions( jet2FourMomentum , jet2CovMat , sigmaE , sigmaTheta , sigmaPhi );
 	jet[ 1 ] = new JetFitObject( jet2FourMomentum.E() , jet2FourMomentum.Theta() , jet2FourMomentum.Phi() , m_SigmaEnergyScaleFactor * sigmaE , sigmaTheta , sigmaPhi , jet2FourMomentum.M() );
 	jet[ 1 ]->setName( "jet2" );
-	streamlog_out(DEBUG8)  << " start four-vector of jet2: " << *jet[ 1 ]  << std::endl ;
+	streamlog_out(MESSAGE)  << " start four-vector of jet2: " << *jet[ 1 ]  << std::endl ;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////													//////
@@ -1003,12 +1009,12 @@ int ZHllqq5CFit::performFIT( 	TLorentzVector jet1FourMomentum , std::vector<floa
 	getLeptonParameters( leptons[ 0 ] , parameters , errors );
 	lepton[ 0 ] = new LeptonFitObject ( parameters[ 0 ] , parameters[ 1 ] , parameters[ 2 ] , errors[ 0 ] , errors[ 1 ] , errors[ 2 ] , leptons[ 0 ]->getMass() );
 	lepton[ 0 ]->setName( "lepton1" );
-	streamlog_out(DEBUG8)  << " start four-vector of lepton1: " << *lepton[ 0 ]  << std::endl ;
+	streamlog_out(MESSAGE)  << " start four-vector of lepton1: " << *lepton[ 0 ]  << std::endl ;
 	streamlog_out(DEBUG6) << "		get lepton2 parameters"  << std::endl ;
 	getLeptonParameters( leptons[ 1 ] , parameters , errors );
 	lepton[ 1 ] = new LeptonFitObject ( parameters[ 0 ] , parameters[ 1 ] , parameters[ 2 ] , errors[ 0 ] , errors[ 1 ] , errors[ 2 ] , leptons[ 1 ]->getMass() );
 	lepton[ 1 ]->setName( "lepton2" );
-	streamlog_out(DEBUG8)  << " start four-vector of lepton2: " << *lepton[ 1 ]  << std::endl ;
+	streamlog_out(MESSAGE)  << " start four-vector of lepton2: " << *lepton[ 1 ]  << std::endl ;
 
 ////	these don't get changed by the fit -> to obtain start values later!
 	const int NJETS = 2;
@@ -1040,7 +1046,7 @@ int ZHllqq5CFit::performFIT( 	TLorentzVector jet1FourMomentum , std::vector<floa
 	for (int i = 0; i < NLEPTONS; ++i)
 	{
 		LEPTONs[i] = &fitleptons[i];
-		streamlog_out(DEBUG8)  << "	start four-vector of leptons " << i << ": " << *(LEPTONs[i])  << std::endl ;
+		streamlog_out(DEBUG8)  << "	start four-vector of lepton " << i << ": " << *(LEPTONs[i])  << std::endl ;
 	}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1088,7 +1094,7 @@ int ZHllqq5CFit::performFIT( 	TLorentzVector jet1FourMomentum , std::vector<floa
 	ISRPhotonFitObject *photon = new ISRPhotonFitObject (0., 0., -pzc.getValue(), b, ISRPzMaxB);
 	if( m_fitISR )
 	{
-		streamlog_out(DEBUG8)  << "start four-vector of ISR photon: " << *(photon) << std::endl ;
+		streamlog_out(MESSAGE)  << "start four-vector of ISR photon: " << *(photon) << std::endl ;
 
 		pxc.addToFOList(*(photon));
 		pyc.addToFOList(*(photon));
@@ -1165,22 +1171,22 @@ int ZHllqq5CFit::performFIT( 	TLorentzVector jet1FourMomentum , std::vector<floa
 	int nit = fitter.getIterations();
 	ErrorCode = fitter.getError();
 
-	streamlog_out(DEBUG8)  << "	<<<<<<<<<<<<<<<<<<<<<<<<<< FIT OUTPUTS >>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
-	streamlog_out(DEBUG8) << "	fit probability = " << fitProbability << std::endl ;
-	streamlog_out(DEBUG8) << "	fit chi2 = " << chi2  << std::endl ;
-	streamlog_out(DEBUG8) << "	error code: " << ErrorCode << std::endl ;
+	streamlog_out(MESSAGE)  << "	<<<<<<<<<<<<<<<<<<<<<<<<<< FIT OUTPUTS >>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
 
 	for (int i = 0; i < NJETS; ++i)
 	{
-		streamlog_out(DEBUG8)  << "final four-vector of jet " << i << ": " << *(JETs[i]) << std::endl ;
+		streamlog_out(MESSAGE)  << "final four-vector of jet " << i << ": " << *(JETs[i]) << std::endl ;
 		streamlog_out(DEBUG8)  << "final px of jet " << i << ": " << (JETs[i]) << std::endl ;
 	}
 	for (int i = 0; i < NLEPTONS; ++i)
 	{
-		streamlog_out(DEBUG8)  << "final four-vector of lepton " << i << ": " << *(LEPTONs[i]) << std::endl ;
+		streamlog_out(MESSAGE)  << "final four-vector of lepton " << i << ": " << *(LEPTONs[i]) << std::endl ;
 		streamlog_out(DEBUG8)  << "final px of lepton " << i << ": " << (LEPTONs[i]) << std::endl ;
 	}
-	if( m_fitISR ) streamlog_out(DEBUG9)  << "final four-vector of ISR photon: " << *(photon) << std::endl;
+	streamlog_out(MESSAGE) << "	fit probability = " << fitProbability << std::endl ;
+	streamlog_out(MESSAGE) << "	fit chi2 = " << chi2  << std::endl ;
+	streamlog_out(MESSAGE) << "	error code: " << ErrorCode << std::endl ;
+	if( m_fitISR ) streamlog_out(MESSAGE)  << "final four-vector of ISR photon: " << *(photon) << std::endl;
 
 	streamlog_out(DEBUG9)  << "fitter error: " << ErrorCode << std::endl;
 
@@ -1301,11 +1307,12 @@ int ZHllqq5CFit::performFIT( 	TLorentzVector jet1FourMomentum , std::vector<floa
 	}
 
 
-	streamlog_out(DEBUG9)  << "start mass of Z: " << ZstartMass << std::endl ;
-	streamlog_out(DEBUG9)  << "start mass of H: " << HstartMass << std::endl ;
-	streamlog_out(DEBUG9)  << "mass of fitted Z: " << Zmass_after_fit << std::endl ;
-	streamlog_out(DEBUG9)  << "mass of fitted H: " << Hmass_after_fit << std::endl ;
+	streamlog_out(MESSAGE)  << "start mass of Z: " << ZstartMass << std::endl ;
+	streamlog_out(MESSAGE)  << "start mass of H: " << HstartMass << std::endl ;
+	streamlog_out(MESSAGE)  << "mass of fitted Z: " << Zmass_after_fit << std::endl ;
+	streamlog_out(MESSAGE)  << "mass of fitted H: " << Hmass_after_fit << std::endl ;
 	streamlog_out(DEBUG9)  << "Error Code: " << ErrorCode << std::endl ;
+	streamlog_out(DEBUG9)  << "Fit probability: " << fitProbability << std::endl ;
 
 	fitOutputs[ 0 ] = nit; // number of itterations
 	fitOutputs[ 1 ] = chi2;
