@@ -348,8 +348,7 @@
 
 	<processor name="MyZHllqqFit" type="ZHllqq5CFit"><!--ZHllqqFit does a 5C fit on 2 jet + 2 leptons events (5C: Px, Py, Pz, E, M12 = MZ ) -->
 		<!--Name of collection with the selected isolated lepton-->
-		<parameter name="isolatedlaptonCollection" type="string" lcioInType="ReconstructedParticle">IsolatedLeptons</parameter>
-		<!--parameter name="isolatedlaptonCollection" type="string" lcioInType="ReconstructedParticle">ISOLeptons</parameter-->
+		<parameter name="isolatedlaptonCollection" type="string" lcioInType="ReconstructedParticle">ISOLeptons</parameter>
         	<!--Name of the Jet collection-->
         	<parameter name="JetCollectionName" type="string" lcioInType="ReconstructedParticle">Durham_2Jets</parameter>
 		<!--parameter name="JetCollectionName" type="string" lcioInType="ReconstructedParticle">Durham_2JetsErrorFlow</parameter-->
