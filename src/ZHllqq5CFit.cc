@@ -53,6 +53,13 @@ eB(0.0)
 					std::string("JetSLDLinkName")
 				);
 
+	registerInputCollection(	LCIO::LCRELATION,
+					"SLDNeutrinoRelationCollection",
+					"Name of the JetSemiLeptonicDecayVertex-Neutrinos Relation collection",
+					m_inputSLDNuLink,
+					std::string("SLDNuLinkName")
+				);
+
 	registerOutputCollection( 	LCIO::RECONSTRUCTEDPARTICLE,
 					"FitOutputColection" ,
 					"Name of Output Fit collection"  ,
@@ -532,62 +539,33 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 			streamlog_out(MESSAGE) << "	||||||||||||||||||||||||||||  FEED NEUTRINO COORECTION TO KINFIT  ||||||||||||||||||||||||||||" << std::endl ;
 			streamlog_out(MESSAGE) << "	||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||" << std::endl ;
 			LCRelationNavigator JetSLDNav( pLCEvent->getCollection( m_inputJetSLDLink ) );
-
+			LCRelationNavigator SLDNuNav( pLCEvent->getCollection( m_inputSLDNuLink ) );
+			
+			pfoVectorVector jet1NuSolutions;
+			std::vector<std::vector<int>> jet1SLDCombinations;
+			pfoVectorVector jet2NuSolutions;
+			std::vector<std::vector<int>> jet2SLDCombinations;
+			getNeutrinosInJet( JetSLDNav , SLDNuNav , jet1 , jet1NuSolutions , jet1SLDCombinations );
+			getNeutrinosInJet( JetSLDNav , SLDNuNav , jet2 , jet2NuSolutions , jet2SLDCombinations );
+			int njet1SLDSolutions = jet1SLDCombinations.size();
+			int njet2SLDSolutions = jet2SLDCombinations.size();
 			TLorentzVector jet1FourMomentum( 0.0 , 0.0 , 0.0 , 0.0 );
 			std::vector< float > jet1CovMat( 10 , 0.0 );
-			pfoVector jet1ZeroNeutrinos;
-			getSLDsInJet( JetSLDNav , jet1 , jet1ZeroNeutrinos );
-			std::vector< int > jet1nSLDSolutions{};
-			int njet1SLDSolutions = 1;
-			streamlog_out(DEBUG6) << "	Number of semi-leptonic decays in jet1: " << jet1ZeroNeutrinos.size() << std::endl ;
-			for ( unsigned int i_sld = 0 ; i_sld < jet1ZeroNeutrinos.size() ; ++i_sld )
-			{
-				int nNeutrinos = jet1ZeroNeutrinos[ i_sld ]->getParticles().size() + 1;
-				streamlog_out(DEBUG6) << "	Number of Neutrinos for semi-leptonic decay[ " << i_sld << " ] in jet1: " << nNeutrinos << std::endl ;
-				jet1nSLDSolutions.push_back( nNeutrinos );
-				njet1SLDSolutions *= nNeutrinos;
-			}
-
 			TLorentzVector jet2FourMomentum( 0.0 , 0.0 , 0.0 , 0.0 );
 			std::vector< float > jet2CovMat( 10 , 0.0 );
-			pfoVector jet2ZeroNeutrinos;
-			getSLDsInJet( JetSLDNav , jet2 , jet2ZeroNeutrinos );
-			std::vector< int > jet2nSLDSolutions{};
-			int njet2SLDSolutions = 1;
-			streamlog_out(DEBUG6) << "	Number of semi-leptonic decays in jet2: " << jet2ZeroNeutrinos.size() << std::endl ;
-			for ( unsigned int i_sld = 0 ; i_sld < jet2ZeroNeutrinos.size() ; ++i_sld )
-			{
-				int nNeutrinos = jet2ZeroNeutrinos[ i_sld ]->getParticles().size() + 1;
-				streamlog_out(DEBUG6) << "	Number of Neutrinos for semi-leptonic decay[ " << i_sld << " ] in jet2: " << nNeutrinos << std::endl ;
-				jet2nSLDSolutions.push_back( nNeutrinos );
-				njet2SLDSolutions *= nNeutrinos;
-			}
+			std::vector<int> jet1FinalNuSolutions( jet1NuSolutions.size() , 0 );
+			std::vector<int> jet2FinalNuSolutions( jet2NuSolutions.size() , 0 );
 
-			std::vector<int> jet1SLDCombination( jet1ZeroNeutrinos.size() , 0 );
-			std::vector<int> jet2SLDCombination( jet2ZeroNeutrinos.size() , 0 );
-			std::vector<int> jet1FinalNuSolutions( jet1ZeroNeutrinos.size() , 0 );
-			std::vector<int> jet2FinalNuSolutions( jet2ZeroNeutrinos.size() , 0 );
 			for ( int i_jet1 = 0 ; i_jet1 < njet1SLDSolutions ; ++i_jet1 )
 			{
 				streamlog_out(DEBUG6) << "" << std::endl ;
 				jet1FourMomentum = jet1tlv;
 				for ( int i_Element = 0 ; i_Element < 10 ; ++i_Element ) jet1CovMat[ i_Element ] = jet1initialCovMat[ i_Element ];
-				getSLDCombination( jet1nSLDSolutions , i_jet1 , jet1SLDCombination );
-				streamlog_out(DEBUG6) << "	Preparing Jet1 for kinematic fit with " << jet1ZeroNeutrinos.size() << " semi-leptonic decays:" << std::endl ;
 				TLorentzVector Nu1FourMomentum( 0.0 , 0.0 , 0.0 , 0.0 );
 				std::vector< float > Nu1CovMat( 10 , 0.0 );
-				for ( unsigned int i_sld1 = 0 ; i_sld1 < jet1ZeroNeutrinos.size() ; ++i_sld1 )
+				for ( unsigned int i_sld1 = 0 ; i_sld1 < jet1SLDCombinations[ i_jet1 ].size() ; ++i_sld1 )
 				{
-					streamlog_out(DEBUG6) << "		Adding solution [" << jet1SLDCombination[ i_sld1 ] << "] From semi-leptonic decay[ " << i_sld1 << " ] to Jet1" << std::endl ;
-					ReconstructedParticle* Neutrino1 = NULL;
-					if ( jet1SLDCombination[ i_sld1 ] == 0 )
-					{
-						Neutrino1 = jet1ZeroNeutrinos[ i_sld1 ];
-					}
-					else
-					{
-						Neutrino1 = jet1ZeroNeutrinos[ i_sld1 ]->getParticles()[ jet1SLDCombination[ i_sld1 ] - 1 ];
-					}
+					ReconstructedParticle* Neutrino1 = jet1NuSolutions[ i_sld1 ][ jet1SLDCombinations[ i_jet1 ][ i_sld1 ] ];
 					streamlog_out(DEBUG1) << *Neutrino1 << std::endl;
 					Nu1FourMomentum += TLorentzVector( Neutrino1->getMomentum() , Neutrino1->getEnergy() );
 					for ( int i_Element = 0 ; i_Element < 10 ; ++i_Element ) Nu1CovMat[ i_Element ] += Neutrino1->getCovMatrix()[ i_Element ];
@@ -595,31 +573,21 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 				jet1FourMomentum += Nu1FourMomentum;
 				for ( int i_Element = 0 ; i_Element < 10 ; ++i_Element ) jet1CovMat[ i_Element ] += Nu1CovMat[ i_Element ];
 				for ( int i_jet2 = 0 ; i_jet2 < njet2SLDSolutions ; ++i_jet2 )
-		 		{
+				{
+					streamlog_out(DEBUG6) << "" << std::endl ;
 					jet2FourMomentum = jet2tlv;
 					for ( int i_Element = 0 ; i_Element < 10 ; ++i_Element ) jet2CovMat[ i_Element ] = jet2initialCovMat[ i_Element ];
-		 			getSLDCombination( jet2nSLDSolutions , i_jet2 , jet2SLDCombination );
-					streamlog_out(DEBUG6) << "	Preparing Jet2 for kinematic fit with " << jet2ZeroNeutrinos.size() << " semi-leptonic decays:" << std::endl ;
 					TLorentzVector Nu2FourMomentum( 0.0 , 0.0 , 0.0 , 0.0 );
 					std::vector< float > Nu2CovMat( 10 , 0.0 );
-					for ( unsigned int i_sld2 = 0 ; i_sld2 < jet2ZeroNeutrinos.size() ; ++i_sld2 )
+					for ( unsigned int i_sld2 = 0 ; i_sld2 < jet2SLDCombinations[ i_jet2 ].size() ; ++i_sld2 )
 					{
-						streamlog_out(DEBUG6) << "		Adding solution [" << jet2SLDCombination[ i_sld2 ] << "] From semi-leptonic decay[ " << i_sld2 << " ] to Jet1" << std::endl ;
-						ReconstructedParticle* Neutrino2 = NULL;
-						if ( jet2SLDCombination[ i_sld2 ] == 0 )
-						{
-							Neutrino2 = jet2ZeroNeutrinos[ i_sld2 ];
-						}
-						else
-						{
-							Neutrino2 = jet2ZeroNeutrinos[ i_sld2 ]->getParticles()[ jet2SLDCombination[ i_sld2 ] - 1 ];
-						}
+						ReconstructedParticle* Neutrino2 = jet2NuSolutions[ i_sld2 ][ jet2SLDCombinations[ i_jet2 ][ i_sld2 ] ];
 						streamlog_out(DEBUG1) << *Neutrino2 << std::endl;
 						Nu2FourMomentum += TLorentzVector( Neutrino2->getMomentum() , Neutrino2->getEnergy() );
 						for ( int i_Element = 0 ; i_Element < 10 ; ++i_Element ) Nu2CovMat[ i_Element ] += Neutrino2->getCovMatrix()[ i_Element ];
 					}
 					jet2FourMomentum += Nu2FourMomentum;
-					for ( int i_Element = 0 ; i_Element < 10 ; ++i_Element ) jet2CovMat[ i_Element ] += Nu2CovMat[ i_Element ];
+					for ( int i_Element = 0 ; i_Element < 10 ; ++i_Element ) jet2CovMat[ i_Element ] += Nu1CovMat[ i_Element ];
 					fitErrorCode = performFIT( jet1FourMomentum , jet1CovMat , jet2FourMomentum , jet2CovMat , Leptons , fitProbability , fitOutputs_temp , fittedObjects_temp , pull_temp , traceEvent );
 					if ( fitProbability >= fitProbabilityBestFit_wNu ) m_FitErrorCode_wNu = fitErrorCode;
 					if ( fitErrorCode == 0 )
@@ -629,8 +597,8 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 							for ( unsigned int i = 0 ; i < sizeof( fitOutputs_wNu ) / sizeof( fitOutputs_wNu[ 0 ] ) ; ++i ) fitOutputs_wNu[ i ] = fitOutputs_temp[ i ];
 							for ( unsigned int i = 0 ; i < sizeof( pull_wNu ) / sizeof( pull_wNu[ 0 ] ) ; ++i ) pull_wNu[ i ] = pull_temp[ i ];
 							for ( unsigned int i = 0 ; i < fittedObjects_wNu.size()  ; ++i ) fittedObjects_wNu.push_back( fittedObjects_temp[ i ] );
-							for ( unsigned int i_sld1 = 0 ; i_sld1 < jet1SLDCombination.size() ; ++i_sld1 ) jet1FinalNuSolutions[ i_sld1 ] = jet1SLDCombination[ i_sld1 ];
-							for ( unsigned int i_sld2 = 0 ; i_sld2 < jet2SLDCombination.size() ; ++i_sld2 ) jet2FinalNuSolutions[ i_sld2 ] = jet2SLDCombination[ i_sld2 ];
+							for ( unsigned int i_sld1 = 0 ; i_sld1 < jet1SLDCombinations[ i_jet1 ].size() ; ++i_sld1 ) jet1FinalNuSolutions[ i_sld1 ] = jet1SLDCombinations[ i_jet1 ][ i_sld1 ];
+							for ( unsigned int i_sld2 = 0 ; i_sld2 < jet2SLDCombinations[ i_jet2 ].size() ; ++i_sld2 ) jet2FinalNuSolutions[ i_sld2 ] = jet2SLDCombinations[ i_jet2 ][ i_sld2 ];
 							fitProbabilityBestFit_wNu = fitProbability;
 							m_ZMassBeforeFit_wNu = fitOutputs_wNu[ 2 ];
 							m_HMassBeforeFit_wNu = fitOutputs_wNu[ 3 ];
@@ -639,8 +607,9 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 							m_FitProbability_wNu = fitProbabilityBestFit_wNu;
 						}
 					}
-		 		}
+				}
 			}
+
 			std::vector<EVENT::ReconstructedParticle*> jet1Neutrinos{};
 			std::vector<EVENT::ReconstructedParticle*> jet2Neutrinos{};
 			streamlog_out(DEBUG0) << " Checking Fit Probability of KinFit with and without Neutrino Correction " << std::endl;
@@ -657,25 +626,11 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 				for ( unsigned int i = 0 ; i < fittedObjects_wNu.size()  ; ++i ) fittedObjects.push_back( fittedObjects_wNu[ i ] );
 				for ( unsigned int i = 0 ; i < jet1FinalNuSolutions.size() ; ++i )
 				{
-					if ( jet1FinalNuSolutions[ i ] == 0 )
-					{
-						jet1Neutrinos.push_back( ( EVENT::ReconstructedParticle* )jet1ZeroNeutrinos[ i ] );
-					}
-					else
-					{
-						jet1Neutrinos.push_back( ( EVENT::ReconstructedParticle* )jet1ZeroNeutrinos[ i ]->getParticles()[ jet1FinalNuSolutions[ i ] - 1 ] );
-					}
+					jet1Neutrinos.push_back( ( EVENT::ReconstructedParticle* )jet1NuSolutions[ i ][ jet1FinalNuSolutions[ i ] ] );
 				}
 				for ( unsigned int i = 0 ; i < jet2FinalNuSolutions.size() ; ++i )
 				{
-					if ( jet2FinalNuSolutions[ i ] == 0 )
-					{
-						jet2Neutrinos.push_back( ( EVENT::ReconstructedParticle* )jet2ZeroNeutrinos[ i ] );
-					}
-					else
-					{
-						jet2Neutrinos.push_back( ( EVENT::ReconstructedParticle* )jet2ZeroNeutrinos[ i ]->getParticles()[ jet2FinalNuSolutions[ i ] - 1 ] );
-					}
+					jet2Neutrinos.push_back( ( EVENT::ReconstructedParticle* )jet2NuSolutions[ i ][ jet2FinalNuSolutions[ i ] ] );
 				}
 			}
 			else
@@ -718,7 +673,7 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 			std::vector< float > outJet1CovMat( 10 , 0.0 ); for ( int i_Element = 0 ; i_Element < 10 ; ++i_Element ) outJet1CovMat[ i_Element ] = outJet1->getCovMatrix()[ i_Element ];
 			std::vector< float > outJet2CovMat( 10 , 0.0 ); for ( int i_Element = 0 ; i_Element < 10 ; ++i_Element ) outJet2CovMat[ i_Element ] = outJet2->getCovMatrix()[ i_Element ];
 			streamlog_out(DEBUG0) << " Output jets are obtained from input jet collection " << std::endl;
-			getNormalizedResiduals( pLCEvent , outJet1 , outJet2 , jetNormalizedResiduals , foundTrueJet_woNu , false );
+			getNormalizedResiduals( pLCEvent , outJet1 , outJet2 , jetNormalizedResiduals , foundTrueJet_woNu );
 			streamlog_out(DEBUG0) << " Normalized Residuals of Jets without Neutrino Correction calculated " << std::endl;
 			if ( foundTrueJet_woNu )
 			{
@@ -769,7 +724,7 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 			outJet2->setEnergy( jet2Energy );
 			outJet2->setCovMatrix( outJet2CovMat );
 			streamlog_out(DEBUG0) << " FourMomentum of Jet2 updated" << std::endl;
-			getNormalizedResiduals( pLCEvent , outJet1 , outJet2 , jetNormalizedResiduals , foundTrueJet_wNu , true );
+			getNormalizedResiduals( pLCEvent , outJet1 , outJet2 , jetNormalizedResiduals , foundTrueJet_wNu );
 			if ( foundTrueJet_wNu )
 			{
 				m_normalizedResidualJetEnergy_wNu.push_back( jetNormalizedResiduals[ 0 ] );	m_normalizedResidualJetEnergy_wNu.push_back( jetNormalizedResiduals[ 1 ] );
@@ -801,7 +756,7 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 
 }
 
-void ZHllqq5CFit::getNormalizedResiduals( EVENT::LCEvent *pLCEvent , ReconstructedParticleImpl* recoJet1 , ReconstructedParticleImpl* recoJet2 , double (&jetNormalizedResiduals)[ 6 ] , bool &foundTrueJets , bool includeInvisiblesInTrueJet )
+void ZHllqq5CFit::getNormalizedResiduals( EVENT::LCEvent *pLCEvent , ReconstructedParticleImpl* recoJet1 , ReconstructedParticleImpl* recoJet2 , double (&jetNormalizedResiduals)[ 6 ] , bool &foundTrueJets )
 {
 	TrueJet_Parser* trueJet	= this;
 	trueJet->getall( pLCEvent );
@@ -944,28 +899,72 @@ void ZHllqq5CFit::getNormalizedResiduals( EVENT::LCEvent *pLCEvent , Reconstruct
 
 }
 
-void ZHllqq5CFit::getSLDsInJet( LCRelationNavigator JetSLDNav , EVENT::ReconstructedParticle* jet , pfoVector &Neutrinos )
+void ZHllqq5CFit::getNeutrinosInJet( LCRelationNavigator JetSLDNav , LCRelationNavigator SLDNuNav , EVENT::ReconstructedParticle* jet , pfoVectorVector &Neutrinos , std::vector<std::vector<int>> &NeutrinoInJetCombinations )
 {
 	const EVENT::LCObjectVec& SLDVertices = JetSLDNav.getRelatedToObjects( jet );
 	Neutrinos.clear();
+	NeutrinoInJetCombinations.clear();
+	pfoVector NeutrinosOfThisSLD;
+	std::vector<std::vector<int>>  neutrinoSolutions;
+	std::vector<int> i_NeutrinoSolution;
+	std::vector<int> singleCombination;
 	for ( unsigned int i_sld = 0 ; i_sld < SLDVertices.size() ; ++i_sld )
 	{
 		Vertex *sldVertex = (Vertex*) SLDVertices.at( i_sld );
-		ReconstructedParticle *sldRP = (ReconstructedParticle *) ( sldVertex->getAssociatedParticle() );
-		Neutrinos.push_back( sldRP->getParticles()[ 0 ] );
+		NeutrinosOfThisSLD.clear();
+		i_NeutrinoSolution.clear();
+		singleCombination.push_back( 0 );
+		const EVENT::LCObjectVec& neutrinos = SLDNuNav.getRelatedToObjects( sldVertex );
+		for ( unsigned int i_nu = 0 ; i_nu < neutrinos.size() ; ++i_nu )
+		{
+			EVENT::ReconstructedParticle* neutrino = (ReconstructedParticle*) neutrinos.at( i_nu );
+			NeutrinosOfThisSLD.push_back( neutrino );
+			i_NeutrinoSolution.push_back( i_nu );
+		}
+		Neutrinos.push_back( NeutrinosOfThisSLD );
+		neutrinoSolutions.push_back( i_NeutrinoSolution );
 	}
-}
 
-void ZHllqq5CFit::getSLDCombination( std::vector<int> jetnSLDSolutions , int iteration , std::vector<int> &jetSLDCombination )
-{
-	int k,l,m;
-	m = iteration;
-	for ( unsigned int i = 0 ; i < jetnSLDSolutions.size() ; ++i )
+	int nCombinations = 1;
+	for ( unsigned int i_sld = 0 ; i_sld < neutrinoSolutions.size() ; ++i_sld ) nCombinations *= neutrinoSolutions[ i_sld ].size();
+	for ( int i = 0 ; i < nCombinations ; ++i ) NeutrinoInJetCombinations.push_back( singleCombination );
+	for ( unsigned int i_sld = 0 ; i_sld < neutrinoSolutions.size() ; ++i_sld )
 	{
-		k = m / jetnSLDSolutions[ jetnSLDSolutions.size() - i - 1 ];
-		l = m - k * jetnSLDSolutions[ jetnSLDSolutions.size() - i - 1 ];
-		m = k;
-		jetSLDCombination[ jetnSLDSolutions.size() - i - 1 ] = l;
+		int nUpSLD = 1;
+		int nDownSLD = 1;
+		for ( unsigned int j = 0 ; j < i_sld ; ++j )
+		{
+			nUpSLD *= neutrinoSolutions[ j ].size();
+		}
+		for ( unsigned int i = i_sld + 1 ; i < neutrinoSolutions.size() ; ++i )
+		{
+			nDownSLD *= neutrinoSolutions[ i ].size();
+		}
+		streamlog_out(MESSAGE) << "Number of Big loops in sld[ " << i_sld << " ] = 	" << nUpSLD << std::endl;
+		streamlog_out(MESSAGE) << "Number of Small loops in sld[ " << i_sld << " ] = 	" << nDownSLD << std::endl;
+		for ( int i = 0 ; i < nUpSLD ; ++i )
+		{
+			for ( unsigned int i_nu = 0 ; i_nu < neutrinoSolutions[ i_sld ].size() ; ++i_nu )
+			{
+				for ( int j = 0 ; j < nDownSLD ; ++j )
+				{
+					streamlog_out(MESSAGE) << "i = " << i << " , i_nu = " << i_nu << " , j = " << j ;
+					streamlog_out(MESSAGE) << " ,	Filling sldcombination[ " << j + i * neutrinoSolutions[ i_sld ].size() * nDownSLD + i_nu * nDownSLD << " ][ " << i_sld << " ] = 	" << neutrinoSolutions[ i_sld ][ i_nu ] << std::endl;
+					NeutrinoInJetCombinations[ j + i * neutrinoSolutions[ i_sld ].size() * nDownSLD + i_nu * nDownSLD ][ i_sld ] = neutrinoSolutions[ i_sld ][ i_nu ];
+				}
+			}
+		}
+	}
+	streamlog_out(MESSAGE) << "Total Number of SLD combinations in jet: " << NeutrinoInJetCombinations.size() << " combinations for " << NeutrinoInJetCombinations[ 0 ].size() << " semi-leptonic decays!" << std::endl;
+	streamlog_out(MESSAGE) << "Possible combinations:" << std::endl;
+	for ( unsigned int i_comb = 0 ; i_comb < NeutrinoInJetCombinations.size() ; ++i_comb )
+	{
+		streamlog_out(MESSAGE) << "		combination " << i_comb << ":	";
+		for ( unsigned int i_sld = 0 ; i_sld < NeutrinoInJetCombinations[ i_comb ].size() ; ++i_sld )
+		{
+			streamlog_out(MESSAGE) << " " << NeutrinoInJetCombinations[ i_comb ][ i_sld ] << " ";
+		}
+		streamlog_out(MESSAGE) << " " << std::endl;
 	}
 }
 
