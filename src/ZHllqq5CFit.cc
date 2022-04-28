@@ -587,7 +587,7 @@ void ZHllqq5CFit::processEvent( EVENT::LCEvent *pLCEvent )
 						for ( int i_Element = 0 ; i_Element < 10 ; ++i_Element ) Nu2CovMat[ i_Element ] += Neutrino2->getCovMatrix()[ i_Element ];
 					}
 					jet2FourMomentum += Nu2FourMomentum;
-					for ( int i_Element = 0 ; i_Element < 10 ; ++i_Element ) jet2CovMat[ i_Element ] += Nu1CovMat[ i_Element ];
+					for ( int i_Element = 0 ; i_Element < 10 ; ++i_Element ) jet2CovMat[ i_Element ] += Nu2CovMat[ i_Element ];
 					fitErrorCode = performFIT( jet1FourMomentum , jet1CovMat , jet2FourMomentum , jet2CovMat , Leptons , fitProbability , fitOutputs_temp , fittedObjects_temp , pull_temp , traceEvent );
 					if ( fitProbability >= fitProbabilityBestFit_wNu ) m_FitErrorCode_wNu = fitErrorCode;
 					if ( fitErrorCode == 0 )
